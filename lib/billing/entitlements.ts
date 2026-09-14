@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { FOUNDER_EMAIL, getPlan, type PlanId } from '@/lib/plans';
+import { FOUNDER_EMAIL, getPlan } from '@/lib/plans';
 
 export const UNITS = { audit: 1, recheck: 1, competitor: 0.5, messageMatch: 0.25, copy: 0.1 } as const;
 
@@ -28,7 +28,6 @@ export async function canConsumeUnits(userId: string, units: number) {
   if (!plan) return false;
   const now = new Date();
   const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
   const balance = await db.usageBalance.findUnique({ where: { userId_periodStart: { userId, periodStart } } });
   const consumed = Number(balance?.consumedUnits ?? 0);
   return consumed + units <= plan.units;

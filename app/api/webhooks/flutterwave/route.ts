@@ -3,6 +3,15 @@ import { db } from '@/lib/db';
 import { getPlan, FOUNDING_LIFETIME_MAX_SLOTS, type PlanId } from '@/lib/plans';
 import { verifyTransaction } from '@/lib/billing/flutterwave';
 
+type FlutterwaveWebhookPayload = {
+  id?: string | number;
+  event?: string;
+  data?: {
+    id?: string | number;
+    tx_ref?: string;
+  };
+};
+
 function foundingOpen() {
   const raw = process.env.FOUNDING_LIFETIME_LAUNCH_AT;
   if (!raw) return false;
@@ -16,31 +25,31 @@ export async function POST(request: Request) {
   const signature = request.headers.get('verif-hash');
   if (!configured || !signature || signature !== configured) return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
 
-  let payload: any;
+  let payload: FlutterwaveWebhookPayload;
   try {
-    payload = await request.json();
+    payload = (await request.json()) as FlutterwaveWebhookPayload;
   } catch {
     return NextResponse.json({ error: 'VALIDATION_ERROR' }, { status: 400 });
   }
 
-  const eventId = String(payload?.id ?? payload?.data?.id ?? `${payload?.event ?? 'unknown'}:${payload?.data?.tx_ref ?? 'unknown'}`);
+  const eventId = String(payload.id ?? payload.data?.id ?? `${payload.event ?? 'unknown'}:${payload.data?.tx_ref ?? 'unknown'}`);
   const existing = await db.webhookEvent.findUnique({ where: { provider_providerEventId: { provider: 'flutterwave', providerEventId: eventId } } });
   if (existing?.processedAt) return NextResponse.json({ received: true, duplicate: true });
 
   await db.webhookEvent.upsert({
     where: { provider_providerEventId: { provider: 'flutterwave', providerEventId: eventId } },
-    create: { provider: 'flutterwave', providerEventId: eventId, payload },
-    update: { payload },
+    create: { provider: 'flutterwave', providerEventId: eventId, payload: payload as object },
+    update: { payload: payload as object },
   });
 
   try {
-    const transactionId = payload?.data?.id;
+    const transactionId = payload.data?.id;
     if (!transactionId) throw new Error('MISSING_TRANSACTION_ID');
 
     const verified = await verifyTransaction(transactionId);
     if (verified.status !== 'successful') throw new Error('PAYMENT_NOT_SUCCESSFUL');
 
-    const txRef = verified.tx_ref || payload.data.tx_ref;
+    const txRef = verified.tx_ref || payload.data?.tx_ref;
     const parts = String(txRef).split('_');
     const userId = parts[1];
     const planId = parts[2] as PlanId;
@@ -62,8 +71,8 @@ export async function POST(request: Request) {
     await db.$transaction(async (tx) => {
       await tx.payment.upsert({
         where: { providerReference: txRef },
-        create: { userId, provider: 'flutterwave', providerReference: txRef, amount: verified.amount, currency: verified.currency, status: 'successful', planId, metadata: payload },
-        update: { status: 'successful', metadata: payload },
+        create: { userId, provider: 'flutterwave', providerReference: txRef, amount: verified.amount, currency: verified.currency, status: 'successful', planId, metadata: payload as object },
+        update: { status: 'successful', metadata: payload as object },
       });
 
       const status = planId === 'founding_lifetime' ? 'LIFETIME' : 'ACTIVE';

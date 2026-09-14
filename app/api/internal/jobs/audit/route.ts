@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { runAudit } from '@/lib/audit/engine';
+import { interpretAudit } from '@/lib/ai/reason';
 
 export async function POST(request: Request) {
   const secret = process.env.INTERNAL_JOB_SECRET;
@@ -11,8 +12,9 @@ export async function POST(request: Request) {
   if (!claimed.count) return NextResponse.json({ processed: false });
   try {
     await runAudit(job.auditId);
+    const ai = await interpretAudit(job.auditId);
     await db.auditJob.update({ where: { id: job.id }, data: { status: 'COMPLETED', completedAt: new Date() } });
-    return NextResponse.json({ processed: true, auditId: job.auditId });
+    return NextResponse.json({ processed: true, auditId: job.auditId, ai });
   } catch (error) {
     await db.auditJob.update({ where: { id: job.id }, data: { status: 'FAILED', completedAt: new Date(), errorCode: error instanceof Error ? error.message : 'UNKNOWN_ERROR', errorMessage: error instanceof Error ? error.message : 'Audit worker failed.' } });
     return NextResponse.json({ processed: true, failed: true }, { status: 500 });

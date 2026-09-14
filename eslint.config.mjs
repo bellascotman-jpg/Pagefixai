@@ -7,3 +7,5 @@ export default defineConfig([
   ...nextTs,
   globalIgnores([".next/**", "node_modules/**", "coverage/**"]),
 ]);
+
+// Flat-config entrypoints use explicit .js extensions for Node ESM resolution in CI.

@@ -10,9 +10,17 @@ function authorized(request: Request) {
   return false;
 }
 
-export async function POST(request: Request) {
+async function handle(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
   const result = await processNextAuditJob();
   if (result.failed) return NextResponse.json(result, { status: 500 });
   return NextResponse.json(result);
+}
+
+export async function GET(request: Request) {
+  return handle(request);
+}
+
+export async function POST(request: Request) {
+  return handle(request);
 }

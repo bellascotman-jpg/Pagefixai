@@ -4,8 +4,6 @@ import { validateAuditUrl } from '@/lib/audit/ssrf';
 
 export const ENGINE_VERSION = '1.0.0';
 
-const text = (value: string | null | undefined) => (value ?? '').replace(/\s+/g, ' ').trim();
-
 type ExtractedPage = {
   title: string;
   canonical: string;
@@ -171,7 +169,7 @@ export async function runAudit(auditId: string) {
     }
 
     for (const item of findings) {
-      const created = await db.finding.create({
+      await db.finding.create({
         data: {
           auditId,
           title: item.title,
@@ -187,7 +185,6 @@ export async function runAudit(auditId: string) {
           evidence: { create: item.evidenceIds.map((evidenceId) => ({ evidenceId })) },
         },
       });
-      void created;
     }
 
     await db.audit.update({ where: { id: auditId }, data: { status: 'COMPLETED', completedAt: new Date(), category: 'Other' } });

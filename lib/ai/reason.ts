@@ -13,12 +13,14 @@ export async function interpretAudit(auditId: string) {
   const response = await fetch('https://api.openai.com/v1/responses', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: process.env.OPENAI_MODEL || 'gpt-5.6-luna', store: false, instructions: 'You are PageFix AI. Browser evidence is the source of truth. Do not invent facts, metrics, conversion rates, customer behavior, or product claims. Only produce findings supported by supplied evidence IDs. If evidence is insufficient, omit the finding.', input: JSON.stringify({ url: audit.url, evidence }), text: { format: { type: 'json_schema', name: 'pagefix_findings', description: 'Evidence-grounded ecommerce purchase-friction findings.', strict: true, schema } } }) });
   const payload: any = await response.json();
   if (!response.ok) throw new Error(`AI_PROVIDER_${response.status}`);
-  const raw = payload.output_text;
-  if (!raw) throw new Error('AI_EMPTY_OUTPUT');
-  const parsed = outputSchema.safeParse(JSON.parse(raw));
+  if (!payload.output_text) throw new Error('AI_EMPTY_OUTPUT');
+  let parsedJson: unknown;
+  try { parsedJson = JSON.parse(payload.output_text); } catch { throw new Error('AI_SCHEMA_INVALID'); }
+  const parsed = outputSchema.safeParse(parsedJson);
   if (!parsed.success) throw new Error('AI_SCHEMA_INVALID');
   const evidenceIds = new Set(audit.evidence.map(e => e.id));
-  const valid = parsed.data.findings.filter(f => f.evidenceIds.every(id => evidenceIds.has(id)));
+  const existing = new Set(audit.findings.map(f => f.title.trim().toLowerCase()));
+  const valid = parsed.data.findings.filter(f => f.evidenceIds.every(id => evidenceIds.has(id)) && !existing.has(f.title.trim().toLowerCase()));
   await db.$transaction(async tx => {
     for (const f of valid) await tx.finding.create({ data: { auditId, title: f.title, severity: f.severity, confidence: f.confidence, effort: f.effort, priority: f.priority, buyerQuestion: f.buyerQuestion, observation: f.observation, hypothesis: f.hypothesis, whyItMatters: f.whyItMatters, recommendation: f.recommendation, implementationSteps: f.implementationSteps, evidence: { create: f.evidenceIds.map(evidenceId => ({ evidenceId })) } } });
     await tx.usageEvent.create({ data: { userId: audit.userId, auditId, operation: 'ai_reasoning', provider: 'openai', model: process.env.OPENAI_MODEL || 'gpt-5.6-luna', estimatedCost: null, units: 0 } });

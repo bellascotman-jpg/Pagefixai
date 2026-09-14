@@ -1,25 +1,5 @@
+import Link from 'next/link';
+
 export default function HomePage() {
-  return (
-    <main style={{ maxWidth: 1100, margin: "0 auto", padding: "72px 24px" }}>
-      <p style={{ fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#087f73" }}>PageFix AI</p>
-      <h1 style={{ fontSize: "clamp(2.5rem, 7vw, 5.5rem)", lineHeight: 0.98, maxWidth: 850, margin: "18px 0" }}>
-        Find what&apos;s getting in the way of the sale.
-      </h1>
-      <p style={{ maxWidth: 680, fontSize: 20, lineHeight: 1.6, color: "#46605f" }}>
-        Evidence-driven ecommerce purchase-friction intelligence. PageFix analyzes observable storefront evidence, prioritizes purchase friction, and turns findings into practical fixes.
-      </p>
-      <section style={{ marginTop: 48, display: "grid", gap: 16, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
-        {[
-          ["Evidence first", "Browser evidence and deterministic checks remain the source of truth."],
-          ["Buyer questions", "Map observable information gaps to the questions buyers need answered."],
-          ["Fix center", "Turn verified findings into implementation-ready actions and rechecks."],
-        ].map(([title, body]) => (
-          <article key={title} style={{ background: "white", border: "1px solid #dce8e5", borderRadius: 18, padding: 24 }}>
-            <h2 style={{ marginTop: 0 }}>{title}</h2>
-            <p style={{ color: "#5a706f", lineHeight: 1.6 }}>{body}</p>
-          </article>
-        ))}
-      </section>
-    </main>
-  );
+  return <main><header className="topbar"><div className="brand">PageFix <span>AI</span></div><nav style={{ display: 'flex', gap: 18, alignItems: 'center' }}><Link href="/pricing">Pricing</Link><Link href="/auth">Sign in</Link><Link href="/auth" className="primary-button">Start auditing</Link></nav></header><div className="container" style={{ padding: '80px 0 100px' }}><section style={{ maxWidth: 900 }}><div className="label">Evidence-driven ecommerce intelligence</div><h1 style={{ fontSize: 'clamp(3rem, 8vw, 6.8rem)', lineHeight: .94, letterSpacing: '-.055em', margin: '18px 0 24px' }}>Find what&apos;s getting in the way of the sale.</h1><p className="muted" style={{ fontSize: 20, maxWidth: 720 }}>PageFix AI renders your storefront, extracts observable evidence, identifies purchase friction and turns it into prioritized fixes you can actually implement.</p><div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 30 }}><Link href="/auth" className="primary-button">Create your workspace</Link><Link href="/pricing" style={{ padding: '13px 18px', border: '1px solid #cbdad7', borderRadius: 12, fontWeight: 800 }}>See pricing</Link></div></section><section className="grid grid-3" style={{ marginTop: 70 }}>{[['Evidence first','Browser rendering, DOM, visible text, metadata, structured data and screenshots remain the source of truth.'],['Buyer questions','Map observable information gaps to the questions buyers need answered before purchase.'],['Fix → recheck','Turn supported findings into implementation steps, then compare a fresh audit without overwriting history.']].map(([title,body]) => <article className="card" key={title}><h2>{title}</h2><p className="muted">{body}</p></article>)}</section><section className="card" style={{ marginTop: 22, background: '#102a2a', color: '#fff' }}><div className="label" style={{ color: '#a7ded7' }}>Important limitation</div><h2>PageFix does not invent conversion numbers.</h2><p style={{ color: '#c4d5d2', lineHeight: 1.7, maxWidth: 760 }}>An audit can identify observable purchase friction and revenue-friction hypotheses. It cannot determine actual conversion rate, revenue impact, traffic quality, margin, lifetime value or checkout abandonment without connected analytics.</p></section></div></main>;
 }

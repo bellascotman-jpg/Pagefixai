@@ -49,8 +49,10 @@ export async function POST(request: Request) {
     const verified = await verifyTransaction(transactionId);
     if (verified.status !== 'successful') throw new Error('PAYMENT_NOT_SUCCESSFUL');
 
-    const txRef = verified.tx_ref || payload.data?.tx_ref;
-    const parts = String(txRef).split('_');
+    const txRef = verified.tx_ref ?? payload.data?.tx_ref;
+    if (!txRef) throw new Error('MISSING_TRANSACTION_REFERENCE');
+
+    const parts = txRef.split('_');
     const userId = parts[1];
     const planId = parts[2] as PlanId;
     const plan = getPlan(planId);

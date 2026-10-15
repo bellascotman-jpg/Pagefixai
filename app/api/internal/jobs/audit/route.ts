@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { processNextAuditJob } from '@/lib/jobs/audit-worker';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 function authorized(request: Request) {
   const header = request.headers.get('authorization');
   const internal = process.env.INTERNAL_JOB_SECRET;

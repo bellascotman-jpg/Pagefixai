@@ -94,8 +94,11 @@ export async function runAudit(auditId: string) {
   const target = await validateAuditUrl(audit.url);
   await db.audit.update({ where: { id: auditId }, data: { status: 'RUNNING', startedAt: new Date(), engineVersion: ENGINE_VERSION } });
 
-  const browser = await chromium.launch({ headless: true });
+  let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
   try {
+    // Launch inside the guarded block so browser startup failures are persisted as
+    // a terminal audit error instead of leaving the audit stuck in RUNNING.
+    browser = await chromium.launch({ headless: true });
     const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [];
     const viewports = [
       { name: 'desktop', width: 1440, height: 1000 },
@@ -292,6 +295,6 @@ export async function runAudit(auditId: string) {
     }).catch(() => undefined);
     throw error;
   } finally {
-    await browser.close();
+    if (browser) await browser.close().catch(() => undefined);
   }
 }

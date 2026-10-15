@@ -220,6 +220,26 @@ export async function runAudit(auditId: string) {
       findings.push(makeFinding('No visible images detected', 'LOW', 'No visible image elements were detected in the captured viewport and page state.', 'For visually evaluated offers, missing imagery may leave buyers with less context. CSS backgrounds and lazy-loaded content may not be detected.', 'Confirm whether the offer needs product or contextual imagery. If so, provide relevant images and ensure the primary visual is visible.', 'What will I receive or experience?', imageEvidence.id));
     }
 
+    const visibleText = primary.bodyText.toLowerCase();
+    const buyerQuestionChecks = [
+      { question: 'What does this product or offer cost?', observed: /(?:\\$|₦|€|£)\\s?\\d|\\b(?:usd|ngn|gbp|eur)\\s?\\d/i.test(primary.bodyText), evidenceIds: [textEvidence.id] },
+      { question: 'How is shipping or delivery handled?', observed: /shipping|delivery|dispatch|fulfilment|fulfillment/i.test(visibleText), evidenceIds: [textEvidence.id, linkEvidence.id] },
+      { question: 'What are the return, refund or exchange terms?', observed: /return policy|returns|refund|exchange/i.test(visibleText), evidenceIds: [textEvidence.id, linkEvidence.id] },
+      { question: 'What product details or specifications are provided?', observed: /dimensions|materials|ingredients|specifications|size chart|product details|product information/i.test(visibleText), evidenceIds: [textEvidence.id] },
+      { question: 'How can a visitor contact the business?', observed: /contact us|customer support|support@|mailto:|whatsapp|call us|phone number/i.test(visibleText) || primary.links.some((link) => /contact|support|help/i.test(link.text)), evidenceIds: [textEvidence.id, linkEvidence.id] },
+      { question: 'Is a clear commercial next action exposed?', observed: primary.buttons.some((button) => /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now/i.test(button)) || primary.links.some((link) => /buy now|shop now|add to cart|book now|request a quote|contact sales/i.test(link.text)), evidenceIds: [domEvidence.id, linkEvidence.id] },
+      { question: 'Are visible images available?', observed: primary.images.length > 0, evidenceIds: [imageEvidence.id] },
+    ];
+
+    await db.buyerQuestionResult.createMany({
+      data: buyerQuestionChecks.map((item) => ({
+        auditId,
+        question: item.question,
+        status: item.observed ? 'OBSERVED_IN_CAPTURED_PAGE' : 'NOT_OBSERVED_IN_CAPTURED_PAGE',
+        evidenceIds: item.evidenceIds,
+      })),
+    });
+
     for (const item of findings) {
       await db.finding.create({
         data: {
@@ -240,7 +260,11 @@ export async function runAudit(auditId: string) {
       });
     }
 
-    await db.audit.update({ where: { id: auditId }, data: { status: 'COMPLETED', completedAt: new Date(), category: 'Other' } });
+    const pageUrl = new URL(target);
+    const isProductPage = /\\/(products?|items?)\\//i.test(pageUrl.pathname) || /add to cart|product details|\\bsku\\b|in stock/i.test(primary.bodyText);
+    const isCategoryPage = /\\/(collections?|categories?)\\//i.test(pageUrl.pathname);
+    const category = isProductPage ? 'Product' : isCategoryPage ? 'Category' : 'Landing Page';
+    await db.audit.update({ where: { id: auditId }, data: { status: 'COMPLETED', completedAt: new Date(), category } });
     return { auditId, findings: findings.length, pageId: pageRecord.id };
   } catch (error) {
     await db.audit.update({

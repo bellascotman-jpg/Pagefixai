@@ -23,6 +23,10 @@ export async function GET() {
     database = "unavailable";
   }
 
+  const configuredUrl = env.DATABASE_URL || env.POSTGRES_PRISMA_URL || env.POSTGRES_URL || env.Pagefixai_PRISMA_DATABASE_URL || env.Pagefixai_POSTGRES_URL || env.Pagefixai_DATABASE_URL;
+  let databaseHost: string | null = null;
+  try { if (configuredUrl) databaseHost = new URL(configuredUrl).hostname; } catch { databaseHost = "invalid-database-url"; }
+
   const healthy = database === "ok";
   return NextResponse.json({
     status: healthy ? "ok" : "degraded",
@@ -31,6 +35,7 @@ export async function GET() {
       database,
       databaseUrlConfigured: Boolean(databaseSource),
       databaseUrlSource: databaseSource,
+      databaseHost,
       authSecretConfigured: Boolean(env.AUTH_SECRET),
     },
     timestamp: new Date().toISOString(),

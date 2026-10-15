@@ -20,8 +20,9 @@ export async function createCheckout(input: { userId: string; email: string; nam
   const plan = getPlan(input.planId);
   if (!plan) throw new Error('INVALID_PLAN');
   const currency = process.env.BILLING_CURRENCY || 'USD';
+  const appUrl = process.env.APP_URL || 'https://pagefixai.vercel.app';
   const reference = `pagefix_${input.userId}_${input.planId}_${randomUUID()}`;
-  const data = await flw<{ status: string; data?: { link?: string } }>('/payments', { method: 'POST', body: JSON.stringify({ amount: plan.amount, currency, tx_ref: reference, redirect_url: `${process.env.APP_URL}/billing/return`, customer: { email: input.email, name: input.name || input.email }, customizations: { title: 'PageFix AI', description: `${plan.name} plan` }, meta: { userId: input.userId, planId: input.planId } }) });
+  const data = await flw<{ status: string; data?: { link?: string } }>('/payments', { method: 'POST', body: JSON.stringify({ amount: plan.amount, currency, tx_ref: reference, redirect_url: `${appUrl}/billing/return`, customer: { email: input.email, name: input.name || input.email }, customizations: { title: 'PageFix AI', description: `${plan.name} plan` }, meta: { userId: input.userId, planId: input.planId } }) });
   if (data.status !== 'success' || !data.data?.link) throw new Error('FLUTTERWAVE_CHECKOUT_FAILED');
   return { reference, url: data.data.link, amount: plan.amount, currency };
 }

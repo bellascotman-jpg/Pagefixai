@@ -11,6 +11,7 @@ PageFix AI is an evidence-led website diagnostics product for ecommerce pages, p
 - A public URL audit does not reveal private revenue, traffic quality, margins, conversion rates or checkout abandonment.
 - Screenshots and stored evidence must only be described as available when they have actually been persisted and can be retrieved.
 - A fresh recheck is a new inspection; it must not silently overwrite an earlier audit.
+- Fast audit mode inspects one desktop viewport, avoids waiting for network-idle, and publishes deterministic findings before optional AI enrichment. Third-party sites may block automated inspection; blocked captures must be reported honestly.
 - Only audit websites the operator is authorized to inspect.
 
 ## Stack

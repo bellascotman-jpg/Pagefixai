@@ -84,7 +84,7 @@ export default function HomePage() {
 
       <section className="final-cta"><div className="eyebrow eyebrow-light">MAKE THE NEXT FIX A BETTER-INFORMED ONE</div><h2>Start with what your page<br />actually shows.</h2><p>Inspect a public page, review the evidence, and decide what deserves attention.</p><Link href="/auth" className="button button-light">Create your workspace <span aria-hidden="true">→</span></Link></section>
 
-      <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/pricing">Pricing</Link><Link href="/auth">Sign in / Create account</Link><a href="mailto:support@pagefixai.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and are not guarantees of commercial outcomes.</small></footer>
+      <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/pricing">Pricing</Link><Link href="/auth">Sign in / Create account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and are not guarantees of commercial outcomes.</small></footer>
     </main>
   );
 }

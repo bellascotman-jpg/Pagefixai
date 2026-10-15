@@ -18,6 +18,23 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (!audit) return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
 
   let job = audit.jobs[0];
+  if (job?.status === 'FAILED' && ['QUEUED', 'RUNNING'].includes(audit.status)) {
+    await db.audit.updateMany({
+      where: { id, userId: user.id, status: { in: ['QUEUED', 'RUNNING'] } },
+      data: {
+        status: 'FAILED',
+        completedAt: job.completedAt ?? new Date(),
+        errorCode: job.errorCode || 'AUDIT_WORKER_FAILED',
+        errorMessage: job.errorMessage || 'The audit worker could not complete this run.',
+      },
+    });
+    audit = await db.audit.findFirst({
+      where: { id, userId: user.id },
+      include: { jobs: { orderBy: { createdAt: 'desc' }, take: 1 } },
+    });
+    if (!audit) return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
+    job = audit.jobs[0];
+  }
   const now = Date.now();
   const staleBefore = new Date(now - 70_000);
 

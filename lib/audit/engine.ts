@@ -1,8 +1,5 @@
-import { chromium, type Page as PlaywrightPage } from 'playwright-core';
-import serverlessChromium from '@sparticuz/chromium';
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
-import { isScreenshotStorageConfigured, storeAuditScreenshot } from '@/lib/storage/object-store';
 
 export const ENGINE_VERSION = '1.3.0';
 
@@ -19,49 +16,6 @@ type ExtractedPage = {
   headings: Array<{ tag: string; text: string }>;
   statusCode: number | null;
 };
-
-async function extract(page: PlaywrightPage): Promise<ExtractedPage> {
-  return page.evaluate(() => {
-    const visible = (element: Element) => {
-      const style = window.getComputedStyle(element);
-      const rect = (element as HTMLElement).getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-    };
-    const buttons = Array.from(document.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"]'))
-      .filter(visible)
-      .map((element) => (element.textContent || (element as HTMLInputElement).value || '').trim())
-      .filter(Boolean)
-      .slice(0, 40);
-    const links = Array.from(document.querySelectorAll('a[href]'))
-      .filter(visible)
-      .map((element) => ({ text: (element.textContent || element.getAttribute('aria-label') || element.getAttribute('title') || '').trim(), href: (element as HTMLAnchorElement).href }))
-      .slice(0, 120);
-    const images = Array.from(document.images)
-      .filter(visible)
-      .map((element) => ({ src: element.currentSrc || element.src, alt: element.alt, width: element.naturalWidth, height: element.naturalHeight }))
-      .slice(0, 80);
-    const structuredData = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
-      .map((element) => element.textContent || '')
-      .slice(0, 30);
-    const bodyText = (document.body?.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 50000);
-    return {
-      title: document.title.trim(),
-      canonical: document.querySelector('link[rel="canonical"]')?.getAttribute('href') || '',
-      description: document.querySelector('meta[name="description"]')?.getAttribute('content') || '',
-      bodyText,
-      buttons,
-      links,
-      images,
-      structuredData,
-      forms: document.querySelectorAll('form').length,
-      headings: Array.from(document.querySelectorAll('h1,h2,h3'))
-        .filter(visible)
-        .map((element) => ({ tag: element.tagName, text: (element.textContent || '').trim() }))
-        .slice(0, 50),
-      statusCode: null,
-    };
-  });
-}
 
 function makeFinding(
   title: string,
@@ -97,8 +51,8 @@ function decodeHtml(value: string): string {
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => String.fromCodePoint(parseInt(code, 16)));
+    .replace(/&#(\d+);/g, (_, code: string) => { const point = Number(code); return point <= 0x10ffff ? String.fromCodePoint(point) : ''; })
+    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => { const point = parseInt(code, 16); return point <= 0x10ffff ? String.fromCodePoint(point) : ''; });
 }
 
 function htmlText(value: string): string {
@@ -202,7 +156,6 @@ export async function runAudit(auditId: string) {
   const target = await validateAuditUrl(audit.url, validatedHosts);
   await db.audit.update({ where: { id: auditId }, data: { status: 'RUNNING', startedAt: new Date(), engineVersion: ENGINE_VERSION, errorCode: null, errorMessage: null } });
 
-  let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
   try {
     // Fast mode uses a bounded HTTP capture rather than starting a headless
     // browser. This keeps the initial evidence pass predictable on serverless
@@ -379,7 +332,5 @@ export async function runAudit(auditId: string) {
       },
     }).catch(() => undefined);
     throw error;
-  } finally {
-    if (browser) await browser.close().catch(() => undefined);
   }
 }

@@ -222,7 +222,7 @@ export async function runAudit(auditId: string) {
 
     const visibleText = primary.bodyText.toLowerCase();
     const buyerQuestionChecks = [
-      { question: 'What does this product or offer cost?', observed: /(?:\\$|₦|€|£)\\s?\\d|\\b(?:usd|ngn|gbp|eur)\\s?\\d/i.test(primary.bodyText), evidenceIds: [textEvidence.id] },
+      { question: 'What does this product or offer cost?', observed: /(?:\$|₦|€|£)\s?\d|\b(?:usd|ngn|gbp|eur)\s?\d/i.test(primary.bodyText), evidenceIds: [textEvidence.id] },
       { question: 'How is shipping or delivery handled?', observed: /shipping|delivery|dispatch|fulfilment|fulfillment/i.test(visibleText), evidenceIds: [textEvidence.id, linkEvidence.id] },
       { question: 'What are the return, refund or exchange terms?', observed: /return policy|returns|refund|exchange/i.test(visibleText), evidenceIds: [textEvidence.id, linkEvidence.id] },
       { question: 'What product details or specifications are provided?', observed: /dimensions|materials|ingredients|specifications|size chart|product details|product information/i.test(visibleText), evidenceIds: [textEvidence.id] },
@@ -261,8 +261,8 @@ export async function runAudit(auditId: string) {
     }
 
     const pageUrl = new URL(target);
-    const isProductPage = /\\/(products?|items?)\\//i.test(pageUrl.pathname) || /add to cart|product details|\\bsku\\b|in stock/i.test(primary.bodyText);
-    const isCategoryPage = /\\/(collections?|categories?)\\//i.test(pageUrl.pathname);
+    const isProductPage = /\/(products?|items?)\//i.test(pageUrl.pathname) || /add to cart|product details|\\bsku\\b|in stock/i.test(primary.bodyText);
+    const isCategoryPage = /\/(collections?|categories?)\//i.test(pageUrl.pathname);
     const category = isProductPage ? 'Product' : isCategoryPage ? 'Category' : 'Landing Page';
     await db.audit.update({ where: { id: auditId }, data: { status: 'COMPLETED', completedAt: new Date(), category } });
     return { auditId, findings: findings.length, pageId: pageRecord.id };

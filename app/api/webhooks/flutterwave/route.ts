@@ -85,6 +85,34 @@ export async function POST(request: Request) {
         update: { status, expiresAt },
       });
 
+      // Attribute a verified payment to the referring affiliate and create
+      // a commission once per payment. The unique paymentId prevents webhook retries
+      // from duplicating earnings. Pending commissions are paid manually after review.
+      const referral = await tx.affiliateReferral.findUnique({
+        where: { referredUserId: userId },
+        include: { affiliate: { select: { id: true, status: true, commissionRate: true } } },
+      });
+      if (referral?.affiliate.status === 'APPROVED' && referral.affiliate.commissionRate > 0) {
+        const paidPayment = await tx.payment.findUnique({ where: { providerReference: txRef } });
+        if (paidPayment) {
+          const priorCommission = await tx.affiliateCommission.findUnique({ where: { paymentId: paidPayment.id } });
+          if (!priorCommission) {
+            const commissionAmount = Math.round(Number(verified.amount) * referral.affiliate.commissionRate) / 100;
+            await tx.affiliateCommission.create({
+              data: {
+                affiliateId: referral.affiliate.id,
+                referralId: referral.id,
+                paymentId: paidPayment.id,
+                amount: commissionAmount,
+                currency: verified.currency,
+                commissionRate: referral.affiliate.commissionRate,
+                status: 'PENDING',
+              },
+            });
+          }
+        }
+      }
+
       const features = [
         'AUDIT',
         'REPORTS',

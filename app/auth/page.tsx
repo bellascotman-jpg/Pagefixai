@@ -32,7 +32,9 @@ export default function AuthPage() {
         if (response.status >= 500) throw new Error(data?.message || 'The account service is temporarily unavailable. Please try again shortly.');
         throw new Error(data?.message || 'Please check your details and try again.');
       }
-      router.push('/dashboard');
+      const requestedNext = new URLSearchParams(window.location.search).get('next');
+      const safeNext = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard';
+      router.replace(safeNext);
       router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'We could not complete this request. Please try again.');

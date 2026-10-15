@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const env = process.env as Record<string, string | undefined>;
   const databaseSource = [
-    ["DATABASE_URL", env.DATABASE_URL],
-    ["POSTGRES_PRISMA_URL", env.POSTGRES_PRISMA_URL],
-    ["POSTGRES_URL", env.POSTGRES_URL],
-    ["Pagefixai_PRISMA_DATABASE_URL", env.Pagefixai_PRISMA_DATABASE_URL],
     ["Pagefixai_POSTGRES_URL", env.Pagefixai_POSTGRES_URL],
+    ["POSTGRES_URL", env.POSTGRES_URL],
     ["Pagefixai_DATABASE_URL", env.Pagefixai_DATABASE_URL],
+    ["DATABASE_URL", env.DATABASE_URL],
+    ["Pagefixai_PRISMA_DATABASE_URL", env.Pagefixai_PRISMA_DATABASE_URL],
+    ["POSTGRES_PRISMA_URL", env.POSTGRES_PRISMA_URL],
   ].find(([, value]) => Boolean(value))?.[0] ?? null;
 
   let database: "ok" | "unavailable" = "unavailable";
@@ -23,7 +23,7 @@ export async function GET() {
     database = "unavailable";
   }
 
-  const configuredUrl = env.DATABASE_URL || env.POSTGRES_PRISMA_URL || env.POSTGRES_URL || env.Pagefixai_PRISMA_DATABASE_URL || env.Pagefixai_POSTGRES_URL || env.Pagefixai_DATABASE_URL;
+  const configuredUrl = env.Pagefixai_POSTGRES_URL || env.POSTGRES_URL || env.Pagefixai_DATABASE_URL || env.DATABASE_URL || env.Pagefixai_PRISMA_DATABASE_URL || env.POSTGRES_PRISMA_URL;
   let databaseHost: string | null = null;
   try { if (configuredUrl) databaseHost = new URL(configuredUrl).hostname; } catch { databaseHost = "invalid-database-url"; }
 

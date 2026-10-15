@@ -6,7 +6,7 @@ export const UNITS = { audit: 1, recheck: 1, competitor: 0.5, messageMatch: 0.25
 export async function getEffectivePlan(userId: string) {
   const user = await db.user.findUnique({ where: { id: userId }, select: { email: true, role: true } });
   if (!user) return null;
-  if (user.role === 'FOUNDER' || user.email.toLowerCase() === FOUNDER_EMAIL) return 'founding_lifetime' as const;
+  if (user.role === 'FOUNDER' && user.email.toLowerCase() === FOUNDER_EMAIL) return 'founding_lifetime' as const;
   const subscription = await db.subscription.findFirst({ where: { userId, status: { in: ['ACTIVE', 'LIFETIME'] }, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, orderBy: { startedAt: 'desc' } });
   return subscription?.planId ?? null;
 }

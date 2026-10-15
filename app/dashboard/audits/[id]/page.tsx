@@ -18,6 +18,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         orderBy: [{ priority: 'asc' }, { severity: 'asc' }],
       },
       evidence: true,
+      buyerQuestions: { orderBy: { createdAt: 'asc' } },
       pages: { select: { statusCode: true, title: true, canonical: true, metaDescription: true }, orderBy: { createdAt: 'desc' }, take: 1 },
       jobs: { orderBy: { createdAt: 'desc' }, take: 1 },
     },
@@ -55,6 +56,16 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           <div className="card"><div className="label">Evidence items</div><div className="stat">{audit.evidence.length}</div></div>
           <div className="card"><div className="label">Page response</div><div className="stat" style={{ fontSize: 23 }}>{page?.statusCode ?? 'Not recorded'}</div><p className="muted">HTTP status observed during the primary navigation.</p></div>
         </div>
+        <section className="card" style={{ marginTop: 24 }}>
+          <h2>Buyer question coverage</h2>
+          <p className="muted" style={{ fontSize: 12 }}>These checks look for signals in the captured visible page and link inventory. “Not observed” does not mean the information is absent elsewhere on the site.</p>
+          <div className="grid" style={{ gap: 0 }}>
+            {audit.buyerQuestions.map(item => <div key={item.id} className="finding" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+              <div><strong>{item.question}</strong><p className="muted" style={{ fontSize: 12, margin: '5px 0 0' }}>Evidence sources: {Array.isArray(item.evidenceIds) ? item.evidenceIds.length : 0}</p></div>
+              <span className={`badge ${item.status === 'OBSERVED_IN_CAPTURED_PAGE' ? '' : 'danger'}`}>{item.status === 'OBSERVED_IN_CAPTURED_PAGE' ? 'Signal observed' : 'Not observed'}</span>
+            </div>)}
+          </div>
+        </section>
         <section className="card" style={{ marginTop: 24 }}>
           <h2>Prioritized findings</h2>
           {audit.findings.length === 0 && <p className="muted">No supported finding was detected by the current checks. This is not proof that the page has no issues.</p>}

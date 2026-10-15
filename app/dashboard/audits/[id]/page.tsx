@@ -32,7 +32,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
   const page = audit.pages[0];
 
   return <main className="dashboard">
-    <AuditStatusRefresh active={active} />
+    <AuditStatusRefresh active={active} auditId={audit.id} />
     <header className="topbar"><Link href="/dashboard" className="brand">PageFix <span>AI</span></Link><Link href="/dashboard">Dashboard</Link></header>
     <div className="container dashboard-main">
       <div className="label">Audit report</div>

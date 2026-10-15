@@ -5,12 +5,12 @@ const prisma = new PrismaClient();
 
 const FOUNDER_EMAIL = 'wisdomfrankceo@gmail.com';
 const plans = [
-  ['starter_monthly', 'Starter', 20, false],
-  ['starter_annual', 'Starter', 20, false],
-  ['growth_monthly', 'Growth', 100, false],
-  ['growth_annual', 'Growth', 100, false],
-  ['agency_monthly', 'Agency', 300, false],
-  ['agency_annual', 'Agency', 300, false],
+  ['starter_monthly', 'Starter', 50, false],
+  ['starter_annual', 'Starter', 50, false],
+  ['growth_monthly', 'Growth', 250, false],
+  ['growth_annual', 'Growth', 250, false],
+  ['agency_monthly', 'Agency', 1000, false],
+  ['agency_annual', 'Agency', 1000, false],
   // Keep historical plan records available, but do not expose lifetime purchases in checkout.
   ['founding_lifetime', 'Founding Lifetime', 50, true],
 ];

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { processNextAuditJob } from '@/lib/jobs/audit-worker';
@@ -72,17 +72,19 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     }
   }
 
-  // The browser worker runs in this dedicated request, not in the request that
-  // creates the audit. That keeps the create endpoint from timing out in after().
+  // Return the status immediately, then trigger the queued worker after the
+  // response. The browser work must not hold the polling request open.
   if (audit.status === 'QUEUED' && job?.status === 'QUEUED') {
-    try {
-      await processNextAuditJob(id);
-    } catch (error) {
-      console.error('pagefix_audit_status_worker_failed', {
-        auditId: id,
-        message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-      });
-    }
+    after(async () => {
+      try {
+        await processNextAuditJob(id);
+      } catch (error) {
+        console.error('pagefix_audit_status_worker_failed', {
+          auditId: id,
+          message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+        });
+      }
+    });
   }
 
   const latest = await db.audit.findFirst({

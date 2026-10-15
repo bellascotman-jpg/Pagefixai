@@ -25,6 +25,9 @@ export async function POST(request: Request) {
   }
 
   const { name, email, password } = parsed.data;
+  const cookieHeader = request.headers.get('cookie') || '';
+  const referralCode = cookieHeader.match(/(?:^|;\\s*)pagefix_ref=([A-Z0-9]+)/)?.[1]?.toUpperCase() || null;
+  const referringAffiliate = referralCode ? await db.affiliateProfile.findFirst({ where: { code: referralCode, status: 'APPROVED' }, select: { id: true } }).catch(() => null) : null;
   if (email === FOUNDER_EMAIL) {
     return NextResponse.json({ error: 'EMAIL_RESERVED', message: 'This founder account is provisioned separately and cannot be created through public signup.' }, { status: 403 });
   }
@@ -58,6 +61,12 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    if (referringAffiliate) {
+      await db.affiliateReferral.create({ data: { affiliateId: referringAffiliate.id, referredUserId: user.id } }).catch((error) => {
+        console.error('referral_attribution_error', { name: error instanceof Error ? error.name : 'UnknownError' });
+      });
+    }
 
     await createSession(user.id);
     return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } }, { status: 201 });

@@ -3,7 +3,7 @@ import { randomBytes, scryptSync } from 'node:crypto';
 
 const prisma = new PrismaClient();
 
-const FOUNDER_EMAIL = 'wisdomchin658@gmail.com';
+const FOUNDER_EMAIL = 'wisdomfrankceo@gmail.com';
 const plans = [
   ['starter_monthly', 'Starter', 20, false],
   ['starter_annual', 'Starter', 20, false],
@@ -11,6 +11,7 @@ const plans = [
   ['growth_annual', 'Growth', 100, false],
   ['agency_monthly', 'Agency', 300, false],
   ['agency_annual', 'Agency', 300, false],
+  // Keep historical plan records available, but do not expose lifetime purchases in checkout.
   ['founding_lifetime', 'Founding Lifetime', 50, true],
 ];
 

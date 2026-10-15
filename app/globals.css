@@ -416,3 +416,77 @@ html,body{background:var(--paper);color:var(--ink)}
 .status-paid{background:#e4f3e9;color:#1d6240}.status-void{background:#f9e7e4;color:#923e32}
 @media(max-width:950px){.competitor-grid,.partner-terms-grid,.resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.partner-application{grid-template-columns:1fr;gap:22px}.resource-cta-strip{display:block}.resource-cta-actions{margin-top:20px}.referral-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.proof-section,.resource-cta-strip{width:calc(100% - 36px);padding:58px 0}.proof-cards,.competitor-grid,.resource-grid,.partner-terms-grid,.partner-hero-stats,.referral-columns{grid-template-columns:1fr}.editorial-hero,.comparison-content,.editorial-sources,.partner-content,.partner-application,.referral-hero{width:calc(100% - 36px)}.editorial-hero{padding:55px 0 38px}.editorial-callout{display:block;padding:48px 18px}.editorial-callout .button{margin-top:22px}.article-body{padding:50px 0 65px}.article-body p,.article-body li{font-size:14px}.partner-application{padding:23px 18px}.partner-faq{padding-bottom:55px}.referral-dashboard{width:calc(100% - 36px)}.referral-url{flex-direction:column}.referral-url .button{width:100%}.referral-stats{gap:8px}.referral-stats article{padding:14px}.resource-card{min-height:0}}
+
+
+/* Professional visual system refresh — clean, calm, conversion-focused SaaS UI */
+:root{
+  --ink:#142238;--muted:#66758b;--teal:#315efb;--teal-dark:#2349d8;
+  --mint:#eaf0ff;--line:#e2e8f0;--paper:#f7f9fc;--white:#fff;
+  --dark:#0d1728;--dark-2:#172744;
+}
+html,body{background:var(--paper);color:var(--ink)}
+.site-nav{background:rgba(255,255,255,.94);border-bottom:1px solid #e5eaf2;box-shadow:0 3px 18px rgba(16,35,67,.035)}
+.nav-links,.nav-actions{color:#516078}
+.nav-links a:hover,.site-footer a:hover{color:var(--teal)}
+.brand{color:#13233a}.brand span{color:var(--teal)}
+.button-primary,.primary-button{background:linear-gradient(135deg,#315efb,#254bd8);color:#fff;box-shadow:0 8px 22px rgba(49,94,251,.18)}
+.button-primary:hover,.primary-button:hover{background:#2349d8}
+.button-secondary{border:1px solid #d6deea;background:#fff;color:#24354e}
+.hero-section{gap:clamp(36px,5vw,72px);padding-top:clamp(56px,7vw,92px)}
+.hero-copy h1{color:#102039}
+.hero-copy h1 span,.section-intro h2 span{color:#315efb}
+.hero-description{color:#5d6b81}
+.product-preview{border:1px solid #dce4f0;box-shadow:0 28px 85px rgba(19,39,75,.13);transform:none}
+.preview-window-bar{background:#f8faff;border-color:#e7edf5}
+.eyebrow{color:#315efb}
+.proof-mark{background:#eaf0ff;color:#315efb}
+.section-intro h2,.editorial-hero h1,.partner-hero h1,.referral-hero h1{color:#13233a}
+.section-intro p,.editorial-hero p,.partner-hero p,.referral-hero p{color:#66758b}
+.capability-card,.workflow-card,.audience-card,.proof-card,.partner-terms-grid article,.referral-panel,.referral-link-card,.referral-stat-card,.resource-card,.comparison-card{
+  border-color:#e1e8f2!important;box-shadow:0 8px 26px rgba(21,42,78,.045)
+}
+.capability-card:hover,.resource-card:hover{border-color:#bdccff!important;box-shadow:0 16px 38px rgba(36,73,150,.09)}
+.section-dark,.trust-section,.final-cta-section{background:#101d32!important;color:#fff}
+.section-dark p,.trust-section p,.final-cta-section p{color:#c4cedd}
+.section-dark h2,.trust-section h2,.final-cta-section h2{color:#fff}
+.trust-section{border-color:#233451!important}
+.site-footer{background:#0d1728;color:#d8e1ef;border-top:1px solid #25334a}
+.site-footer a{color:#c6d2e4}
+.auth-shell{background:#f4f7fc}
+.auth-aside{background:radial-gradient(circle at 85% 12%,rgba(49,94,251,.28),transparent 30%),linear-gradient(145deg,#101d32,#172b4b)}
+.auth-aside .brand{color:#fff}.auth-aside .brand span{color:#8eabff}
+.auth-panel{background:#f7f9fc}
+.auth-card,.card,.pricing-card,.referral-dashboard>*,.partner-content>*,.editorial-content>*{border-color:#e1e8f2}
+.auth-card{box-shadow:0 20px 70px rgba(22,43,78,.09);border-radius:20px}
+.auth-card input,.partner-content input,.partner-content textarea,.referral-dashboard input,.referral-dashboard select{border-color:#d8e1ee;background:#fff;border-radius:10px}
+.auth-card input:focus,.partner-content input:focus,.referral-dashboard input:focus{outline:3px solid rgba(49,94,251,.14);border-color:#7894ff}
+.dashboard{background:#f6f8fc;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #e3e9f2}
+.container .card,.dashboard .card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 8px 24px rgba(17,38,72,.035)}
+.dashboard .primary-button{border-radius:10px}
+.badge{background:#edf2ff;color:#315efb;border-color:#dce5ff}
+.text-button{color:#52627a}
+.pricing-page{background:#f7f9fc}
+.pricing-card{background:#fff!important;border:1px solid #e1e8f2!important;border-radius:18px!important;box-shadow:0 12px 36px rgba(17,38,72,.055)!important}
+.pricing-card.popular,.pricing-card.featured{border-color:#315efb!important;box-shadow:0 18px 44px rgba(49,94,251,.11)!important}
+.editorial-page{background:#f7f9fc}
+.editorial-hero,.partner-hero,.referral-hero{background:radial-gradient(circle at 82% 18%,rgba(49,94,251,.08),transparent 32%)}
+.partner-hero,.referral-hero{border-bottom:1px solid #e5eaf2}
+.partner-hero .partner-hero-stats>div{background:#fff;border:1px solid #e1e8f2;border-radius:14px;box-shadow:0 8px 24px rgba(17,38,72,.04)}
+.referral-link-card,.referral-panel{background:#fff;border:1px solid #e1e8f2;border-radius:16px}
+.application-note{color:#66758b}
+@media(max-width:900px){
+ .site-nav{height:auto;min-height:70px;padding:14px 20px;gap:14px;flex-wrap:wrap}
+ .nav-links{order:3;width:100%;gap:18px;overflow-x:auto;padding:8px 0 2px;white-space:nowrap}
+ .nav-actions{margin-left:auto;gap:12px}
+ .hero-section{grid-template-columns:1fr;width:min(100% - 36px,720px);padding:54px 0;gap:36px}
+ .product-preview{max-width:100%;transform:none}
+}
+@media(max-width:520px){
+ .site-nav{padding:12px 16px}
+ .nav-links{font-size:12px;gap:15px}
+ .nav-actions{font-size:12px}
+ .hero-copy h1{font-size:clamp(38px,10vw,52px)}
+ .hero-description{font-size:15px}
+ .button{min-height:44px;padding:11px 14px}
+}

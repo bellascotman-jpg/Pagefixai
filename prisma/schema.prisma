@@ -689,6 +689,7 @@ model AffiliateProfile {
   code           String            @unique
   status         AffiliateStatus   @default(APPROVED)
   commissionRate Int               @default(25)
+  clicks         Int               @default(0)
   payoutMethod   String?
   payoutEmail    String?
   createdAt      DateTime          @default(now())

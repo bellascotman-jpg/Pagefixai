@@ -4,12 +4,33 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 const plans = [
-  { id: 'starter_monthly', name: 'Starter', price: '$19', period: '/month', units: '20 audit units / month', desc: 'For individual store owners getting started.', features: ['Evidence-based page audits', 'Prioritized findings', 'Practical fix guidance', 'Audit history'] },
-  { id: 'starter_annual', name: 'Starter', price: '$190', period: '/year', units: '20 audit units / month', desc: 'A full year of Starter access.', features: ['All Starter features', 'Annual billing', 'Predictable yearly cost'] },
-  { id: 'growth_monthly', name: 'Growth', price: '$49', period: '/month', units: '100 audit units / month', desc: 'For teams running regular optimization work.', popular: true, features: ['Everything in Starter', 'Competitor intelligence', 'Message-match review', 'AI-assisted copy suggestions'] },
-  { id: 'growth_annual', name: 'Growth', price: '$490', period: '/year', units: '100 audit units / month', desc: 'A full year of Growth access.', features: ['All Growth features', 'Annual billing', 'Predictable yearly cost'] },
-  { id: 'agency_monthly', name: 'Agency', price: '$99', period: '/month', units: '300 audit units / month', desc: 'For consultants and multi-client workflows.', features: ['Everything in Growth', 'Higher monthly audit allowance', 'Agency workspace capability'] },
-  { id: 'agency_annual', name: 'Agency', price: '$990', period: '/year', units: '300 audit units / month', desc: 'A full year of Agency access.', features: ['All Agency features', 'Annual billing', 'Predictable yearly cost'] },
+  {
+    id: 'starter_monthly', name: 'Starter', price: '$49', unit: '/ month', audience: 'For founders and store owners who need a clear, repeatable page review.',
+    description: 'Find and prioritize issues on the pages that matter most.',
+    features: ['50 audit units per month', 'Product page and landing page audits', 'Technical SEO and page metadata checks', 'Buyer-question and objection coverage', 'Evidence-linked findings and confidence labels', 'Prioritized remediation guidance', 'Audit history and report views', 'Manual recheck workflow'],
+  },
+  {
+    id: 'growth_monthly', name: 'Growth', price: '$149', unit: '/ month', audience: 'For growing teams that regularly ship landing pages and storefront changes.',
+    description: 'A more complete workflow from diagnosis to verification.',
+    popular: true,
+    features: ['Everything in Starter', '250 audit units per month', 'Competitor workspace capability', 'Ad-to-page and message-match review', 'AI-assisted copy and fix suggestions', 'Expanded buyer friction diagnostics', 'Recheck comparison and status tracking', 'Team-ready project and store organization', 'Higher audit capacity'],
+  },
+  {
+    id: 'agency_monthly', name: 'Agency', price: '$399', unit: '/ month', audience: 'For consultants and agencies managing multiple client websites.',
+    description: 'Higher capacity for repeatable multi-client delivery.',
+    features: ['Everything in Growth', '1,000 audit units per month', 'Multi-client project organization', 'Client-ready audit history and findings', 'Repeatable inspection and remediation workflow', 'Higher-volume reporting capacity', 'Priority planning for agency workflows', 'Designed for future client sharing and white-label expansion'],
+  },
+];
+
+const matrix = [
+  ['Public page and product-page audits', 'Included', 'Included', 'Included'],
+  ['Evidence-linked findings and confidence', 'Included', 'Included', 'Included'],
+  ['Technical SEO and metadata checks', 'Included', 'Included', 'Included'],
+  ['Buyer questions and purchase friction', 'Included', 'Included', 'Included'],
+  ['Copy suggestions and message match', 'Core', 'Expanded', 'Expanded'],
+  ['Competitor workspace', '—', 'Included', 'Included'],
+  ['Monthly audit units', '50', '250', '1,000'],
+  ['Multi-client workflow', '—', 'Projects', 'Agency-focused'],
 ];
 
 export default function PricingPage() {
@@ -20,44 +41,67 @@ export default function PricingPage() {
     setError('');
     setLoading(planId);
     try {
-      const r = await fetch('/api/billing/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId }) });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.message || data.error || 'Checkout failed.');
+      const response = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      });
+      const data = await response.json();
+      if (response.status === 401) { window.location.href = '/auth?mode=signup&next=/pricing'; return; }
+      if (!response.ok) throw new Error(data.message || data.error || 'Checkout is not available right now.');
       if (!data.url) throw new Error('The payment provider did not return a checkout URL.');
       window.location.href = data.url;
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Checkout failed.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Checkout is not available right now.');
       setLoading('');
     }
   }
 
-  return <main>
-    <header className="topbar"><Link className="brand" href="/">PageFix <span>AI</span></Link><div style={{ display: 'flex', gap: 18, alignItems: 'center' }}><Link href="/">Overview</Link><Link href="/auth">Sign in</Link></div></header>
-    <div className="container" style={{ padding: '68px 0 80px' }}>
-      <div style={{ maxWidth: 740, margin: '0 auto', textAlign: 'center' }}>
-        <div className="label">Straightforward pricing</div>
-        <h1 style={{ fontSize: 'clamp(2.5rem, 6vw, 4.2rem)', lineHeight: 1.04, letterSpacing: '-.06em', margin: '18px 0' }}>Pay for useful evidence.<br /><span style={{ color: 'var(--teal)' }}>Not AI theatre.</span></h1>
-        <p className="muted" style={{ fontSize: 16 }}>Choose an allowance that fits your workflow. Each audit is based on observable page evidence, and business outcomes are never guaranteed.</p>
-      </div>
-      {error && <div className="error-box" style={{ maxWidth: 700, margin: '24px auto 0' }} role="alert">{error}</div>}
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 16, marginTop: 42 }}>
-        {plans.map(plan => <article className="card" key={plan.id} style={{ position: 'relative', display: 'flex', flexDirection: 'column', borderColor: plan.popular ? '#8bcfc0' : 'var(--line)', boxShadow: plan.popular ? '0 12px 34px rgba(8,127,115,.08)' : 'none' }}>
-          {plan.popular && <span className="badge" style={{ alignSelf: 'flex-start', marginBottom: 12 }}>MOST POPULAR</span>}
-          <div className="label">{plan.name}</div>
-          <h2 style={{ fontSize: 37, letterSpacing: '-.06em', margin: '12px 0 0' }}>{plan.price}<span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', letterSpacing: 0 }}>{plan.period}</span></h2>
-          <p style={{ fontWeight: 800, fontSize: 12, margin: '7px 0' }}>{plan.units}</p>
-          <p className="muted" style={{ fontSize: 13, minHeight: 42 }}>{plan.desc}</p>
-          <div style={{ borderTop: '1px solid var(--line)', paddingTop: 16, marginTop: 8, flex: 1 }}>
-            {plan.features.map(feature => <p key={feature} style={{ display: 'flex', gap: 9, fontSize: 12, margin: '10px 0', color: '#526966' }}><span style={{ color: 'var(--teal)', fontWeight: 900 }}>✓</span>{feature}</p>)}
-          </div>
-          <button className="primary-button" style={{ width: '100%', marginTop: 18 }} onClick={() => checkout(plan.id)} disabled={!!loading}>{loading === plan.id ? 'Opening checkout…' : 'Choose plan'}</button>
-        </article>)}
-      </div>
-      <div className="card" style={{ maxWidth: 850, margin: '28px auto 0', background: '#f0f8f4' }}>
-        <h2 style={{ fontSize: 18, marginTop: 0 }}>What counts as an audit unit?</h2>
-        <p className="muted" style={{ fontSize: 13, marginBottom: 0 }}>Usage allowances are enforced by the application. Review your workspace balance before starting work. Public-page audits cannot determine private revenue, traffic, conversion rate or checkout abandonment without authorized data connections.</p>
-      </div>
-      <p className="muted" style={{ textAlign: 'center', fontSize: 11, marginTop: 24 }}>Payments are processed through the configured provider. Access is granted only after server-side transaction verification.</p>
-    </div>
+  return <main className="pricing-page">
+    <header className="site-nav">
+      <Link href="/" className="brand">PageFix<span>AI</span></Link>
+      <nav className="nav-links" aria-label="Pricing navigation"><Link href="/#capabilities">Capabilities</Link><Link href="/#how-it-works">How it works</Link><Link href="/security">Security</Link></nav>
+      <div className="nav-actions"><Link className="nav-signin" href="/auth?mode=login">Sign in</Link><Link href="/auth" className="button button-primary button-small">Create account ↗</Link></div>
+    </header>
+    <section className="pricing-hero">
+      <div className="eyebrow">CLEAR PLANS · NO PUBLIC LIFETIME DEAL</div>
+      <h1>Choose the depth of work<br/><span>your team needs.</span></h1>
+      <p>Start with evidence-backed audits. Scale into repeatable optimization workflows as your team, store portfolio and audit volume grow. Prices are shown in USD per month.</p>
+      <div className="pricing-promise"><span>✓</span> No invented analytics. No guaranteed conversion lifts. No hidden claims about private data.</div><p className="pricing-trial-note">Start with a 7-day trial. No card is requested when you create an account.</p>
+    </section>
+    {error && <div className="error-box pricing-error" role="alert">{error}</div>}
+    <section className="pricing-cards" aria-label="Subscription plans">
+      {plans.map(plan => <article className={`pricing-card ${plan.popular ? 'pricing-card-featured' : ''}`} key={plan.id}>
+        {plan.popular && <div className="pricing-ribbon">BEST FIT FOR GROWING TEAMS</div>}
+        <div className="pricing-card-inner">
+          <div className="pricing-plan-name">{plan.name}</div>
+          <h2>{plan.price}<span>{plan.unit}</span></h2>
+          <p className="pricing-audience">{plan.audience}</p>
+          <p className="pricing-description">{plan.description}</p>
+          <button className={plan.popular ? 'button button-primary pricing-cta' : 'button button-secondary pricing-cta'} onClick={() => checkout(plan.id)} disabled={Boolean(loading)}>
+            {loading === plan.id ? 'Opening secure checkout…' : `Choose ${plan.name}`} <span aria-hidden="true">→</span>
+          </button>
+          <div className="pricing-feature-heading">WHAT’S INCLUDED</div>
+          <ul>{plan.features.map(feature => <li key={feature}><span>✓</span>{feature}</li>)}</ul>
+        </div>
+      </article>)}
+    </section>
+    <section className="custom-plan">
+      <div><div className="eyebrow">CUSTOM / ENTERPRISE</div><h2>Need a tailored operating model?</h2><p>For larger portfolios, bespoke reporting requirements, governance reviews, authorized data integrations or a custom rollout, discuss scope before committing. Availability depends on technical feasibility and agreed requirements.</p></div>
+      <a className="button button-secondary" href="mailto:wisdomfrankceo@gmail.com?subject=PageFix%20AI%20Custom%20Plan">Discuss a custom plan ↗</a>
+    </section>
+    <section className="pricing-comparison">
+      <div className="eyebrow">PLAN COMPARISON</div><h2>Know what you’re paying for.</h2>
+      <div className="comparison-table-wrap"><table><thead><tr><th>Capability</th><th>Starter · $49</th><th>Growth · $149</th><th>Agency · $399</th></tr></thead><tbody>{matrix.map(row => <tr key={row[0]}>{row.map((cell,i) => i===0 ? <th key={cell} scope="row">{cell}</th> : <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div>
+      <p className="pricing-footnote">“Included” describes the product workflow currently available or the stated plan allowance; it does not imply access to private analytics without an authorized connection. Custom, future and provider-dependent capabilities are never represented as live until implemented and verified.</p>
+    </section>
+    <section className="pricing-faq">
+      <div className="eyebrow">COMMON QUESTIONS</div><h2>Clear expectations from day one.</h2>
+      <details><summary>Can PageFix see my revenue, conversion rate or customer behaviour from a public URL?</summary><p>No. Public-page inspection can identify observable page-level evidence and possible risks. Private business metrics require an authorized data connection and must not be guessed.</p></details>
+      <details><summary>Does PageFix guarantee more sales or higher rankings?</summary><p>No. It helps identify and prioritize issues. Results depend on implementation, audience, traffic quality, offer, market and other factors.</p></details>
+      <details><summary>Can I request a custom plan?</summary><p>Yes. Contact the team to discuss scope, data access, security requirements and the integrations you need. Custom functionality is subject to feasibility and agreement.</p></details>
+      <details><summary>Is checkout available now?</summary><p>Checkout requires the payment provider&apos;s production credentials and successful server-side transaction verification. If checkout is unavailable, no payment should be assumed to have succeeded.</p></details>
+    </section>
+    <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Pricing is in USD. Business outcomes are not guaranteed.</small></footer>
   </main>;
 }

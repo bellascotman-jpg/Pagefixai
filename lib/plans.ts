@@ -1,26 +1,19 @@
 export const PLAN_DEFINITIONS = {
-  starter_monthly: { id: "starter_monthly", name: "Starter", interval: "month", amount: 19, units: 20 },
-  starter_annual: { id: "starter_annual", name: "Starter", interval: "year", amount: 190, units: 20 },
-  growth_monthly: { id: "growth_monthly", name: "Growth", interval: "month", amount: 49, units: 100 },
-  growth_annual: { id: "growth_annual", name: "Growth", interval: "year", amount: 490, units: 100 },
-  agency_monthly: { id: "agency_monthly", name: "Agency", interval: "month", amount: 99, units: 300 },
-  agency_annual: { id: "agency_annual", name: "Agency", interval: "year", amount: 990, units: 300 },
-  // Retained for existing historical entitlements and payment records. New checkout is explicitly disabled.
+  // Current public monthly plans. Audit units are monthly allowances, not a promise of business results.
+  starter_monthly: { id: "starter_monthly", name: "Starter", interval: "month", amount: 49, units: 50 },
+  starter_annual: { id: "starter_annual", name: "Starter", interval: "year", amount: 490, units: 50 },
+  growth_monthly: { id: "growth_monthly", name: "Growth", interval: "month", amount: 149, units: 250 },
+  growth_annual: { id: "growth_annual", name: "Growth", interval: "year", amount: 1490, units: 250 },
+  agency_monthly: { id: "agency_monthly", name: "Agency", interval: "month", amount: 399, units: 1000 },
+  agency_annual: { id: "agency_annual", name: "Agency", interval: "year", amount: 3990, units: 1000 },
+  // Historical-only plan. Kept to preserve existing records; new checkout is disabled.
   founding_lifetime: { id: "founding_lifetime", name: "Founding Lifetime", interval: "one_time", amount: 799, units: 50 },
 } as const;
 
 export type PlanId = keyof typeof PLAN_DEFINITIONS;
-export type PublicPlanId = Exclude<PlanId, "founding_lifetime">;
+export type PublicPlanId = "starter_monthly" | "growth_monthly" | "agency_monthly";
 
-export const PUBLIC_PLAN_IDS: PublicPlanId[] = [
-  "starter_monthly",
-  "starter_annual",
-  "growth_monthly",
-  "growth_annual",
-  "agency_monthly",
-  "agency_annual",
-];
-
+export const PUBLIC_PLAN_IDS: PublicPlanId[] = ["starter_monthly", "growth_monthly", "agency_monthly"];
 export const FOUNDER_EMAIL = "wisdomfrankceo@gmail.com";
 export const FOUNDING_LIFETIME_MAX_SLOTS = 50;
 

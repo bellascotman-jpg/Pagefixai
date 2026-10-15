@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getCurrentUser } from '@/lib/auth/session';
+import { db } from '@/lib/db';
 import { createCheckout } from '@/lib/billing/flutterwave';
 import { getCheckoutPlan, type PublicPlanId } from '@/lib/plans';
 
@@ -17,6 +18,7 @@ export async function POST(request: Request) {
   if (!plan) return NextResponse.json({ error: 'PLAN_UNAVAILABLE', message: 'This plan is not available for new purchases.' }, { status: 410 });
 
   try {
+    await db.plan.upsert({ where: { id: plan.id }, create: { id: plan.id, name: plan.name, monthlyUnits: plan.units, lifetime: false }, update: { name: plan.name, monthlyUnits: plan.units, lifetime: false } });
     const checkout = await createCheckout({ userId: user.id, email: user.email, name: user.name, planId: plan.id as PublicPlanId });
     return NextResponse.json(checkout);
   } catch (error) {

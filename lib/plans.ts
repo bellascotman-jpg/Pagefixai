@@ -25,7 +25,7 @@ export const FOUNDER_EMAIL = "wisdomfrankceo@gmail.com";
 export const FOUNDING_LIFETIME_MAX_SLOTS = 50;
 
 export function getPlan(planId: string) {
-  if (!(planId in PLAN_DEFINITIONS)) return null;
+  if (!Object.prototype.hasOwnProperty.call(PLAN_DEFINITIONS, planId)) return null;
   return PLAN_DEFINITIONS[planId as PlanId];
 }
 

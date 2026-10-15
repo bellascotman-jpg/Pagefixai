@@ -25,6 +25,16 @@ function hashPassword(password) {
 }
 
 async function main() {
+  // Retire the former seeded founder identity so a stale role cannot grant founder access.
+  const legacyFounder = await prisma.user.findUnique({ where: { email: 'wisdomchin658@gmail.com' } });
+  if (legacyFounder && legacyFounder.email.toLowerCase() !== FOUNDER_EMAIL && legacyFounder.role === 'FOUNDER') {
+    await prisma.user.update({ where: { id: legacyFounder.id }, data: { role: 'USER' } });
+    await prisma.entitlement.updateMany({
+      where: { userId: legacyFounder.id, source: 'founder-role', active: true },
+      data: { active: false },
+    });
+  }
+
   for (const [id, name, monthlyUnits, lifetime] of plans) {
     await prisma.plan.upsert({
       where: { id },

@@ -5,15 +5,31 @@ export const PLAN_DEFINITIONS = {
   growth_annual: { id: "growth_annual", name: "Growth", interval: "year", amount: 490, units: 100 },
   agency_monthly: { id: "agency_monthly", name: "Agency", interval: "month", amount: 99, units: 300 },
   agency_annual: { id: "agency_annual", name: "Agency", interval: "year", amount: 990, units: 300 },
+  // Retained for existing historical entitlements and payment records. New checkout is explicitly disabled.
   founding_lifetime: { id: "founding_lifetime", name: "Founding Lifetime", interval: "one_time", amount: 799, units: 50 },
 } as const;
 
 export type PlanId = keyof typeof PLAN_DEFINITIONS;
+export type PublicPlanId = Exclude<PlanId, "founding_lifetime">;
 
-export const FOUNDER_EMAIL = "wisdomchin658@gmail.com";
+export const PUBLIC_PLAN_IDS: PublicPlanId[] = [
+  "starter_monthly",
+  "starter_annual",
+  "growth_monthly",
+  "growth_annual",
+  "agency_monthly",
+  "agency_annual",
+];
+
+export const FOUNDER_EMAIL = "wisdomfrankceo@gmail.com";
 export const FOUNDING_LIFETIME_MAX_SLOTS = 50;
 
 export function getPlan(planId: string) {
   if (!(planId in PLAN_DEFINITIONS)) return null;
   return PLAN_DEFINITIONS[planId as PlanId];
+}
+
+export function getCheckoutPlan(planId: string) {
+  if (!PUBLIC_PLAN_IDS.includes(planId as PublicPlanId)) return null;
+  return getPlan(planId);
 }

@@ -50,6 +50,7 @@ export default function AuthPage() {
       <button className="primary-button" disabled={loading}>{loading ? 'Working…' : mode === 'signup' ? 'Create account' : 'Sign in'}</button>
     </form>
     <button className="text-button" onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }}>{mode === 'signup' ? 'Already have an account? Sign in' : 'Need an account? Create one'}</button>
+    {mode === 'login' && <Link className="text-button" href="/auth/forgot-password" style={{ display: 'inline-block' }}>Forgot your password?</Link>}
     <p className="muted" style={{ fontSize: 11, marginTop: 18 }}>By continuing, you agree to use PageFix only on websites you are authorized to inspect.</p>
   </div></main>;
 }

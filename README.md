@@ -54,7 +54,7 @@ See .env.example. Optional AI, payment, email and screenshot-storage integration
 
 ## Billing
 
-Six subscription checkout choices are public. The historic founding_lifetime plan identifier remains in the schema and plan definitions to preserve old records and existing entitlements, but it is not offered for new checkout. Public prices and server-side amounts must remain synchronized.
+Three public monthly subscription choices are available in the product UI: Starter ($49/month), Growth ($149/month) and Agency ($399/month). A custom plan is a contact-sales path, not an automatic checkout. New accounts receive a seven-day Starter trial. The historic annual and founding_lifetime plan identifiers remain in the schema and plan definitions to preserve old records and existing entitlements, but they are not offered for new checkout. Public prices, server-side amounts, seeded monthly allowances and plan entitlements must remain synchronized.
 
 Founder/admin access is based on server-side roles, not a frontend email check. The reserved founder account is wisdomfrankceo@gmail.com; provision it securely through the configured server-side seed process and a unique password.
 

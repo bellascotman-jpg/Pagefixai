@@ -52,6 +52,15 @@ export async function processNextAuditJob(auditId?: string) {
     return { processed: true as const, auditId: job.auditId, result, ai, aiWarning };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Audit worker failed.';
+    await db.audit.update({
+      where: { id: job.auditId },
+      data: {
+        status: 'FAILED',
+        completedAt: new Date(),
+        errorCode: message,
+        errorMessage: message,
+      },
+    }).catch(() => undefined);
     await db.auditJob.update({
       where: { id: job.id },
       data: {

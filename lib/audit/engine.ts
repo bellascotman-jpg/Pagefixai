@@ -1,6 +1,7 @@
 import { chromium, type Page as PlaywrightPage } from 'playwright';
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
+import { isScreenshotStorageConfigured, storeAuditScreenshot } from '@/lib/storage/object-store';
 
 export const ENGINE_VERSION = '1.1.0';
 
@@ -95,7 +96,7 @@ export async function runAudit(auditId: string) {
 
   const browser = await chromium.launch({ headless: true });
   try {
-    const results: Array<{ viewport: string; data: ExtractedPage }> = [];
+    const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [];
     const viewports = [
       { name: 'desktop', width: 1440, height: 1000 },
       { name: 'mobile', width: 390, height: 844 },
@@ -124,7 +125,16 @@ export async function runAudit(auditId: string) {
         await page.waitForLoadState('networkidle', { timeout: 7000 }).catch(() => undefined);
         const data = await extract(page);
         data.statusCode = response?.status() ?? null;
-        results.push({ viewport: viewport.name, data });
+        let screenshotKey: string | null = null;
+        if (isScreenshotStorageConfigured()) {
+          try {
+            const screenshotBytes = await page.screenshot({ type: 'png', fullPage: false });
+            screenshotKey = await storeAuditScreenshot(auditId, viewport.name, screenshotBytes);
+          } catch {
+            console.error('audit_screenshot_storage_failed', { auditId, viewport: viewport.name });
+          }
+        }
+        results.push({ viewport: viewport.name, data, screenshotKey });
       } finally {
         await context.close();
       }
@@ -146,8 +156,12 @@ export async function runAudit(auditId: string) {
     });
 
     for (const result of results) {
+      const screenshotUrl = result.screenshotKey ? '/api/audits/' + auditId + '/screenshots/' + result.viewport : null;
       await db.pageSnapshot.create({
-        data: { pageId: pageRecord.id, viewport: result.viewport, screenshotUrl: null },
+        data: { pageId: pageRecord.id, viewport: result.viewport, screenshotUrl },
+      });
+      await db.screenshot.create({
+        data: { auditId, viewport: result.viewport, kind: 'viewport', storageUrl: result.screenshotKey, mimeType: 'image/png' },
       });
     }
 

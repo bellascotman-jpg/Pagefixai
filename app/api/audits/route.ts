@@ -8,6 +8,9 @@ import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { ENGINE_VERSION } from '@/lib/audit/engine';
 import { processNextAuditJob } from '@/lib/jobs/audit-worker';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 const schema = z.object({
   url: z.string().url().max(2048),
   projectName: z.string().trim().min(2).max(100).default('My Store'),

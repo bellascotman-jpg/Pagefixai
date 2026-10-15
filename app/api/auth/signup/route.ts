@@ -30,6 +30,7 @@ export async function POST(request: Request) {
   }
 
   try {
+    await db.plan.upsert({ where: { id: 'starter_monthly' }, create: { id: 'starter_monthly', name: 'Starter', monthlyUnits: 50, lifetime: false }, update: { name: 'Starter', monthlyUnits: 50, lifetime: false } });
     const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
     if (existing) {
       return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
@@ -45,6 +46,14 @@ export async function POST(request: Request) {
           create: {
             role: 'OWNER',
             organization: { create: { name: `${name}'s workspace` } },
+          },
+        },
+        subscriptions: {
+          create: {
+            plan: { connect: { id: 'starter_monthly' } },
+            status: 'ACTIVE',
+            provider: 'pagefix-trial',
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           },
         },
       },

@@ -64,6 +64,9 @@ export async function POST(request: Request) {
   } catch (error) {
     const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : 'UNKNOWN';
     console.error('signup_error', { code, name: error instanceof Error ? error.name : 'UnknownError' });
+    if (code.startsWith('P10')) {
+      return NextResponse.json({ error: 'DATABASE_UNAVAILABLE', message: 'Account creation is temporarily unavailable because the account database could not be reached. Please try again shortly.' }, { status: 503 });
+    }
     if (code === 'P2002') {
       return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
     }

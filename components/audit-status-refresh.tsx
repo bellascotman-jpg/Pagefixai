@@ -10,6 +10,7 @@ export default function AuditStatusRefresh({ active, auditId }: { active: boolea
     if (!active) return;
     let stopped = false;
     let inFlight = false;
+    let lastState = '';
 
     const refreshStatus = async () => {
       if (inFlight || stopped) return;
@@ -20,16 +21,20 @@ export default function AuditStatusRefresh({ active, auditId }: { active: boolea
           cache: 'no-store',
           headers: { Accept: 'application/json' },
         });
-        if (response.ok && !stopped) router.refresh();
+        if (!response.ok || stopped) return;
+        const data = await response.json();
+        const state = [data.audit?.status ?? '', data.job?.status ?? ''].join(':');
+        if (lastState && state !== lastState) router.refresh();
+        lastState = state;
       } catch {
-        // Keep polling; transient network errors must not leave the page permanently stale.
+        // Keep polling through transient network errors; do not trap the user on stale UI.
       } finally {
         inFlight = false;
       }
     };
 
     void refreshStatus();
-    const timer = window.setInterval(() => void refreshStatus(), 5000);
+    const timer = window.setInterval(() => void refreshStatus(), 4000);
     return () => {
       stopped = true;
       window.clearInterval(timer);

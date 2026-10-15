@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { isScreenshotStorageConfigured, storeAuditScreenshot } from '@/lib/storage/object-store';
 
-export const ENGINE_VERSION = '1.2.0';
+export const ENGINE_VERSION = '1.3.0';
 
 type ExtractedPage = {
   title: string;
@@ -88,6 +88,112 @@ function makeFinding(
   };
 }
 
+
+function decodeHtml(value: string): string {
+  return value
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&#(\d+);/g, (_, code: string) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) => String.fromCodePoint(parseInt(code, 16)));
+}
+
+function htmlText(value: string): string {
+  return decodeHtml(value
+    .replace(/<(script|style|noscript|svg|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim());
+}
+
+function attr(tag: string, name: string): string {
+  const match = tag.match(new RegExp('\\b' + name + '\\s*=\\s*(?:"([^"]*)"|\\x27([^\\x27]*)\\x27|([^\\s>]+))', 'i'));
+  return decodeHtml(match ? (match[1] ?? match[2] ?? match[3] ?? '') : '');
+}
+
+function extractHtml(html: string, statusCode: number | null): ExtractedPage {
+  const title = html.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1] ?? '';
+  const meta = (name: string) => {
+    const tags = html.match(/<meta\b[^>]*>/gi) ?? [];
+    const tag = tags.find((item) => attr(item, 'name').toLowerCase() === name.toLowerCase());
+    return tag ? attr(tag, 'content') : '';
+  };
+  const canonicalTag = (html.match(/<link\b[^>]*>/gi) ?? [])
+    .find((tag) => attr(tag, 'rel').toLowerCase().split(/\s+/).includes('canonical'));
+  const buttons = [
+    ...(html.match(/<button\b[^>]*>[\s\S]*?<\/button\s*>/gi) ?? []).map((tag) => htmlText(tag.replace(/^<button\b[^>]*>/i, '').replace(/<\/button\s*>$/i, ''))),
+    ...(html.match(/<input\b[^>]*type\s*=\s*["']?(?:submit|button)["']?[^>]*>/gi) ?? []).map((tag) => attr(tag, 'value')),
+  ].filter(Boolean).slice(0, 40);
+  const links = (html.match(/<a\b[^>]*>[\s\S]*?<\/a\s*>/gi) ?? []).slice(0, 120).map((tag) => ({
+    text: htmlText(tag.replace(/^<a\b[^>]*>/i, '').replace(/<\/a\s*>$/i, '')) || attr(tag, 'aria-label') || attr(tag, 'title'),
+    href: attr(tag, 'href'),
+  })).filter((link) => link.href);
+  const images = (html.match(/<img\b[^>]*>/gi) ?? []).slice(0, 80).map((tag) => ({
+    src: attr(tag, 'src') || attr(tag, 'data-src') || attr(tag, 'data-original'),
+    alt: attr(tag, 'alt'),
+    width: Number(attr(tag, 'width')) || 0,
+    height: Number(attr(tag, 'height')) || 0,
+  })).filter((image) => image.src);
+  const structuredData = (html.match(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script\s*>/gi) ?? [])
+    .map((tag) => tag.replace(/^<script\b[^>]*>/i, '').replace(/<\/script\s*>$/i, '').trim()).slice(0, 30);
+  const headings: Array<{tag:string;text:string}> = [];
+  for (const match of html.matchAll(/<(h[1-3])\b[^>]*>([\s\S]*?)<\/\1\s*>/gi)) {
+    const text = htmlText(match[2]);
+    if (text) headings.push({ tag: match[1].toUpperCase(), text });
+    if (headings.length >= 50) break;
+  }
+  const body = html.match(/<body\b[^>]*>([\s\S]*?)<\/body\s*>/i)?.[1] ?? html;
+  return {
+    title: htmlText(title),
+    canonical: canonicalTag ? attr(canonicalTag, 'href') : '',
+    description: meta('description'),
+    bodyText: htmlText(body).slice(0, 50000),
+    buttons,
+    links,
+    images,
+    structuredData,
+    forms: (html.match(/<form\b/gi) ?? []).length,
+    headings,
+    statusCode,
+  };
+}
+
+async function fetchStaticPage(url: URL): Promise<ExtractedPage> {
+  const timeout = AbortSignal.timeout(2100);
+  let current = url.toString();
+  let response: Response | null = null;
+  let html = '';
+  for (let hop = 0; hop < 3; hop++) {
+    try {
+      response = await fetch(current, {
+        redirect: 'manual',
+        signal: timeout,
+        headers: {
+          'user-agent': 'Mozilla/5.0 (compatible; PageFixAI/1.2; +https://pagefixai.vercel.app)',
+          accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.5',
+        },
+      });
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (!location) break;
+        const next = new URL(location, current);
+        if (next.hostname.toLowerCase() !== url.hostname.toLowerCase()) break;
+        current = next.toString();
+        continue;
+      }
+      html = (await response.text()).slice(0, 2_000_000);
+      break;
+    } catch {
+      break;
+    }
+  }
+  return extractHtml(html, response?.status ?? null);
+}
+
 export async function runAudit(auditId: string) {
   const audit = await db.audit.findUnique({ where: { id: auditId } });
   if (!audit) throw new Error('AUDIT_NOT_FOUND');
@@ -98,86 +204,13 @@ export async function runAudit(auditId: string) {
 
   let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
   try {
-    // Launch inside the guarded block so browser startup failures are persisted as
-    // a terminal audit error instead of leaving the audit stuck in RUNNING.
-    const launchOptions = process.env.VERCEL
-      ? {
-          args: serverlessChromium.args,
-          executablePath: await serverlessChromium.executablePath(),
-          headless: true as const,
-        }
-      : { headless: true as const };
-    browser = await chromium.launch(launchOptions);
-    const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [];
-    // Fast mode uses one primary viewport; no mobile second pass.
-    const viewports = [
-      { name: 'desktop', width: 1280, height: 900 },
+    // Fast mode uses a bounded HTTP capture rather than starting a headless
+    // browser. This keeps the initial evidence pass predictable on serverless
+    // runtimes and still reports access challenges honestly.
+    const data = await fetchStaticPage(target);
+    const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [
+      { viewport: 'desktop', data, screenshotKey: null },
     ];
-
-    for (const viewport of viewports) {
-      const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
-      try {
-        // Repeated DNS validation of every third-party image, font, analytics
-        // beacon and script can exhaust Vercel's 60-second function limit.
-        // The initial target host is already validated. Allow its resources;
-        // validate any cross-host document navigation (including redirects),
-        // and block cross-host subresources that are not required for text/DOM
-        // evidence. This also reduces exposure to third-party tracking requests.
-        const targetHost = target.hostname.toLowerCase();
-        await context.route('**/*', async (route) => {
-          const request = route.request();
-          const requestUrl = request.url();
-          if (!requestUrl.startsWith('http://') && !requestUrl.startsWith('https://')) {
-            await route.abort();
-            return;
-          }
-
-          let requestHost: string;
-          try {
-            requestHost = new URL(requestUrl).hostname.toLowerCase();
-          } catch {
-            await route.abort('blockedbyclient');
-            return;
-          }
-
-          if (requestHost === targetHost || validatedHosts.has(requestHost)) {
-            await route.continue();
-            return;
-          }
-
-          if (request.isNavigationRequest()) {
-            try {
-              await validateAuditUrl(requestUrl, validatedHosts);
-              await route.continue();
-            } catch {
-              await route.abort('blockedbyclient');
-            }
-            return;
-          }
-
-          await route.abort('blockedbyclient');
-        });
-        const page = await context.newPage();
-        page.setDefaultTimeout(1200);
-        // Don't wait for analytics, recommendations, image CDNs or network idle.
-        // If navigation times out, inspect whatever DOM was received.
-        const response = await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 1800 }).catch(() => null);
-        const data = await extract(page).catch(() => ({ title: '', canonical: '', description: '', bodyText: '', buttons: [], links: [], images: [], structuredData: [], forms: 0, headings: [], statusCode: null }));
-        data.statusCode = response?.status() ?? null;
-        let screenshotKey: string | null = null;
-        if (process.env.PAGEFIX_ENABLE_SCREENSHOTS === 'true' && isScreenshotStorageConfigured()) {
-          try {
-            const screenshotBytes = await page.screenshot({ type: 'png', fullPage: false });
-            screenshotKey = await storeAuditScreenshot(auditId, viewport.name, screenshotBytes);
-          } catch {
-            console.error('audit_screenshot_storage_failed', { auditId, viewport: viewport.name });
-          }
-        }
-        results.push({ viewport: viewport.name, data, screenshotKey });
-      } finally {
-        await context.close();
-      }
-    }
 
     const primary = results[0]?.data;
     if (!primary) throw new Error('PAGE_RENDER_FAILED');

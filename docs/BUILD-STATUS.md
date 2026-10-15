@@ -15,6 +15,9 @@ Work is being prepared on build/production-readiness. The main branch has not be
 - Revalidates browser network request URLs to reduce server-side request forgery exposure.
 - Added baseline metadata and updated sign-in navigation behavior.
 - Added/updated tests for the public plan catalog.
+- Added password-recovery and one-time password-reset routes with configured Resend delivery and token invalidation.
+- Added optional private S3-compatible screenshot storage and an owner-authorized screenshot retrieval route.
+- Added evidence-linked buyer question coverage to audit reports.
 
 ## Not yet verified
 
@@ -27,7 +30,7 @@ Before public launch, run the GitHub Actions workflow and fix every failure. In 
 3. Authentication, password reset delivery and account recovery.
 4. Flutterwave sandbox and live webhook verification, idempotency, currency and amount checks.
 5. Audit queue retries, duplicate-work prevention, timeouts and usage accounting.
-6. Persistent screenshot/report storage before exposing those features as available.
+6. Configure S3-compatible storage credentials and verify screenshot upload/retrieval and retention. PDF/report export and other persistent report formats still require separate verification.
 7. Tenant isolation, URL security, rate limits and authorization.
 8. Mobile/desktop end-to-end flows on the actual deployed domain.
 

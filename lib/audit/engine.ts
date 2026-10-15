@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { isScreenshotStorageConfigured, storeAuditScreenshot } from '@/lib/storage/object-store';
 
-export const ENGINE_VERSION = '1.1.0';
+export const ENGINE_VERSION = '1.2.0';
 
 type ExtractedPage = {
   title: string;
@@ -109,9 +109,9 @@ export async function runAudit(auditId: string) {
       : { headless: true as const };
     browser = await chromium.launch(launchOptions);
     const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [];
+    // Fast mode uses one primary viewport; no mobile second pass.
     const viewports = [
-      { name: 'desktop', width: 1440, height: 1000 },
-      { name: 'mobile', width: 390, height: 844 },
+      { name: 'desktop', width: 1280, height: 900 },
     ];
 
     for (const viewport of viewports) {
@@ -158,13 +158,14 @@ export async function runAudit(auditId: string) {
           await route.abort('blockedbyclient');
         });
         const page = await context.newPage();
-        page.setDefaultTimeout(5000);
-        const response = await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 12000 });
-        await page.waitForLoadState('networkidle', { timeout: 2500 }).catch(() => undefined);
-        const data = await extract(page);
+        page.setDefaultTimeout(1200);
+        // Don't wait for analytics, recommendations, image CDNs or network idle.
+        // If navigation times out, inspect whatever DOM was received.
+        const response = await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 1800 }).catch(() => null);
+        const data = await extract(page).catch(() => ({ title: '', canonical: '', description: '', bodyText: '', buttons: [], links: [], images: [], structuredData: [], forms: 0, headings: [], statusCode: null }));
         data.statusCode = response?.status() ?? null;
         let screenshotKey: string | null = null;
-        if (isScreenshotStorageConfigured()) {
+        if (process.env.PAGEFIX_ENABLE_SCREENSHOTS === 'true' && isScreenshotStorageConfigured()) {
           try {
             const screenshotBytes = await page.screenshot({ type: 'png', fullPage: false });
             screenshotKey = await storeAuditScreenshot(auditId, viewport.name, screenshotBytes);
@@ -225,6 +226,22 @@ export async function runAudit(auditId: string) {
     }
 
     const findings = [];
+    // Detect access challenges so they are reported honestly rather than treated
+    // as missing product content. PageFix does not bypass access controls.
+    const challengeText = (primary.title + ' ' + primary.bodyText).toLowerCase();
+    const accessChallenge = /verify you are human|checking your browser|enable javascript and cookies|attention required|access denied|captcha|unusual traffic|security challenge|just a moment\.\.\./i.test(challengeText);
+    if (accessChallenge || (primary.statusCode !== null && [403, 429, 503].includes(primary.statusCode)) || (primary.statusCode === null && !primary.bodyText.trim())) {
+      const finding = makeFinding('Product page content could not be verified by the audit crawler', 'MEDIUM',
+        'The capture returned an automated-access challenge, an HTTP ' + (primary.statusCode ?? 'unknown') + ' response, or too little page content to verify the product. No product claims were inferred from this response.',
+        'A blocked capture means PageFix cannot reliably inspect product details, purchase actions, shipping information, or trust signals in this run.',
+        'Retry from a permitted browser session or provide a public page/export that allows automated inspection. PageFix will not attempt to bypass the site access controls.',
+        'Can the audit crawler access the same product content a normal shopper sees?', textEvidence.id);
+      await db.finding.create({ data: { auditId, title: finding.title, severity: finding.severity, confidence: finding.confidence, effort: finding.effort, priority: finding.priority, buyerQuestion: finding.buyerQuestion, observation: finding.observation, hypothesis: finding.hypothesis, whyItMatters: finding.whyItMatters, recommendation: finding.recommendation, implementationSteps: finding.implementationSteps, evidence: { create: finding.evidenceIds.map((evidenceId) => ({ evidenceId })) } } });
+      const pageUrl = new URL(target);
+      const category = /\/(products?|items?)\//i.test(pageUrl.pathname) ? 'Product' : 'Landing Page';
+      await db.audit.update({ where: { id: auditId }, data: { status: 'COMPLETED', completedAt: new Date(), category } });
+      return { auditId, findings: 1, pageId: pageRecord.id, accessLimited: true };
+    }
     if (primary.statusCode !== null && primary.statusCode >= 400) {
       findings.push(makeFinding('Page returned an HTTP error status', 'HIGH', `The main document navigation returned HTTP ${primary.statusCode}.`, 'Visitors and crawlers may be unable to use this page normally while the response remains an error.', 'Confirm the intended URL, server response and redirect configuration. Recheck the URL after the response is corrected.', 'Can a visitor and search crawler reach this page?', metadataEvidence.id));
     }

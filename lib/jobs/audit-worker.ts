@@ -27,6 +27,8 @@ export async function processNextAuditJob(auditId?: string) {
     // A successful page inspection remains a successful audit even if the optional
     // AI provider is unavailable, misconfigured, rate-limited, or returns bad output.
     const result = await runAudit(job.auditId);
+    // Publish the evidence-backed report before optional AI enrichment finishes.
+    await db.auditJob.update({ where: { id: job.id }, data: { status: 'COMPLETED', completedAt: new Date(), errorCode: null, errorMessage: null } });
     let ai: unknown = { skipped: true, reason: 'AI_NOT_RUN' };
     let aiWarning: string | null = null;
 

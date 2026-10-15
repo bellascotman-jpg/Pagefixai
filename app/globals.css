@@ -490,3 +490,19 @@ html,body{background:var(--paper);color:var(--ink)}
  .hero-description{font-size:15px}
  .button{min-height:44px;padding:11px 14px}
 }
+
+.dashboard-top-actions .dashboard-referral-link{font-size:12px;font-weight:800;color:#315efb;background:#edf2ff;border:1px solid #dce5ff;border-radius:9px;padding:9px 11px;white-space:nowrap}
+.dashboard-top-actions .dashboard-referral-link:hover{background:#e2eaff;border-color:#c5d3ff}
+.dashboard-referral-banner{display:flex;align-items:center;justify-content:space-between;gap:22px;margin:22px 0 26px;padding:22px 24px;border:1px solid #dbe5ff;border-radius:16px;background:linear-gradient(115deg,#fff 0%,#f1f5ff 100%);box-shadow:0 10px 28px rgba(49,94,251,.055)}
+.dashboard-referral-banner strong{font-size:16px;color:#142238}
+.dashboard-referral-banner p{margin:5px 0 0;max-width:720px;font-size:13px;line-height:1.65;color:#64738a}
+.dashboard-referral-banner .primary-button{white-space:nowrap;flex-shrink:0}
+.partner-actions{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 8px}
+.partner-disclosure{margin-top:28px;padding:24px;background:#fff;border:1px solid #e1e8f2;border-radius:16px}
+.partner-disclosure h3{margin-top:0}
+.partner-disclosure p{color:#66758b}
+@media(max-width:760px){
+ .dashboard-referral-banner{align-items:flex-start;flex-direction:column;padding:18px}
+ .dashboard-top-actions{gap:8px!important}
+ .dashboard-top-actions .topbar-user{display:none}
+}

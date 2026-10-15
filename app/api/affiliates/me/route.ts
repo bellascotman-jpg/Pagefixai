@@ -19,8 +19,12 @@ export async function GET() {
         catch (error) { if (attempt === 2) throw error; }
       }
     }
-    const total = profile!.commissions.reduce((sum, item) => sum + Number(item.amount), 0);
-    const pending = profile!.commissions.filter(item => item.status === 'PENDING' || item.status === 'APPROVED').reduce((sum, item) => sum + Number(item.amount), 0);
+    const [allCommissions, payableCommissions] = await Promise.all([
+      db.affiliateCommission.aggregate({ where: { affiliateId: profile!.id, status: { in: ['PENDING', 'APPROVED', 'PAID'] } }, _sum: { amount: true } }),
+      db.affiliateCommission.aggregate({ where: { affiliateId: profile!.id, status: { in: ['PENDING', 'APPROVED'] } }, _sum: { amount: true } }),
+    ]);
+    const total = Number(allCommissions._sum.amount || 0);
+    const pending = Number(payableCommissions._sum.amount || 0);
     return NextResponse.json({ profile: { code: profile!.code, status: profile!.status, commissionRate: profile!.commissionRate, clicks: profile!.clicks, referralCount: profile!.referrals.length, totalCommission: total, pendingPayout: pending, payoutThreshold: 50, payoutMethod: profile!.payoutMethod, payoutEmail: profile!.payoutEmail, referralUrl: `${process.env.APP_URL || 'https://pagefixai.vercel.app'}/api/referrals/track?code=${profile!.code}`, commissions: profile!.commissions.map(c => ({ amount: Number(c.amount), currency: c.currency, status: c.status, createdAt: c.createdAt })) } });
   } catch (error) {
     console.error('affiliate_profile_error', error);

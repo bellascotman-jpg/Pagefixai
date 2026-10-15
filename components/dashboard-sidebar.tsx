@@ -1,0 +1,39 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const groups = [
+  { label: 'WORKSPACE', items: [
+    { href: '/dashboard', label: 'Overview', icon: '◫', exact: true },
+    { href: '/dashboard/audits', label: 'Audit history', icon: '⌕' },
+    { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
+    { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
+  ]},
+  { label: 'INTELLIGENCE', items: [
+    { href: '/dashboard/competitors', label: 'Competitors', icon: '◎' },
+  ]},
+  { label: 'ACCOUNT', items: [
+    { href: '/dashboard/settings', label: 'Workspace settings', icon: '⚙' },
+    { href: '/pricing', label: 'Plans & usage', icon: '◇' },
+  ]},
+];
+
+export default function DashboardSidebar() {
+  const pathname = usePathname();
+  return <aside className="app-sidebar">
+    <Link href="/dashboard" className="sidebar-brand">PageFix<span>AI</span></Link>
+    {groups.map(group => <div key={group.label}>
+      <div className="sidebar-section-label">{group.label}</div>
+      <nav className="sidebar-nav" aria-label={group.label}>
+        {group.items.map(item => {
+          const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
+          return <Link key={item.href} href={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`} aria-current={active ? 'page' : undefined}>
+            <span className="sidebar-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+          </Link>;
+        })}
+      </nav>
+    </div>)}
+    <div className="sidebar-bottom"><p>Evidence first. Honest limits. Fix what you can verify.</p><Link href="/security">Security & privacy ↗</Link></div>
+  </aside>;
+}

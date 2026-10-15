@@ -47,6 +47,7 @@ export default function PricingPage() {
         body: JSON.stringify({ planId }),
       });
       const data = await response.json();
+      if (response.status === 401) { window.location.href = '/auth?mode=signup&next=/pricing'; return; }
       if (!response.ok) throw new Error(data.message || data.error || 'Checkout is not available right now.');
       if (!data.url) throw new Error('The payment provider did not return a checkout URL.');
       window.location.href = data.url;
@@ -66,7 +67,7 @@ export default function PricingPage() {
       <div className="eyebrow">CLEAR PLANS · NO PUBLIC LIFETIME DEAL</div>
       <h1>Choose the depth of work<br/><span>your team needs.</span></h1>
       <p>Start with evidence-backed audits. Scale into repeatable optimization workflows as your team, store portfolio and audit volume grow. Prices are shown in USD per month.</p>
-      <div className="pricing-promise"><span>✓</span> No invented analytics. No guaranteed conversion lifts. No hidden claims about private data.</div>
+      <div className="pricing-promise"><span>✓</span> No invented analytics. No guaranteed conversion lifts. No hidden claims about private data.</div><p className="pricing-trial-note">Start with a 7-day trial. No card is requested when you create an account.</p>
     </section>
     {error && <div className="error-box pricing-error" role="alert">{error}</div>}
     <section className="pricing-cards" aria-label="Subscription plans">

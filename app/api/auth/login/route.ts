@@ -23,6 +23,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : 'UNKNOWN';
     console.error('login_error', { code, name: error instanceof Error ? error.name : 'UnknownError' });
-    return NextResponse.json({ error: 'LOGIN_UNAVAILABLE', message: 'Sign-in is temporarily unavailable because the service could not reach its account database. Please try again shortly.' }, { status: 503 });
+    const diagnostic = ['P1000','P1001','P1002','P1008','P1017','P2021','P2022','P2023','P2024','P2025'].includes(code) ? code : 'AUTH_DATABASE_ERROR';
+    return NextResponse.json({ error: 'LOGIN_UNAVAILABLE', code: diagnostic, message: diagnostic === 'P2021' || diagnostic === 'P2022' ? 'The account database schema is out of date. The application is being repaired; please retry shortly.' : 'Sign-in is temporarily unavailable because the account service could not complete the database operation. Please retry shortly.' }, { status: 503 });
   }
 }

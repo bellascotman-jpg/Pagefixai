@@ -23,6 +23,12 @@ export async function POST(request: Request) {
   const user = await db.user.findUnique({ where: { email: parsed.data.email } });
   if (!user) return NextResponse.json(genericResponse);
 
+  const recentRequest = await db.passwordResetToken.findFirst({
+    where: { userId: user.id, usedAt: null, createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) } },
+    select: { id: true },
+  });
+  if (recentRequest) return NextResponse.json(genericResponse);
+
   const rawToken = randomBytes(32).toString('base64url');
   const tokenHash = createHash('sha256').update(rawToken).digest('hex');
   const resetToken = await db.passwordResetToken.create({

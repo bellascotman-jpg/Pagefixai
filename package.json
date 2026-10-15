@@ -14,7 +14,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "node prisma/seed.mjs",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma db push --accept-data-loss --skip-generate && prisma generate && next build"
   },
   "prisma": {
     "seed": "node prisma/seed.mjs"

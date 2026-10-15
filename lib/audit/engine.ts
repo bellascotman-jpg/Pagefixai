@@ -230,9 +230,9 @@ export async function runAudit(auditId: string) {
     // as missing product content. PageFix does not bypass access controls.
     const challengeText = (primary.title + ' ' + primary.bodyText).toLowerCase();
     const accessChallenge = /verify you are human|checking your browser|enable javascript and cookies|attention required|access denied|captcha|unusual traffic|security challenge|just a moment\.\.\./i.test(challengeText);
-    if (accessChallenge || (primary.statusCode !== null && [403, 429, 503].includes(primary.statusCode))) {
+    if (accessChallenge || (primary.statusCode !== null && [403, 429, 503].includes(primary.statusCode)) || (primary.statusCode === null && !primary.bodyText.trim())) {
       const finding = makeFinding('Product page content could not be verified by the audit crawler', 'MEDIUM',
-        'The captured page showed an automated-access challenge or HTTP ' + (primary.statusCode ?? 'unknown') + ' response instead of verifiable product-page content. No product claims were inferred from this response.',
+        'The capture returned an automated-access challenge, an HTTP ' + (primary.statusCode ?? 'unknown') + ' response, or too little page content to verify the product. No product claims were inferred from this response.',
         'A blocked capture means PageFix cannot reliably inspect product details, purchase actions, shipping information, or trust signals in this run.',
         'Retry from a permitted browser session or provide a public page/export that allows automated inspection. PageFix will not attempt to bypass the site access controls.',
         'Can the audit crawler access the same product content a normal shopper sees?', textEvidence.id);

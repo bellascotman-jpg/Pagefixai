@@ -17,6 +17,7 @@ PageFix AI is an evidence-led website diagnostics product for ecommerce pages, p
 
 - Next.js App Router, React and TypeScript
 - PostgreSQL and Prisma
+- Optional private S3-compatible storage for desktop/mobile audit screenshots
 - Playwright for browser-based page inspection
 - Zod for input and AI-output validation
 - Flutterwave transaction verification for billing
@@ -37,7 +38,7 @@ A production deployment requires configured database, environment variables and 
 
 ## Environment variables
 
-See .env.example. Optional AI, payment, email and storage integrations remain unavailable until their real credentials and provider settings are configured and verified. ChatGPT subscriptions do not provide an API key automatically.
+See .env.example. Optional AI, payment, email and screenshot-storage integrations remain unavailable until their real credentials and provider settings are configured and verified. Screenshot persistence uses STORAGE_ENDPOINT, STORAGE_REGION, STORAGE_ACCESS_KEY, STORAGE_SECRET_KEY and STORAGE_BUCKET; images are served through an owner-authorized API route, not a public object URL. ChatGPT subscriptions do not provide an API key automatically.
 
 ## Main application areas
 

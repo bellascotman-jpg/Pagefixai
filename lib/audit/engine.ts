@@ -261,7 +261,7 @@ export async function runAudit(auditId: string) {
     }
 
     const pageUrl = new URL(target);
-    const isProductPage = /\/(products?|items?)\//i.test(pageUrl.pathname) || /add to cart|product details|\\bsku\\b|in stock/i.test(primary.bodyText);
+    const isProductPage = /\/(products?|items?)\//i.test(pageUrl.pathname) || /add to cart|product details|\bsku\b|in stock/i.test(primary.bodyText);
     const isCategoryPage = /\/(collections?|categories?)\//i.test(pageUrl.pathname);
     const category = isProductPage ? 'Product' : isCategoryPage ? 'Category' : 'Landing Page';
     await db.audit.update({ where: { id: auditId }, data: { status: 'COMPLETED', completedAt: new Date(), category } });

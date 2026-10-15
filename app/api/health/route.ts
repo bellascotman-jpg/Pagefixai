@@ -19,8 +19,17 @@ export async function GET() {
   try {
     await db.$queryRaw`SELECT 1`;
     database = "ok";
-  } catch {
+  } catch (error) {
     database = "unavailable";
+    // Record a safe, actionable failure signature without logging connection strings
+    // or returning database internals from the public health endpoint.
+    const code = typeof error === "object" && error !== null && "code" in error
+      ? String(error.code)
+      : "UNKNOWN";
+    console.error("health_database_check_failed", {
+      name: error instanceof Error ? error.name : "UnknownError",
+      code,
+    });
   }
 
   const configuredUrl = env.Pagefixai_POSTGRES_URL || env.POSTGRES_URL || env.Pagefixai_DATABASE_URL || env.DATABASE_URL || env.Pagefixai_PRISMA_DATABASE_URL || env.POSTGRES_PRISMA_URL;

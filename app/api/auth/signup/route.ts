@@ -27,7 +27,8 @@ export async function POST(request: Request) {
   const { name, email, password } = parsed.data;
   const cookieHeader = request.headers.get('cookie') || '';
   const referralCode = cookieHeader.match(/(?:^|;\s*)pagefix_ref=([A-Z0-9]+)/)?.[1]?.toUpperCase() || null;
-  const referringAffiliate = referralCode ? await db.affiliateProfile.findFirst({ where: { code: referralCode, status: 'APPROVED' }, select: { id: true } }).catch(() => null) : null;
+  const referralCandidate = referralCode ? await db.affiliateProfile.findFirst({ where: { code: referralCode, status: 'APPROVED' }, select: { id: true, user: { select: { email: true } } } }).catch(() => null) : null;
+  const referringAffiliate = referralCandidate && referralCandidate.user.email.toLowerCase() !== email.toLowerCase() ? referralCandidate : null;
   if (email === FOUNDER_EMAIL) {
     return NextResponse.json({ error: 'EMAIL_RESERVED', message: 'This founder account is provisioned separately and cannot be created through public signup.' }, { status: 403 });
   }

@@ -3,9 +3,9 @@ import { db } from '@/lib/db';
 import { runAudit } from '@/lib/audit/engine';
 import { interpretAudit } from '@/lib/ai/reason';
 
-export async function processNextAuditJob() {
+export async function processNextAuditJob(auditId?: string) {
   const job = await db.auditJob.findFirst({
-    where: { status: 'QUEUED', availableAt: { lte: new Date() } },
+    where: { status: 'QUEUED', availableAt: { lte: new Date() }, ...(auditId ? { auditId } : {}) },
     orderBy: { createdAt: 'asc' },
   });
 

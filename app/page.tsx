@@ -26,7 +26,7 @@ export default function HomePage() {
   return <main className="marketing">
     <header className="site-nav">
       <Link href="/" className="brand" aria-label="PageFix AI home">PageFix<span>AI</span></Link>
-      <nav className="nav-links" aria-label="Main navigation"><a href="#capabilities">Capabilities</a><a href="#how-it-works">How it works</a><a href="#trust">Trust & security</a><Link href="/pricing">Pricing</Link></nav>
+      <nav className="nav-links" aria-label="Main navigation"><a href="#capabilities">Capabilities</a><a href="#how-it-works">How it works</a><a href="#trust">Trust & security</a><Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link></nav>
       <div className="nav-actions"><Link href="/auth?mode=login" className="nav-signin">Sign in</Link><Link href="/auth" className="button button-primary button-small">Start an audit ↗</Link></div>
     </header>
 
@@ -53,6 +53,18 @@ export default function HomePage() {
 
     <section className="trust-strip"><span>THE PAGEFIX STANDARD</span><div><b>01</b> Observable evidence</div><div><b>02</b> Honest confidence</div><div><b>03</b> Practical remediation</div><div><b>04</b> Verifiable rechecks</div></section>
 
+    <section className="proof-section" aria-labelledby="proof-heading">
+      <div className="proof-intro"><div className="eyebrow">PROOF YOU CAN INSPECT</div><h2 id="proof-heading">Trust the method.<br/><span>Inspect the evidence.</span></h2><p>We do not substitute invented case studies or made-up conversion lifts for proof. Here is what PageFix is designed to show in a report—and what it will never pretend to know from a public URL alone.</p><Link href="/methodology" className="text-link">Read our evidence standard →</Link></div>
+      <div className="proof-cards">
+        <article><span className="proof-card-index">01 / OBSERVED</span><h3>What the page shows</h3><p>Captured titles, headings, visible copy, links, product details and page elements—subject to what the website allows the inspection to access.</p><small>Report label: Directly Observed Evidence</small></article>
+        <article><span className="proof-card-index">02 / INTERPRETED</span><h3>What may create friction</h3><p>Potential unanswered buyer questions, unclear next steps or mismatches that deserve human review—not a claim that a customer actually abandoned.</p><small>Report label: Inferred Risk or Hypothesis</small></article>
+        <article><span className="proof-card-index">03 / ACTIONABLE</span><h3>What to fix and recheck</h3><p>Specific implementation guidance, a stated verification objective and a fresh inspection to see whether the observable issue remains.</p><small>Report label: Recommendation</small></article>
+      </div>
+      <div className="proof-footnote">Product interface previews are illustrative. PageFix does not publish customer testimonials, performance statistics or case-study outcomes unless they are genuine, authorized and verifiable.</div>
+    </section>
+
+    <section className="resource-cta-strip"><div><div className="eyebrow">MAKE AN INFORMED CHOICE</div><h2>Compare PageFix with the tools you already use.</h2><p>See where page-level friction diagnosis fits alongside SEO crawlers, speed testing and visitor-behaviour analytics.</p></div><div className="resource-cta-actions"><Link href="/compare" className="button button-primary">Compare tools →</Link><Link href="/resources" className="button button-secondary">Read practical guides</Link></div></section>
+
     <section className="section-block" id="capabilities">
       <div className="section-intro"><div className="eyebrow">A PRACTICAL DIAGNOSTIC WORKFLOW</div><h2>More than an audit score.<br/><span>A path from finding to fix.</span></h2><p>PageFix is designed for teams that need to know what the captured page actually reveals, what may be getting in the way and what deserves attention next.</p></div>
       <div className="capability-grid capability-grid-six">{capabilities.map(item=><article className="capability-card" key={item.number}><div className="capability-number">{item.number}</div><h3>{item.title}</h3><p>{item.body}</p><div className="capability-line"/></article>)}</div>
@@ -70,6 +82,6 @@ export default function HomePage() {
 
     <section className="final-cta"><div className="eyebrow eyebrow-light">START WITH THE PAGE, NOT A GUESS</div><h2>Know what deserves attention<br/>before you ship another change.</h2><p>Create a workspace, inspect a public page and review the evidence behind the recommendations.</p><div className="final-cta-actions"><Link href="/auth" className="button button-light">Create your workspace →</Link><Link href="/pricing" className="button button-ghost-light">Compare plans</Link></div></section>
 
-    <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/pricing">Pricing</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>
+    <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>
   </main>;
 }

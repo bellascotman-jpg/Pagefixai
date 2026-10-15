@@ -92,8 +92,9 @@ export async function runAudit(auditId: string) {
   const audit = await db.audit.findUnique({ where: { id: auditId } });
   if (!audit) throw new Error('AUDIT_NOT_FOUND');
 
-  const target = await validateAuditUrl(audit.url);
-  await db.audit.update({ where: { id: auditId }, data: { status: 'RUNNING', startedAt: new Date(), engineVersion: ENGINE_VERSION } });
+  const validatedHosts = new Map<string, number>();
+  const target = await validateAuditUrl(audit.url, validatedHosts);
+  await db.audit.update({ where: { id: auditId }, data: { status: 'RUNNING', startedAt: new Date(), engineVersion: ENGINE_VERSION, errorCode: null, errorMessage: null } });
 
   let browser: Awaited<ReturnType<typeof chromium.launch>> | null = null;
   try {
@@ -124,7 +125,7 @@ export async function runAudit(auditId: string) {
             return;
           }
           try {
-            await validateAuditUrl(requestUrl);
+            await validateAuditUrl(requestUrl, validatedHosts);
             await route.continue();
           } catch {
             await route.abort('blockedbyclient');

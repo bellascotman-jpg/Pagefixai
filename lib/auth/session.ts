@@ -14,7 +14,7 @@ export async function createSession(userId: string) {
   const expiresAt = new Date(Date.now() + SESSION_DAYS * 86400000);
   await db.session.create({ data: { userId, tokenHash: hashToken(token), expiresAt } });
   const store = await cookies();
-  store.set(COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', expires: expiresAt });
+  store.set(COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', expires: expiresAt, maxAge: SESSION_DAYS * 24 * 60 * 60 });
 }
 
 export async function destroySession() {

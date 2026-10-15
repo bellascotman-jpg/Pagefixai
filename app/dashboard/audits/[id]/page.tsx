@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound, redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
@@ -18,6 +19,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         orderBy: [{ priority: 'asc' }, { severity: 'asc' }],
       },
       evidence: true,
+      screenshots: { orderBy: { viewport: 'asc' } },
       buyerQuestions: { orderBy: { createdAt: 'asc' } },
       pages: { select: { statusCode: true, title: true, canonical: true, metaDescription: true }, orderBy: { createdAt: 'desc' }, take: 1 },
       jobs: { orderBy: { createdAt: 'desc' }, take: 1 },
@@ -56,6 +58,17 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           <div className="card"><div className="label">Evidence items</div><div className="stat">{audit.evidence.length}</div></div>
           <div className="card"><div className="label">Page response</div><div className="stat" style={{ fontSize: 23 }}>{page?.statusCode ?? 'Not recorded'}</div><p className="muted">HTTP status observed during the primary navigation.</p></div>
         </div>
+        <section className="card" style={{ marginTop: 24 }}>
+          <h2>Captured page views</h2>
+          <p className="muted" style={{ fontSize: 12 }}>Viewport screenshots are stored privately and are available only to the owner of this audit. Screenshot storage must be configured for these images to be retained.</p>
+          {audit.screenshots.filter(item => item.storageUrl).length === 0 && <p className="muted">No stored screenshots are available for this audit. Configure the S3-compatible storage settings and run a new audit to retain desktop and mobile captures.</p>}
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))' }}>
+            {audit.screenshots.filter(item => item.storageUrl).map(item => <article key={item.id}>
+              <h3 style={{ textTransform: 'capitalize' }}>{item.viewport} view</h3>
+              <Image src={'/api/audits/' + audit.id + '/screenshots/' + item.viewport} alt={'Page screenshot captured at ' + item.viewport + ' viewport'} width={item.viewport === 'mobile' ? 390 : 1440} height={item.viewport === 'mobile' ? 844 : 1000} unoptimized style={{ width: '100%', height: 'auto', border: '1px solid var(--line)', borderRadius: 10 }} />
+            </article>)}
+          </div>
+        </section>
         <section className="card" style={{ marginTop: 24 }}>
           <h2>Buyer question coverage</h2>
           <p className="muted" style={{ fontSize: 12 }}>These checks look for signals in the captured visible page and link inventory. “Not observed” does not mean the information is absent elsewhere on the site.</p>

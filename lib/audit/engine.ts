@@ -1,4 +1,5 @@
-import { chromium, type Page as PlaywrightPage } from 'playwright';
+import { chromium, type Page as PlaywrightPage } from 'playwright-core';
+import serverlessChromium from '@sparticuz/chromium';
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { isScreenshotStorageConfigured, storeAuditScreenshot } from '@/lib/storage/object-store';
@@ -98,7 +99,14 @@ export async function runAudit(auditId: string) {
   try {
     // Launch inside the guarded block so browser startup failures are persisted as
     // a terminal audit error instead of leaving the audit stuck in RUNNING.
-    browser = await chromium.launch({ headless: true });
+    const launchOptions = process.env.VERCEL
+      ? {
+          args: serverlessChromium.args,
+          executablePath: await serverlessChromium.executablePath(),
+          headless: true as const,
+        }
+      : { headless: true as const };
+    browser = await chromium.launch(launchOptions);
     const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [];
     const viewports = [
       { name: 'desktop', width: 1440, height: 1000 },

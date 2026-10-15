@@ -24,7 +24,7 @@ test('pricing lists subscriptions without lifetime access', async ({ page }) => 
   await page.goto('/pricing');
   await expect(page.getByRole('heading', { name: /pay for useful evidence/i })).toBeVisible();
   await expect(page.getByText('Founding Lifetime')).toHaveCount(0);
-  await expect(page.getByText('$19', { exact: true })).toBeVisible();
-  await expect(page.getByText('$49', { exact: true })).toBeVisible();
-  await expect(page.getByText('$99', { exact: true })).toBeVisible();
+  await expect(page.locator('article h2').filter({ hasText: '$19' })).toBeVisible();
+  await expect(page.locator('article h2').filter({ hasText: '$49' })).toBeVisible();
+  await expect(page.locator('article h2').filter({ hasText: '$99' })).toBeVisible();
 });

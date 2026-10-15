@@ -2,10 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<'login' | 'signup'>('signup');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,7 +32,7 @@ export default function AuthPage() {
       }
       const requestedNext = new URLSearchParams(window.location.search).get('next');
       const safeNext = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard';
-      router.replace(safeNext);
+      window.location.replace(safeNext);
       router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'We could not complete this request. Please try again.');

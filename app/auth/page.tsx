@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
@@ -13,16 +13,44 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('mode') === 'login') setMode('login');
+  }, []);
+
   async function submit(event: React.FormEvent) {
-    event.preventDefault(); setError(''); setLoading(true);
+    event.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      const response = await fetch(`/api/auth/${mode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(mode === 'signup' ? { name, email, password } : { email, password }) });
+      const response = await fetch(`/api/auth/${mode}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mode === 'signup' ? { name, email, password } : { email, password }),
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Authentication failed.');
-      router.push('/dashboard'); router.refresh();
-    } catch (e) { setError(e instanceof Error ? e.message : 'Authentication failed.'); }
-    finally { setLoading(false); }
+      router.push('/dashboard');
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Authentication failed.');
+    } finally {
+      setLoading(false);
+    }
   }
 
-  return <main className="auth-shell"><div className="auth-card"><Link className="brand" href="/">PageFix <span>AI</span></Link><h1>{mode === 'signup' ? 'Start finding purchase friction.' : 'Welcome back.'}</h1><p className="muted">{mode === 'signup' ? 'Create your workspace and run evidence-driven storefront audits.' : 'Sign in to your PageFix workspace.'}</p><form onSubmit={submit}>{mode === 'signup' && <label>Name<input value={name} onChange={e => setName(e.target.value)} required minLength={2} maxLength={80} /></label>}<label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" /></label><label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} /></label>{error && <div className="error-box" role="alert">{error}</div>}<button className="primary-button" disabled={loading}>{loading ? 'Working…' : mode === 'signup' ? 'Create account' : 'Sign in'}</button></form><button className="text-button" onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }}>{mode === 'signup' ? 'Already have an account? Sign in' : 'Need an account? Create one'}</button></div></main>;
+  return <main className="auth-shell"><div className="auth-card">
+    <Link className="brand" href="/">PageFix <span>AI</span></Link>
+    <h1>{mode === 'signup' ? 'Start finding purchase friction.' : 'Welcome back.'}</h1>
+    <p className="muted">{mode === 'signup' ? 'Create your workspace and run evidence-driven storefront audits.' : 'Sign in to your PageFix workspace.'}</p>
+    <form onSubmit={submit}>
+      {mode === 'signup' && <label>Name<input value={name} onChange={e => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="name" /></label>}
+      <label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" maxLength={320} /></label>
+      <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} /></label>
+      {error && <div className="error-box" role="alert">{error}</div>}
+      <button className="primary-button" disabled={loading}>{loading ? 'Working…' : mode === 'signup' ? 'Create account' : 'Sign in'}</button>
+    </form>
+    <button className="text-button" onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }}>{mode === 'signup' ? 'Already have an account? Sign in' : 'Need an account? Create one'}</button>
+    {mode === 'login' && <Link className="text-button" href="/auth/forgot-password" style={{ display: 'inline-block' }}>Forgot your password?</Link>}
+    <p className="muted" style={{ fontSize: 11, marginTop: 18 }}>By continuing, you agree to use PageFix only on websites you are authorized to inspect.</p>
+  </div></main>;
 }

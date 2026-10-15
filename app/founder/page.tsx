@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
+import { FOUNDER_EMAIL } from '@/lib/plans';
 
 export default async function FounderPage() {
   const user = await getCurrentUser();
-  if (!user || (user.role !== 'FOUNDER' && user.role !== 'ADMIN')) redirect('/dashboard');
+  if (!user || (user.role !== 'ADMIN' && !(user.role === 'FOUNDER' && user.email.toLowerCase() === FOUNDER_EMAIL))) redirect('/dashboard');
   const [users, audits, subscriptions, payments, usage] = await Promise.all([
     db.user.count(), db.audit.count(), db.subscription.count({ where: { status: { in: ['ACTIVE', 'LIFETIME'] } } }), db.payment.aggregate({ _sum: { amount: true }, where: { status: 'successful' } }), db.usageEvent.aggregate({ _sum: { units: true, estimatedCost: true } }),
   ]);

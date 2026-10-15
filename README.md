@@ -1,41 +1,71 @@
 # PageFix AI
 
-**Find what's getting in the way of the sale.**
+**Find what's breaking the customer journey.**
 
-PageFix AI is an evidence-driven ecommerce purchase-friction intelligence platform. The product architecture separates browser evidence and deterministic analysis from AI interpretation.
+PageFix AI is an evidence-led website diagnostics product for ecommerce pages, product pages and landing pages. It captures browser-visible evidence, runs deterministic checks, prioritizes supported findings and provides practical remediation guidance.
 
-## Engineering status
+## Product principles
 
-The repository has been initialized with the production foundation: Next.js/React/TypeScript application shell, strict TypeScript configuration, PostgreSQL/Prisma domain schema, stable billing plan identifiers, payment-provider abstraction, health endpoint, Vitest configuration, and GitHub CI.
+- Every finding must be tied to browser-observed evidence or clearly labeled as a risk, hypothesis or recommendation.
+- Never fabricate analytics, rankings, revenue, traffic, conversion rates, reviews, customer data or business outcomes.
+- A public URL audit does not reveal private revenue, traffic quality, margins, conversion rates or checkout abandonment.
+- Screenshots and stored evidence must only be described as available when they have actually been persisted and can be retrieved.
+- A fresh recheck is a new inspection; it must not silently overwrite an earlier audit.
+- Only audit websites the operator is authorized to inspect.
 
-The repository is intentionally built incrementally. No production credential, payment success, customer, analytics value, audit result, or AI response is fabricated.
+## Stack
+
+- Next.js App Router, React and TypeScript
+- PostgreSQL and Prisma
+- Optional private S3-compatible storage for desktop/mobile audit screenshots
+- Playwright for browser-based page inspection
+- Zod for input and AI-output validation
+- Flutterwave transaction verification for billing
+- Vitest and Playwright tests
+- GitHub Actions quality checks
 
 ## Local development
 
-1. Copy `.env.example` to `.env.local`.
-2. Provide a PostgreSQL `DATABASE_URL` and required service credentials for the features being enabled.
-3. Install dependencies with `npm ci` after a lockfile is generated for the chosen dependency versions.
-4. Generate the Prisma client with `npx prisma generate`.
-5. Apply migrations with `npx prisma migrate dev` during development.
-6. Run `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` before deployment.
+1. Copy .env.example to .env.local.
+2. Configure DATABASE_URL for a PostgreSQL database.
+3. Set a long random AUTH_SECRET, INTERNAL_JOB_SECRET and CRON_SECRET.
+4. Install dependencies using npm install.
+5. Generate the Prisma client using npx prisma generate.
+6. Apply the schema to a development database using npx prisma db push.
+7. Run npm run typecheck, npm run lint, npm test, npm run build and npm run e2e.
 
-## Architecture
+A production deployment requires configured database, environment variables and a browser runtime compatible with Playwright. Do not expose secrets in client-side variables or commit .env.local.
 
-- `app/` — Next.js application and HTTP routes
-- `lib/` — stable domain utilities and provider boundaries
-- `prisma/` — PostgreSQL schema and future migrations
-- `audit-engine/` — browser acquisition, extraction, deterministic checks, evidence, findings, and prioritization
-- `ai/` — schema-validated AI interpretation and QA
-- `billing/` — Flutterwave integration, payment verification, subscriptions, and entitlements
-- `jobs/` — durable audit/background processing
-- `reports/` — professional report generation and sharing
-- `founder/` and `admin/` — server-authorized operational interfaces
-- `tests/` and `e2e/` — automated verification
+## Environment variables
 
-## Security principles
+See .env.example. Optional AI, payment, email and screenshot-storage integrations remain unavailable until their real credentials and provider settings are configured and verified. Screenshot persistence uses STORAGE_ENDPOINT, STORAGE_REGION, STORAGE_ACCESS_KEY, STORAGE_SECRET_KEY and STORAGE_BUCKET; images are served through an owner-authorized API route, not a public object URL. ChatGPT subscriptions do not provide an API key automatically.
 
-The application must never trust client-side plan state, payment-return query parameters, local storage roles, or arbitrary submitted prices. Payment access is granted only after server-side provider verification and idempotent webhook/transaction processing. Audit targets are subject to SSRF controls before browser acquisition.
+## Main application areas
 
-## Environment
+- app/ — marketing site, authentication, pricing, dashboard and API routes
+- components/ — client-side audit and status components
+- lib/audit/ — URL validation and browser audit engine
+- lib/ai/ — schema-constrained evidence interpretation
+- lib/billing/ — plan entitlements and payment provider integration
+- lib/jobs/ — queued audit processing
+- prisma/ — PostgreSQL domain schema
+- tests/ and e2e/ — automated checks
+- docs/ — architecture, security, provider and verification notes
 
-See `.env.example`. Never commit `.env`, API keys, Flutterwave secrets, authentication secrets, database credentials, or private keys.
+## Billing
+
+Six subscription checkout choices are public. The historic founding_lifetime plan identifier remains in the schema and plan definitions to preserve old records and existing entitlements, but it is not offered for new checkout. Public prices and server-side amounts must remain synchronized.
+
+Founder/admin access is based on server-side roles, not a frontend email check. The reserved founder account is wisdomfrankceo@gmail.com; provision it securely through the configured server-side seed process and a unique password.
+
+## Security notes
+
+- Never trust client-side plan state or payment-return query parameters.
+- Grant paid access only after provider-side transaction verification and idempotent webhook processing.
+- Validate URL targets before browser acquisition and revalidate network requests, including redirect destinations.
+- Store credentials only in server-side environment variables.
+- Review tenant isolation, rate limits, resource limits, session expiry and background-job behavior before public launch.
+
+## Verification status
+
+A commit or generated UI is not proof of a successful build. See docs/BUILD-STATUS.md for checks that have and have not been executed.

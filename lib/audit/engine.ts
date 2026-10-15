@@ -117,19 +117,45 @@ export async function runAudit(auditId: string) {
     for (const viewport of viewports) {
       const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, deviceScaleFactor: 1 });
       try {
-        // Revalidate every network request, including redirect destinations, to reduce SSRF exposure.
+        // Repeated DNS validation of every third-party image, font, analytics
+        // beacon and script can exhaust Vercel's 60-second function limit.
+        // The initial target host is already validated. Allow its resources;
+        // validate any cross-host document navigation (including redirects),
+        // and block cross-host subresources that are not required for text/DOM
+        // evidence. This also reduces exposure to third-party tracking requests.
+        const targetHost = target.hostname.toLowerCase();
         await context.route('**/*', async (route) => {
-          const requestUrl = route.request().url();
+          const request = route.request();
+          const requestUrl = request.url();
           if (!requestUrl.startsWith('http://') && !requestUrl.startsWith('https://')) {
             await route.abort();
             return;
           }
+
+          let requestHost: string;
           try {
-            await validateAuditUrl(requestUrl, validatedHosts);
-            await route.continue();
+            requestHost = new URL(requestUrl).hostname.toLowerCase();
           } catch {
             await route.abort('blockedbyclient');
+            return;
           }
+
+          if (requestHost === targetHost) {
+            await route.continue();
+            return;
+          }
+
+          if (request.isNavigationRequest()) {
+            try {
+              await validateAuditUrl(requestUrl, validatedHosts);
+              await route.continue();
+            } catch {
+              await route.abort('blockedbyclient');
+            }
+            return;
+          }
+
+          await route.abort('blockedbyclient');
         });
         const page = await context.newPage();
         page.setDefaultTimeout(5000);

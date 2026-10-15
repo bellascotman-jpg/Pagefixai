@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { db } from '@/lib/db';
@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { consumeUnits, canConsumeUnits, UNITS } from '@/lib/billing/entitlements';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { ENGINE_VERSION } from '@/lib/audit/engine';
+import { processNextAuditJob } from '@/lib/jobs/audit-worker';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -93,8 +94,19 @@ export async function POST(request: Request) {
       },
     });
 
-    // The audit detail page's authenticated status endpoint starts the worker in
-    // its own request. This prevents the create request from timing out while Chromium runs.
+    // Dispatch immediately after the response instead of depending on the
+    // detail page being opened or polled. The worker atomically claims jobs,
+    // so this is safe alongside the status endpoint's recovery dispatch.
+    after(async () => {
+      try {
+        await processNextAuditJob(audit.id);
+      } catch (error) {
+        console.error('pagefix_audit_create_worker_failed', {
+          auditId: audit.id,
+          message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+        });
+      }
+    });
 
     return NextResponse.json(
       {

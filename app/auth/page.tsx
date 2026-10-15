@@ -27,30 +27,43 @@ export default function AuthPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mode === 'signup' ? { name, email, password } : { email, password }),
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Authentication failed.');
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        if (response.status >= 500) throw new Error(data?.message || 'The account service is temporarily unavailable. Please try again shortly.');
+        throw new Error(data?.message || 'Please check your details and try again.');
+      }
       router.push('/dashboard');
       router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Authentication failed.');
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'We could not complete this request. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
-  return <main className="auth-shell"><div className="auth-card">
-    <Link className="brand" href="/">PageFix <span>AI</span></Link>
-    <h1>{mode === 'signup' ? 'Start finding purchase friction.' : 'Welcome back.'}</h1>
-    <p className="muted">{mode === 'signup' ? 'Create your workspace and run evidence-driven storefront audits.' : 'Sign in to your PageFix workspace.'}</p>
-    <form onSubmit={submit}>
-      {mode === 'signup' && <label>Name<input value={name} onChange={e => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="name" /></label>}
-      <label>Email<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" maxLength={320} /></label>
-      <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} /></label>
-      {error && <div className="error-box" role="alert">{error}</div>}
-      <button className="primary-button" disabled={loading}>{loading ? 'Working…' : mode === 'signup' ? 'Create account' : 'Sign in'}</button>
-    </form>
-    <button className="text-button" onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }}>{mode === 'signup' ? 'Already have an account? Sign in' : 'Need an account? Create one'}</button>
-    {mode === 'login' && <Link className="text-button" href="/auth/forgot-password" style={{ display: 'inline-block' }}>Forgot your password?</Link>}
-    <p className="muted" style={{ fontSize: 11, marginTop: 18 }}>By continuing, you agree to use PageFix only on websites you are authorized to inspect.</p>
-  </div></main>;
+  return <main className="auth-shell">
+    <div className="auth-aside">
+      <Link className="brand" href="/">PageFix<span>AI</span></Link>
+      <div className="auth-aside-copy"><div className="eyebrow eyebrow-light">EVIDENCE BEFORE OPINIONS</div><h2>Find the issue.<br/>Understand the why.<br/><span>Verify the fix.</span></h2><p>Practical website diagnostics for teams who need clear evidence, not invented metrics or generic recommendations.</p><div className="auth-assurance"><span>✓</span> Findings grounded in captured page evidence</div><div className="auth-assurance"><span>✓</span> Clear limits around private business data</div><div className="auth-assurance"><span>✓</span> Rechecks that preserve audit history</div></div>
+      <div className="auth-aside-foot">PageFix AI · Website diagnostics with honest limits</div>
+    </div>
+    <section className="auth-panel">
+      <div className="auth-card">
+        <div className="auth-mobile-brand"><Link className="brand" href="/">PageFix<span>AI</span></Link></div>
+        <div className="eyebrow">{mode === 'signup' ? 'CREATE YOUR WORKSPACE' : 'YOUR WORKSPACE AWAITS'}</div>
+        <h1>{mode === 'signup' ? 'Start with the evidence.' : 'Welcome back.'}</h1>
+        <p className="muted">{mode === 'signup' ? 'Create an account to inspect pages, organize findings and track the fixes you make.' : 'Sign in to continue your website diagnostics workflow.'}</p>
+        <form onSubmit={submit}>
+          {mode === 'signup' && <label>Name<input value={name} onChange={e => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="name" placeholder="Your name"/></label>}
+          <label>Email address<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" maxLength={320} placeholder="you@company.com"/></label>
+          <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}/></label>
+          {error && <div className="error-box" role="alert"><strong>{mode === 'signup' ? 'Account creation failed' : 'Sign-in failed'}</strong><p style={{margin:'5px 0 0'}}>{error}</p></div>}
+          <button className="primary-button auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'signup' ? 'Create account →' : 'Sign in →'}</button>
+        </form>
+        <div className="auth-switch">{mode === 'signup' ? 'Already have an account?' : 'New to PageFix AI?'} <button onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }} type="button">{mode === 'signup' ? 'Sign in' : 'Create account'}</button></div>
+        {mode === 'login' && <Link className="auth-forgot" href="/auth/forgot-password">Forgot your password?</Link>}
+        <p className="auth-legal">By continuing, you agree to use PageFix only on websites you are authorized to inspect. Read our <Link href="/privacy">Privacy notice</Link> and <Link href="/security">Security practices</Link>.</p>
+      </div>
+    </section>
+  </main>;
 }

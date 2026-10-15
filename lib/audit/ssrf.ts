@@ -49,7 +49,7 @@ function isPrivateIp(ip: string) {
   return false;
 }
 
-export async function validateAuditUrl(raw: string) {
+export async function validateAuditUrl(raw: string, validatedHosts?: Map<string, number>) {
   let url: URL;
   try {
     url = new URL(raw);
@@ -70,6 +70,9 @@ export async function validateAuditUrl(raw: string) {
     return url;
   }
 
+  const cachedUntil = validatedHosts?.get(host) ?? 0;
+  if (cachedUntil > Date.now()) return url;
+
   let records: Array<{ address: string; family: number }>;
   try {
     records = await dns.lookup(host, { all: true, verbatim: true });
@@ -80,6 +83,9 @@ export async function validateAuditUrl(raw: string) {
   if (!records.length || records.some((record) => isPrivateIp(record.address))) {
     throw new Error('BLOCKED_PRIVATE_IP');
   }
+  // Reuse only a successful public-host validation during one audit run; all URL
+  // scheme, credentials, hostname and private-host checks still run per request.
+  validatedHosts?.set(host, Date.now() + 60_000);
 
   return url;
 }

@@ -10,7 +10,8 @@ const options = [
 ] as const;
 
 export default function FindingStatusControl({ id, initialStatus }: { id: string; initialStatus: string }) {
-  const [status, setStatus] = useState(initialStatus);
+  const normalize = (value: string) => value === 'VERIFIED' ? 'COMPLETED' : value === 'STILL_DETECTED' || value === 'UNABLE_TO_VERIFY' ? 'RECHECK_REQUIRED' : value;
+  const [status, setStatus] = useState(normalize(initialStatus));
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   async function update(value: string) {

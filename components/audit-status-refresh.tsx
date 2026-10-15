@@ -24,7 +24,7 @@ export default function AuditStatusRefresh({ active, auditId }: { active: boolea
         if (!response.ok || stopped) return;
         const data = await response.json();
         const state = [data.audit?.status ?? '', data.job?.status ?? ''].join(':');
-        if (lastState && state !== lastState) router.refresh();
+        if (!lastState || state !== lastState) router.refresh();
         lastState = state;
       } catch {
         // Keep polling through transient network errors; do not trap the user on stale UI.

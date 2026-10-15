@@ -131,9 +131,9 @@ export async function runAudit(auditId: string) {
           }
         });
         const page = await context.newPage();
-        page.setDefaultTimeout(8000);
-        const response = await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 20000 });
-        await page.waitForLoadState('networkidle', { timeout: 7000 }).catch(() => undefined);
+        page.setDefaultTimeout(5000);
+        const response = await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 12000 });
+        await page.waitForLoadState('networkidle', { timeout: 2500 }).catch(() => undefined);
         const data = await extract(page);
         data.statusCode = response?.status() ?? null;
         let screenshotKey: string | null = null;

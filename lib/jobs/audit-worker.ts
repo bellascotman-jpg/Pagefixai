@@ -24,17 +24,20 @@ export async function processNextAuditJob() {
   if (!claimed.count) return { processed: false as const };
 
   try {
-    // A successful page inspection is a useful audit even if the optional AI provider
-    // is unconfigured or temporarily unavailable. Keep those outcomes separate.
+    // A successful page inspection remains a successful audit even if the optional
+    // AI provider is unavailable, misconfigured, rate-limited, or returns bad output.
     const result = await runAudit(job.auditId);
-    let ai: { skipped?: boolean; reason?: string; findings?: number; rejected?: number } | { skipped: true; reason: string };
+    let ai: unknown = { skipped: true, reason: 'AI_NOT_RUN' };
+    let aiWarning: string | null = null;
 
     try {
       ai = await interpretAudit(job.auditId);
+      if (ai && typeof ai === 'object' && 'skipped' in ai && ai.skipped) {
+        aiWarning = 'AI reasoning was skipped; evidence-based checks are available.';
+      }
     } catch (error) {
-      const code = error instanceof Error ? error.message : 'AI_ANALYSIS_FAILED';
-      console.error('audit_ai_analysis_failed', { auditId: job.auditId, code });
-      ai = { skipped: true, reason: code };
+      aiWarning = error instanceof Error ? error.message : 'AI reasoning failed.';
+      console.error('pagefix_ai_reasoning_failed', { auditId: job.auditId, message: aiWarning });
     }
 
     await db.auditJob.update({
@@ -42,11 +45,11 @@ export async function processNextAuditJob() {
       data: {
         status: 'COMPLETED',
         completedAt: new Date(),
-        errorCode: ai.skipped ? ai.reason ?? null : null,
-        errorMessage: ai.skipped ? 'The page inspection completed, but the optional AI analysis could not be completed.' : null,
+        errorCode: aiWarning ? 'AI_REASONING_UNAVAILABLE' : null,
+        errorMessage: aiWarning,
       },
     });
-    return { processed: true as const, auditId: job.auditId, result, ai };
+    return { processed: true as const, auditId: job.auditId, result, ai, aiWarning };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Audit worker failed.';
     await db.auditJob.update({

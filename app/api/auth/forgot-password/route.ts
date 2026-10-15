@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json(genericResponse);
 
   const recentRequest = await db.passwordResetToken.findFirst({
-    where: { userId: user.id, usedAt: null, createdAt: { gt: new Date(Date.now() - 5 * 60 * 1000) } },
+    where: { userId: user.id, usedAt: null, expiresAt: { gt: new Date() } },
     select: { id: true },
   });
   if (recentRequest) return NextResponse.json(genericResponse);

@@ -15,4 +15,12 @@ describe('audit URL security', () => {
     await expect(validateAuditUrl('http://localhost:3000')).rejects.toThrow('BLOCKED_PRIVATE_HOST');
     await expect(validateAuditUrl('http://service.internal')).rejects.toThrow('BLOCKED_PRIVATE_HOST');
   });
+
+  it('rejects loopback, link-local, reserved and mapped private IP literals', async () => {
+    await expect(validateAuditUrl('http://127.0.0.1')).rejects.toThrow('BLOCKED_PRIVATE_IP');
+    await expect(validateAuditUrl('http://169.254.169.254')).rejects.toThrow('BLOCKED_PRIVATE_IP');
+    await expect(validateAuditUrl('http://192.0.2.10')).rejects.toThrow('BLOCKED_PRIVATE_IP');
+    await expect(validateAuditUrl('http://[::1]')).rejects.toThrow('BLOCKED_PRIVATE_IP');
+    await expect(validateAuditUrl('http://[::ffff:127.0.0.1]')).rejects.toThrow('BLOCKED_PRIVATE_IP');
+  });
 });

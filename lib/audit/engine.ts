@@ -162,7 +162,7 @@ export async function runAudit(auditId: string) {
     // runtimes and still reports access challenges honestly.
     const data = await fetchStaticPage(target);
     const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [
-      { viewport: 'desktop', data, screenshotKey: null },
+      { viewport: 'static-html', data, screenshotKey: null },
     ];
 
     const primary = results[0]?.data;
@@ -192,12 +192,12 @@ export async function runAudit(auditId: string) {
 
     const evidence = await db.evidence.createManyAndReturn({
       data: [
-        { auditId, type: 'TEXT', source: 'browser.visible_text', location: 'body', content: primary.bodyText.slice(0, 20000), confidence: 'HIGH' },
+        { auditId, type: 'TEXT', source: 'http.html_text', location: 'retrieved_html_body', content: primary.bodyText.slice(0, 20000), confidence: 'HIGH' },
         { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical }), confidence: 'HIGH' },
-        { auditId, type: 'DOM', source: 'browser.dom', location: 'interactive_elements_and_headings', content: JSON.stringify({ buttons: primary.buttons, forms: primary.forms, headings: primary.headings, unlabeledLinks: primary.links.filter((link) => !link.text).length }), confidence: 'HIGH' },
+        { auditId, type: 'DOM', source: 'http.html_elements', location: 'buttons_forms_and_headings', content: JSON.stringify({ buttons: primary.buttons, forms: primary.forms, headings: primary.headings, unlabeledLinks: primary.links.filter((link) => !link.text).length }), confidence: 'HIGH' },
         { auditId, type: 'STRUCTURED_DATA', source: 'jsonld', location: 'script[type="application/ld+json"]', content: JSON.stringify(primary.structuredData), confidence: primary.structuredData.length ? 'HIGH' : 'LOW' },
-        { auditId, type: 'SYSTEM_DETECTED', source: 'browser.image_inventory', location: 'images', content: JSON.stringify({ totalVisible: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, images: primary.images }), confidence: 'HIGH' },
-        { auditId, type: 'LINK', source: 'browser.link_inventory', location: 'visible_links', content: JSON.stringify(primary.links), confidence: 'HIGH' },
+        { auditId, type: 'SYSTEM_DETECTED', source: 'http.image_inventory', location: 'images', content: JSON.stringify({ totalVisible: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, images: primary.images }), confidence: 'HIGH' },
+        { auditId, type: 'LINK', source: 'http.link_inventory', location: 'visible_links', content: JSON.stringify(primary.links), confidence: 'HIGH' },
       ],
     });
 
@@ -216,9 +216,9 @@ export async function runAudit(auditId: string) {
     // as missing product content. PageFix does not bypass access controls.
     const challengeText = (primary.title + ' ' + primary.bodyText).toLowerCase();
     const accessChallenge = /verify you are human|checking your browser|enable javascript and cookies|attention required|access denied|captcha|unusual traffic|security challenge|just a moment\.\.\./i.test(challengeText);
-    if (accessChallenge || (primary.statusCode !== null && [403, 429, 503].includes(primary.statusCode)) || (primary.statusCode === null && !primary.bodyText.trim())) {
+    if (accessChallenge || (primary.statusCode !== null && (primary.statusCode >= 300 && primary.statusCode < 400 || [403, 429, 503].includes(primary.statusCode))) || (primary.statusCode === null && !primary.bodyText.trim())) {
       const finding = makeFinding('Product page content could not be verified by the audit crawler', 'MEDIUM',
-        'The capture returned an automated-access challenge, an HTTP ' + (primary.statusCode ?? 'unknown') + ' response, or too little page content to verify the product. No product claims were inferred from this response.',
+        'The static HTML capture returned an automated-access challenge, an HTTP ' + (primary.statusCode ?? 'unknown') + ' response, or too little page content to verify the product. No product claims were inferred from this response.',
         'A blocked capture means PageFix cannot reliably inspect product details, purchase actions, shipping information, or trust signals in this run.',
         'Retry from a permitted browser session or provide a public page/export that allows automated inspection. PageFix will not attempt to bypass the site access controls.',
         'Can the audit crawler access the same product content a normal shopper sees?', textEvidence.id);
@@ -246,21 +246,21 @@ export async function runAudit(auditId: string) {
     }
     const h1s = primary.headings.filter((heading) => heading.tag === 'H1');
     if (h1s.length === 0) {
-      findings.push(makeFinding('No visible H1 detected', 'MEDIUM', 'No visible H1 element was detected in the rendered page.', 'The page may not have a clear, programmatically identified primary heading.', 'Add a clear H1 that accurately describes the page topic or offer.', 'What is the main thing being presented here?', domEvidence.id));
+      findings.push(makeFinding('No H1 heading detected in retrieved HTML', 'MEDIUM', 'No H1 element was detected in the retrieved HTML.', 'The page may not have a clear, programmatically identified primary heading.', 'Add a clear H1 that accurately describes the page topic or offer.', 'What is the main thing being presented here?', domEvidence.id));
     } else if (h1s.length > 1) {
       findings.push(makeFinding('Multiple visible H1 headings', 'LOW', `The rendered page contains ${h1s.length} visible H1 elements.`, 'Multiple H1 elements are valid in some HTML structures, but they can make the main page hierarchy harder to review.', 'Review the heading outline and ensure the primary page proposition is clear. Do not remove headings solely to meet an arbitrary count.', 'Which heading is the primary page proposition?', domEvidence.id));
     }
     const ctaLabels = primary.buttons.filter((button) => /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now/i.test(button));
     if (!ctaLabels.length) {
-      findings.push(makeFinding('No clearly labeled commercial action detected', 'MEDIUM', 'The visible button labels did not match common purchase or lead-action labels.', 'A visitor may need to infer the next step if the main commercial action is not explicit. Custom labels and link-based actions may not be detected by this rule.', 'Review the primary action on the page and make its label specific to the next step, such as buying, booking, subscribing or requesting information.', 'What should I do next if I am interested?', domEvidence.id));
+      findings.push(makeFinding('No clearly labeled commercial action detected', 'MEDIUM', 'The button labels found in retrieved HTML did not match common purchase or lead-action labels.', 'A visitor may need to infer the next step if the main commercial action is not explicit. Custom labels and link-based actions may not be detected by this rule.', 'Review the primary action on the page and make its label specific to the next step, such as buying, booking, subscribing or requesting information.', 'What should I do next if I am interested?', domEvidence.id));
     }
     const missingAlt = primary.images.filter((image) => !image.alt.trim()).length;
     if (primary.images.length && missingAlt > 0) {
-      findings.push(makeFinding('Visible images missing alternative text', missingAlt > 5 ? 'MEDIUM' : 'LOW', `${missingAlt} of ${primary.images.length} visible images have an empty alt attribute.`, 'Meaningful alternative text helps convey relevant image information to people using assistive technology. Decorative images should intentionally use empty alt text.', 'Review each image. Add concise, useful alt text for informative images and retain empty alt text for decorative images.', 'Can someone using a screen reader understand the important visual information?', imageEvidence.id));
+      findings.push(makeFinding('Image elements missing alternative text', missingAlt > 5 ? 'MEDIUM' : 'LOW', `${missingAlt} of ${primary.images.length} visible images have an empty alt attribute.`, 'Meaningful alternative text helps convey relevant image information to people using assistive technology. Decorative images should intentionally use empty alt text.', 'Review each image. Add concise, useful alt text for informative images and retain empty alt text for decorative images.', 'Can someone using a screen reader understand the important visual information?', imageEvidence.id));
     }
     const unlabeledLinks = primary.links.filter((link) => !link.text.trim()).length;
     if (unlabeledLinks > 0) {
-      findings.push(makeFinding('Visible links without an accessible text label', unlabeledLinks > 5 ? 'MEDIUM' : 'LOW', `${unlabeledLinks} visible links had no text, aria-label or title available to the extractor.`, 'Unlabeled links can make navigation unclear for assistive technology and for users scanning the page.', 'Give each meaningful link an accessible name. If an icon-only link is intentional, provide a suitable aria-label.', 'Can the purpose of each link be understood without seeing its icon?', linkEvidence.id));
+      findings.push(makeFinding('Link elements without an accessible text label', unlabeledLinks > 5 ? 'MEDIUM' : 'LOW', `${unlabeledLinks} visible links had no text, aria-label or title available to the extractor.`, 'Unlabeled links can make navigation unclear for assistive technology and for users scanning the page.', 'Give each meaningful link an accessible name. If an icon-only link is intentional, provide a suitable aria-label.', 'Can the purpose of each link be understood without seeing its icon?', linkEvidence.id));
     }
     const parsedStructuredData = primary.structuredData.filter((item) => item.trim()).map((item) => {
       try { JSON.parse(item); return true; } catch { return false; }
@@ -272,7 +272,7 @@ export async function runAudit(auditId: string) {
       findings.push(makeFinding('Product structured data not detected', 'LOW', 'No JSON-LD Product type was detected by the current pattern check.', 'For a product detail page, valid product structured data can help search systems interpret product attributes. This finding may not apply to non-product pages.', 'If this is a product detail page, review whether accurate Product structured data is appropriate and reflects the visible product information.', 'Is this a product page, and are its key attributes machine-readable?', structuredEvidence.id));
     }
     if (!primary.images.length) {
-      findings.push(makeFinding('No visible images detected', 'LOW', 'No visible image elements were detected in the captured viewport and page state.', 'For visually evaluated offers, missing imagery may leave buyers with less context. CSS backgrounds and lazy-loaded content may not be detected.', 'Confirm whether the offer needs product or contextual imagery. If so, provide relevant images and ensure the primary visual is visible.', 'What will I receive or experience?', imageEvidence.id));
+      findings.push(makeFinding('No visible images detected', 'LOW', 'No image elements were detected in the retrieved HTML.', 'For visually evaluated offers, missing imagery may leave buyers with less context. CSS backgrounds and lazy-loaded content may not be detected.', 'Confirm whether the offer needs product or contextual imagery. If so, provide relevant images and ensure the primary visual is visible.', 'What will I receive or experience?', imageEvidence.id));
     }
 
     const visibleText = primary.bodyText.toLowerCase();

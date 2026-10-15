@@ -24,13 +24,29 @@ export async function processNextAuditJob() {
   if (!claimed.count) return { processed: false as const };
 
   try {
-    await runAudit(job.auditId);
-    const ai = await interpretAudit(job.auditId);
+    // A successful page inspection is a useful audit even if the optional AI provider
+    // is unconfigured or temporarily unavailable. Keep those outcomes separate.
+    const result = await runAudit(job.auditId);
+    let ai: { skipped?: boolean; reason?: string; findings?: number; rejected?: number } | { skipped: true; reason: string };
+
+    try {
+      ai = await interpretAudit(job.auditId);
+    } catch (error) {
+      const code = error instanceof Error ? error.message : 'AI_ANALYSIS_FAILED';
+      console.error('audit_ai_analysis_failed', { auditId: job.auditId, code });
+      ai = { skipped: true, reason: code };
+    }
+
     await db.auditJob.update({
       where: { id: job.id },
-      data: { status: 'COMPLETED', completedAt: new Date() },
+      data: {
+        status: 'COMPLETED',
+        completedAt: new Date(),
+        errorCode: ai.skipped ? ai.reason ?? null : null,
+        errorMessage: ai.skipped ? 'The page inspection completed, but the optional AI analysis could not be completed.' : null,
+      },
     });
-    return { processed: true as const, auditId: job.auditId, ai };
+    return { processed: true as const, auditId: job.auditId, result, ai };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Audit worker failed.';
     await db.auditJob.update({

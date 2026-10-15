@@ -18,9 +18,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     await runAudit(next.id);
     const after = await db.finding.findMany({ where: { auditId: next.id }, select: { title: true, severity: true } });
     const before = previous.findings.map(f => ({ title: f.title, severity: f.severity }));
-    const beforeTitles = new Set(before.map(x => x.title));
-    const afterTitles = new Set(after.map(x => x.title));
-    const result = [...afterTitles].every(t => beforeTitles.has(t)) && after.length === 0 ? 'RESOLVED' : after.length < before.length ? 'IMPROVED' : after.length > 0 ? 'STILL_DETECTED' : 'UNABLE_TO_VERIFY';
+    const result = before.length > 0 && after.length === 0 ? 'RESOLVED' : after.length < before.length ? 'IMPROVED' : after.length > 0 ? 'STILL_DETECTED' : 'UNABLE_TO_VERIFY';
     await db.recheck.create({ data: { auditId: next.id, previousAuditId: previous.id, beforeJson: before, afterJson: after, result, engineVersion: ENGINE_VERSION } });
     return NextResponse.json({ auditId: next.id, result });
   } catch (error) {

@@ -140,7 +140,7 @@ export async function runAudit(auditId: string) {
             return;
           }
 
-          if (requestHost === targetHost) {
+          if (requestHost === targetHost || validatedHosts.has(requestHost)) {
             await route.continue();
             return;
           }

@@ -35,6 +35,15 @@ Production deployment: unchanged by this work. No manual deployment was triggere
 - Added a seller-facing Promise Ledger for saving exact claim text, source type, optional source URL, context and review status.
 - A recorded claim is not automatically certified as true. Automated cross-source contradiction detection remains separate.
 
+### Store intelligence and message match
+- Added a seller-level page-history workspace that groups repeated finding titles across the latest 250 audits owned by the user and links to source reports.
+- Added a client-side literal signal comparison for source ad/social text and destination-page text. It flags missing signal categories and numeric price/discount differences for review; it is not a semantic contradiction verdict and does not estimate ad profitability.
+
+### Recheck workflow
+- Added a reinspection action to completed audit reports.
+- Rechecks now use the same worker path as initial audits so a job is not left queued after a direct engine call.
+- Previous findings receive VERIFIED, STILL_DETECTED or UNABLE_TO_VERIFY based on the new completed capture and exact title matching. This is a deterministic first-stage comparison and still needs regression tests and careful review of false-resolution risk.
+
 ### Commercial impact scenarios
 - Added a seller-input calculator for monthly visits, conversion rate, average order value, currency and a hypothetical absolute percentage-point change.
 - Outputs are explicitly labelled as scenario calculations, not forecasts or recovered revenue.
@@ -45,12 +54,12 @@ Production deployment: unchanged by this work. No manual deployment was triggere
 | Phase | Status | Notes |
 |---|---|---|
 | 0. Baseline | In progress | Source-level review performed. Full runtime, schema and production workflow validation still required. |
-| 1. Inspection reliability | Existing implementation found; needs runtime validation | Current source includes post-response worker dispatch and stale-job recovery. Do not call the pipeline fixed until tests confirm it. |
+| 1. Inspection reliability | Existing implementation found; needs runtime validation | Current source includes post-response worker dispatch and stale-job recovery. Rechecks now use the worker path. Do not call the pipeline fixed until tests confirm it. |
 | 2. Evidence and classification | Partially implemented | Existing evidence-linked findings remain; qualitative scorecard and tests added. Classification consistency needs a broader test suite. |
 | 3. Buyer Decision Intelligence | Foundation exists; expand and validate | Category rules and buyer-question signals exist. More categories and human-reviewed evaluation cases remain. |
-| 4. Claim and Contradiction Intelligence | Partially implemented | Existing conservative contradiction rules plus a persisted Promise Ledger. Cross-source claim matching, provenance links and evaluation tests remain. |
-| 5. Fix Intelligence and Fix Center | Existing foundation; expand verification | Existing Fix Center and recheck workflow remain. Finding-level matching, lifecycle audit history and assignment controls need validation/extension. |
-| 6. Store Intelligence | Not complete | Hub explains the capability; multi-product grouping and recurring-pattern aggregation still need implementation. |
+| 4. Claim and Contradiction Intelligence | Partially implemented | Existing conservative contradiction rules, a persisted Promise Ledger and a literal ad-to-page signal comparison. Semantic cross-source claim matching, deeper provenance links and evaluation tests remain. |
+| 5. Fix Intelligence and Fix Center | Improved foundation; validation required | Rechecks now compare previous finding titles against a fresh completed audit and record finding-level verification states. Exact-title matching is a first-stage heuristic; lifecycle audit history and assignment controls remain. |
+| 6. Store Intelligence | Basic cross-audit grouping implemented | The workspace groups repeated finding titles across up to 250 recent audits. Catalogue discovery, richer normalisation and deeper product-level pattern analysis remain. |
 | 7. Commercial Impact Analysis | Scenario calculator implemented; data-backed measurement not complete | Calculator is input-driven and transparent. Analytics integrations and measured outcomes remain future work. |
 | 8. Seller, team and agency experience | Partially implemented | Seller-first messaging and navigation added. Full multi-client permissions, sharing and tenant-isolation testing remain. |
 | 9. Integrations | Not complete | No new store integration is represented as available by this branch. Read-only integrations should precede approved write actions. |

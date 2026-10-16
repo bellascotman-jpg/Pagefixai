@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { calculateImpactScenario } from '@/lib/impact/scenario';
 
 const currencies: Record<string, string> = { USD: '$', NGN: '₦', GBP: '£', EUR: '€' };
 const numberFormat = (value: number) => new Intl.NumberFormat('en', { maximumFractionDigits: 2 }).format(value);
@@ -11,14 +12,12 @@ export default function ImpactScenarioCalculator() {
   const [aov, setAov] = useState('50');
   const [change, setChange] = useState('0.2');
   const [currency, setCurrency] = useState('USD');
-  const scenario = useMemo(() => {
-    const v = Number(visits), c = Number(conversion), orderValue = Number(aov), pp = Number(change);
-    const valid = [v,c,orderValue,pp].every(Number.isFinite) && v >= 0 && c >= 0 && c <= 100 && orderValue >= 0 && pp >= 0 && c + pp <= 100;
-    if (!valid) return null;
-    const baselineOrders = v * c / 100;
-    const scenarioOrders = v * (c + pp) / 100;
-    return { baselineOrders, scenarioOrders, baselineRevenue: baselineOrders * orderValue, scenarioRevenue: scenarioOrders * orderValue, deltaOrders: scenarioOrders-baselineOrders, deltaRevenue: (scenarioOrders-baselineOrders)*orderValue };
-  }, [visits, conversion, aov, change]);
+  const scenario = useMemo(() => calculateImpactScenario({
+    monthlyVisits: Number(visits),
+    conversionRatePercent: Number(conversion),
+    averageOrderValue: Number(aov),
+    absoluteConversionChangePoints: Number(change),
+  }), [visits, conversion, aov, change]);
   const money = (value: number) => currencies[currency] + numberFormat(value);
   return <div className="impact-calculator-layout">
     <form className="card impact-calculator-form" onSubmit={e=>e.preventDefault()}>

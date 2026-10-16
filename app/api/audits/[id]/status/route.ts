@@ -72,7 +72,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     }
   }
 
-  // Re  // Process queued audits from the polling request itself. This avoids relying on
+  // Process queued audits from the polling request itself. This avoids relying on
   // post-response callbacks being kept alive by every hosting/runtime configuration.
   // The worker claims jobs atomically, so concurrent poll requests cannot double-run it.
   if (audit.status === 'QUEUED' && job?.status === 'QUEUED') {
@@ -86,7 +86,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     }
   }
 
- latest = await db.audit.findFirst({
+  const latest = await db.audit.findFirst({
     where: { id, userId: user.id },
     include: { jobs: { orderBy: { createdAt: 'desc' }, take: 1 } },
   });

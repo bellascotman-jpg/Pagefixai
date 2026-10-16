@@ -8,6 +8,7 @@ import { buildCommerceClarityScorecard } from '@/lib/audit/scorecard';
 import { summarizeTrustSignals } from '@/lib/audit/buyer-decision-intelligence';
 import RecheckAuditButton from '@/components/recheck-audit-button';
 import CaptureScreenshotsButton from '@/components/capture-screenshots-button';
+import CandidatePromises from '@/components/candidate-promises';
 
 const classifications = ['Directly Observed Evidence', 'Inferred Risk', 'Hypothesis', 'Recommendation'];
 
@@ -154,7 +155,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           <section style={{marginTop:18}}>
             <h3>Candidate promises found in captured text</h3>
             <p className="muted">These are extracted wording candidates for human review, not verified facts or proof of a contradiction.</p>
-            {candidatePromises.length ? <ul>{candidatePromises.map((claim,index)=><li key={index} style={{marginBottom:8}}>{claim}</li>)}</ul> : <p className="muted">No matching promise wording was detected in the captured text. Images, scripts or linked policy pages may contain additional claims.</p>}
+            <CandidatePromises claims={candidatePromises} sourceUrl={audit.url} />
           </section>
           <div style={{marginTop:16}}><Link className="button button-secondary" href="/dashboard/intelligence/claims">Review claims in Promise Ledger →</Link></div>
         </section>

@@ -32,8 +32,8 @@ export default function AuthPage() {
       }
       const requestedNext = new URLSearchParams(window.location.search).get('next');
       const safeNext = requestedNext && requestedNext.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : '/dashboard';
+      // A full navigation refreshes the session and safely honours the local next path.
       window.location.replace(safeNext);
-      router.refresh();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'We could not complete this request. Please try again.');
     } finally {

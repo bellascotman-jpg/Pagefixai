@@ -62,3 +62,46 @@ export function compareCommercialSignals(source: string, destination: string): {
     gaps: compared.filter(item => !item.matchingCategoryPresent || item.valueMismatch),
   };
 }
+
+const MESSAGE_STOPWORDS = new Set([
+  'about','after','again','also','and','are','best','buy','can','deal','for','from','get','has','have','how','into','its','just','more','most','new','now','off','our','out','over','save','shop','special','that','the','their','them','then','this','through','today','use','was','were','what','when','with','your','you','free','only','sale','limited','offer','offers','order','click','visit','learn','discover','exclusive','available','online','official','page','product','products'
+]);
+
+export type MessageContinuity = {
+  sourceTerms: string[];
+  sharedTerms: string[];
+  unmatchedSourceTerms: string[];
+  literalCoveragePercent: number | null;
+  note: string;
+};
+
+/**
+ * Measures exact, normalized keyword overlap only. It is not semantic similarity
+ * and must never be interpreted as an ad relevance score or proof of mismatch.
+ */
+export function analyzeMessageContinuity(source: string, destination: string): MessageContinuity {
+  const tokenize = (text: string) => Array.from(new Set(
+    (text.toLowerCase().match(/[a-z][a-z0-9-]{3,}/g) ?? [])
+      .filter(token => !MESSAGE_STOPWORDS.has(token) && !/^\\d+$/.test(token))
+  )).sort();
+  const sourceTerms = tokenize(source);
+  const destinationTerms = new Set(tokenize(destination));
+  if (sourceTerms.length === 0 || destinationTerms.size === 0) {
+    return {
+      sourceTerms,
+      sharedTerms: [],
+      unmatchedSourceTerms: sourceTerms,
+      literalCoveragePercent: null,
+      note: 'Not enough distinctive words were supplied to calculate literal term overlap.',
+    };
+  }
+  const sharedTerms = sourceTerms.filter(term => destinationTerms.has(term));
+  const unmatchedSourceTerms = sourceTerms.filter(term => !destinationTerms.has(term));
+  return {
+    sourceTerms,
+    sharedTerms,
+    unmatchedSourceTerms,
+    literalCoveragePercent: Math.round((sharedTerms.length / sourceTerms.length) * 100),
+    note: 'Literal keyword overlap only. Synonyms, context, page layout, offer conditions and meaning are not evaluated.',
+  };
+}

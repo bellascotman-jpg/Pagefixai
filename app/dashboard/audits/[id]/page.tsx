@@ -5,6 +5,7 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import AuditStatusRefresh from '@/components/audit-status-refresh';
 import { buildCommerceClarityScorecard } from '@/lib/audit/scorecard';
+import RecheckAuditButton from '@/components/recheck-audit-button';
 
 const classifications = ['Directly Observed Evidence', 'Inferred Risk', 'Hypothesis', 'Recommendation'];
 
@@ -35,7 +36,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
 
   return <main className="dashboard">
     <AuditStatusRefresh active={active} auditId={audit.id} />
-    <header className="topbar"><Link href="/dashboard" className="brand">PageFix <span>AI</span></Link><Link href="/dashboard">Dashboard</Link></header>
+    <header className="topbar"><Link href="/dashboard" className="brand">PageFix <span>AI</span></Link><div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}><Link href="/dashboard">Dashboard</Link>{audit.status === "COMPLETED" && <RecheckAuditButton auditId={audit.id} />}</div></header>
     <div className="container dashboard-main">
       <div className="label">Audit report</div>
       <h1 style={{ overflowWrap: 'anywhere' }}>{audit.url}</h1>

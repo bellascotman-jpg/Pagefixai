@@ -155,7 +155,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           <section style={{marginTop:18}}>
             <h3>Candidate promises found in captured text</h3>
             <p className="muted">These are extracted wording candidates for human review, not verified facts or proof of a contradiction.</p>
-            <CandidatePromises claims={candidatePromises} sourceUrl={audit.url} />
+            <CandidatePromises claims={candidatePromises} sourceUrl={audit.url} auditId={audit.id} />
           </section>
           <div style={{marginTop:16}}><Link className="button button-secondary" href="/dashboard/intelligence/claims">Review claims in Promise Ledger →</Link></div>
         </section>

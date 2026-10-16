@@ -14,8 +14,9 @@ const CAPTURES = [
 ];
 
 export async function captureAuditScreenshots(auditId: string, rawUrl: string): Promise<StoredAuditScreenshot[]> {
-  // Without private object storage configured, do not create fake screenshot
-  // records or spend serverless time launching a browser whose bytes cannot persist.
+  // The storage adapter supports either private object storage or a database-backed
+  // data-URI fallback. Do not fabricate records: only persist captures returned
+  // by a successful browser screenshot and storage write.
   if (!isScreenshotStorageConfigured()) return [];
 
   const validatedHosts = new Map<string, number>();

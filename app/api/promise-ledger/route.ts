@@ -9,7 +9,7 @@ const createSchema = z.object({
   title: z.string().trim().min(2).max(140),
   claimText: z.string().trim().min(3).max(5000),
   sourceType: z.enum(['AD', 'PRODUCT_PAGE', 'POLICY', 'SOCIAL_POST', 'EMAIL', 'OTHER']),
-  sourceUrl: z.string().trim().url().max(2048).optional().or(z.literal('')),
+  sourceUrl: z.string().trim().url().max(2048).refine(value => value.startsWith('https://') || value.startsWith('http://'), 'Use an http or https source URL.').optional().or(z.literal('')),
   context: z.string().trim().max(2000).optional(),
   auditId: z.string().trim().optional(),
 });

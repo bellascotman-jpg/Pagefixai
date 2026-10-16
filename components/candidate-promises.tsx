@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function CandidatePromises({ claims, sourceUrl }: { claims: string[]; sourceUrl: string }) {
+export default function CandidatePromises({ claims, sourceUrl, auditId }: { claims: string[]; sourceUrl: string; auditId: string }) {
   const [saved, setSaved] = useState<Record<number, boolean>>({});
   const [saving, setSaving] = useState<Record<number, boolean>>({});
   const [messages, setMessages] = useState<Record<number, string>>({});
@@ -19,6 +19,7 @@ export default function CandidatePromises({ claims, sourceUrl }: { claims: strin
           claimText: claim,
           sourceType: 'OTHER',
           sourceUrl,
+          auditId,
           context: 'Candidate extracted from a PageFix AI public-page inspection. This is not verification of the claim; review the source and supporting evidence.',
         }),
       });

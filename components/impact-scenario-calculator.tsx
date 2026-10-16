@@ -13,10 +13,10 @@ export default function ImpactScenarioCalculator() {
   const [change, setChange] = useState('0.2');
   const [currency, setCurrency] = useState('USD');
   const scenario = useMemo(() => calculateImpactScenario({
-    monthlyVisits: Number(visits),
-    conversionRatePercent: Number(conversion),
-    averageOrderValue: Number(aov),
-    absoluteConversionChangePoints: Number(change),
+    monthlyVisits: visits.trim() ? Number(visits) : Number.NaN,
+    conversionRatePercent: conversion.trim() ? Number(conversion) : Number.NaN,
+    averageOrderValue: aov.trim() ? Number(aov) : Number.NaN,
+    absoluteConversionChangePoints: change.trim() ? Number(change) : Number.NaN,
   }), [visits, conversion, aov, change]);
   const money = (value: number) => currencies[currency] + numberFormat(value);
   return <div className="impact-calculator-layout">

@@ -1,5 +1,21 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
+type MockRoute = {
+  request: () => { url: () => string };
+  continue: () => Promise<void>;
+  abort: (errorCode?: string) => Promise<void>;
+};
+
+type MockPage = {
+  goto: ReturnType<typeof vi.fn>;
+  waitForTimeout: ReturnType<typeof vi.fn>;
+  screenshot: ReturnType<typeof vi.fn>;
+  close: ReturnType<typeof vi.fn>;
+  route: ReturnType<typeof vi.fn>;
+  routeHandler: null | ((route: MockRoute) => Promise<void>);
+  viewport: { width: number; height: number };
+};
+
 const storage = vi.hoisted(() => ({
   configured: true,
   stored: [] as Array<{ auditId: string; viewport: string; bytes: Buffer }>,
@@ -21,7 +37,7 @@ const browserMock = vi.hoisted(() => ({
   launch: vi.fn(),
   executablePath: vi.fn(),
   args: ['--no-sandbox'],
-  pages: [] as Array<any>,
+  pages: [] as MockPage[],
 }));
 
 vi.mock('@sparticuz/chromium', () => ({
@@ -41,16 +57,19 @@ describe('captureAuditScreenshots', () => {
     browserMock.pages = [];
     browserMock.executablePath.mockResolvedValue('/tmp/chromium');
     browserMock.launch.mockResolvedValue({
-      newPage: vi.fn(async ({ viewport }) => {
-        const page: any = {
+      newPage: vi.fn(async ({ viewport }: { viewport: { width: number; height: number } }) => {
+        const page = {
           goto: vi.fn(async () => undefined),
           waitForTimeout: vi.fn(async () => undefined),
           screenshot: vi.fn(async () => Buffer.from('png-bytes')),
           close: vi.fn(async () => undefined),
-          routeHandler: null as null | ((route: any) => Promise<void>),
+          route: vi.fn(),
+          routeHandler: null as MockPage['routeHandler'],
           viewport,
-        };
-        page.route = vi.fn(async (_pattern: string, handler: (route: any) => Promise<void>) => { page.routeHandler = handler; });
+        } satisfies Omit<MockPage, 'route'> & { route: ReturnType<typeof vi.fn> };
+        page.route = vi.fn(async (_pattern: string, handler: (route: MockRoute) => Promise<void>) => {
+          page.routeHandler = handler;
+        });
         browserMock.pages.push(page);
         return page;
       }),
@@ -79,7 +98,11 @@ describe('captureAuditScreenshots', () => {
     const page = browserMock.pages[0];
     const continueRequest = vi.fn(async () => undefined);
     const abortRequest = vi.fn(async () => undefined);
-    await page.routeHandler({ request: () => ({ url: () => 'http://127.0.0.1/admin' }), continue: continueRequest, abort: abortRequest });
+    await page.routeHandler?.({
+      request: () => ({ url: () => 'http://127.0.0.1/admin' }),
+      continue: continueRequest,
+      abort: abortRequest,
+    });
     expect(abortRequest).toHaveBeenCalledWith('blockedbyclient');
     expect(continueRequest).not.toHaveBeenCalled();
   });

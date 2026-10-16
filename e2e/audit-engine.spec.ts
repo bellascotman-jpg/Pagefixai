@@ -74,4 +74,34 @@ test('a signed-in user can create an audit and receive persisted evidence', asyn
   };
   expect(recheckPayload.auditId).toBeTruthy();
   expect(['RESOLVED', 'IMPROVED', 'STILL_DETECTED', 'UNABLE_TO_VERIFY']).toContain(recheckPayload.result);
+
+  const savedJourney = await request.post('/api/intelligence/journey', {
+    data: {
+      sourceType: 'ad',
+      sourceUrl: 'https://example.com/campaign',
+      source: 'Free delivery on selected items',
+      destinationUrl: 'https://example.com/',
+      destination: 'Example Domain. Learn more.',
+      stages: [
+        { id: 'product', name: 'Product / landing page', url: 'https://example.com/', content: 'Example Domain. Learn more.', expectedNextStep: 'Learn more' },
+        { id: 'cart', name: 'Cart / basket', url: '', content: '', expectedNextStep: 'Proceed to checkout' },
+      ],
+      checkoutStarts: 100,
+      completedOrders: 63,
+      windowLabel: 'Test cohort, same date range',
+      hasSpend: true,
+      hasClicks: true,
+      hasSessions: false,
+      hasConversions: true,
+    },
+  });
+  expect(savedJourney.status(), await savedJourney.text()).toBe(201);
+  const savedJourneyPayload = await savedJourney.json() as { id?: string; saved?: boolean };
+  expect(savedJourneyPayload.saved).toBe(true);
+  expect(savedJourneyPayload.id).toBeTruthy();
+
+  const journeyHistory = await request.get('/api/intelligence/journey');
+  expect(journeyHistory.status(), await journeyHistory.text()).toBe(200);
+  const journeyHistoryPayload = await journeyHistory.json() as { analyses?: Array<{ id: string; sourceType: string; payload?: { windowLabel?: string } }> };
+  expect(journeyHistoryPayload.analyses?.some(item => item.id === savedJourneyPayload.id && item.sourceType === 'ad' && item.payload?.windowLabel === 'Test cohort, same date range')).toBe(true);
 });

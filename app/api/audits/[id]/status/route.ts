@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { processNextAuditJob } from '@/lib/jobs/audit-worker';
@@ -76,14 +76,19 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   // post-response callbacks being kept alive by every hosting/runtime configuration.
   // The worker claims jobs atomically, so concurrent poll requests cannot double-run it.
   if (audit.status === 'QUEUED' && job?.status === 'QUEUED') {
-    try {
-      await processNextAuditJob(id);
-    } catch (error) {
-      console.error('pagefix_audit_status_worker_failed', {
-        auditId: id,
-        message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-      });
-    }
+    // Never make the status/polling request wait for a complete crawl. Dispatch
+    // after responding; the worker's atomic claim safely arbitrates against the
+    // create route and concurrent polls.
+    after(async () => {
+      try {
+        await processNextAuditJob(id);
+      } catch (error) {
+        console.error('pagefix_audit_status_worker_failed', {
+          auditId: id,
+          message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+        });
+      }
+    });
   }
 
   const latest = await db.audit.findFirst({

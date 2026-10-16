@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
+import { captureAuditScreenshots } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
 
@@ -162,12 +163,7 @@ export async function runAudit(auditId: string) {
     // browser. This keeps the initial evidence pass predictable on serverless
     // runtimes and still reports access challenges honestly.
     const data = await fetchStaticPage(target);
-    const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [
-      { viewport: 'static-html', data, screenshotKey: null },
-    ];
-
-    const primary = results[0]?.data;
-    if (!primary) throw new Error('PAGE_RENDER_FAILED');
+    const primary = data;
 
     const pageRecord = await db.page.create({
       data: {
@@ -181,13 +177,23 @@ export async function runAudit(auditId: string) {
       },
     });
 
-    for (const result of results) {
-      const screenshotUrl = result.screenshotKey ? '/api/audits/' + auditId + '/screenshots/' + result.viewport : null;
+    // Screenshot capture is best-effort: a storage/browser failure must not
+    // discard a valid static inspection. Only persist rows for images actually stored.
+    const screenshotKeys = await captureAuditScreenshots(auditId, target.toString()).catch((error) => {
+      console.error('pagefix_screenshot_capture_failed', {
+        auditId,
+        message: error instanceof Error ? error.message : 'SCREENSHOT_CAPTURE_FAILED',
+      });
+      return [] as Array<{ viewport: 'desktop' | 'mobile'; storageKey: string }>;
+    });
+
+    for (const screenshot of screenshotKeys) {
+      const screenshotUrl = '/api/audits/' + auditId + '/screenshots/' + screenshot.viewport;
       await db.pageSnapshot.create({
-        data: { pageId: pageRecord.id, viewport: result.viewport, screenshotUrl },
+        data: { pageId: pageRecord.id, viewport: screenshot.viewport, screenshotUrl },
       });
       await db.screenshot.create({
-        data: { auditId, viewport: result.viewport, kind: 'viewport', storageUrl: result.screenshotKey, mimeType: 'image/png' },
+        data: { auditId, viewport: screenshot.viewport, kind: 'viewport', storageUrl: screenshot.storageKey, mimeType: 'image/png' },
       });
     }
 

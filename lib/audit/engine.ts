@@ -2,6 +2,7 @@ import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
 import { buildCoreRevenueFindings } from '@/lib/audit/revenue-leak-rules';
+import { buildBuyerDecisionFindings, buildBuyerQuestionChecks } from '@/lib/audit/buyer-decision-intelligence';
 import { captureAuditScreenshots, type ViewportAuditSignals } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
@@ -313,6 +314,11 @@ export async function runAudit(auditId: string) {
       { question: 'How can a visitor contact the business?', observed: /contact us|customer support|support@|mailto:|whatsapp|call us|phone number/i.test(visibleText) || primary.links.some((link) => /contact|support|help/i.test(link.text)), evidenceIds: [textEvidence.id, linkEvidence.id] },
       { question: 'Is a clear commercial next action exposed?', observed: primary.buttons.some((button) => /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now/i.test(button)) || primary.links.some((link) => /buy now|shop now|add to cart|book now|request a quote|contact sales/i.test(link.text)), evidenceIds: [domEvidence.id, linkEvidence.id] },
       { question: 'Are visible images available?', observed: primary.images.length > 0, evidenceIds: [imageEvidence.id] },
+      ...buildBuyerQuestionChecks({
+        url: target.toString(), title: primary.title, bodyText: primary.bodyText,
+        headings: primary.headings, buttons: primary.buttons, links: primary.links, forms: primary.forms,
+        textEvidenceId: textEvidence.id, domEvidenceId: domEvidence.id, linkEvidenceId: linkEvidence.id,
+      }),
     ];
 
     await db.buyerQuestionResult.createMany({
@@ -345,6 +351,15 @@ export async function runAudit(auditId: string) {
       imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length,
       viewportEvidenceId: viewportEvidence?.id,
       viewportSignals,
+    }));
+
+    // Phase 3: buyer decision sequence, trust reassurance and claim substantiation.
+    // Browser viewport claims are only emitted when measured viewport evidence exists.
+    findings.push(...buildBuyerDecisionFindings({
+      url: target.toString(), title: primary.title, bodyText: primary.bodyText,
+      headings: primary.headings, buttons: primary.buttons, links: primary.links, forms: primary.forms,
+      textEvidenceId: textEvidence.id, domEvidenceId: domEvidence.id, linkEvidenceId: linkEvidence.id,
+      viewportEvidenceId: viewportEvidence?.id, viewportSignals,
     }));
 
     // Category-aware buyer-decision checks and conservative contradiction

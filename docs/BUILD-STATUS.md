@@ -70,11 +70,11 @@ The intelligence module pages no longer stop at a capability explainer with gene
 **Status: IMPLEMENTED; final CI verification pending on the latest branch commits.**
 
 - The authenticated Journey & Message Match workspace compares user-supplied paid-ad or social copy with supplied destination-page text. It highlights literal commercial-signal gaps, discount/price mismatches, unmatched distinctive terms, and limitations of keyword-only comparison.
-- The customer journey workspace maps product/landing, cart and checkout steps, compares expected next-action wording against supplied content, marks unprovided stages as uninspected, and checks supplied destination URL format without pretending to test live reachability.
+- The customer journey workspace maps product/landing, cart and checkout steps, compares expected next-action wording against supplied content, marks unprovided stages as uninspected, and checks supplied destination URL format without pretending to test live reachability. The audit engine also probes up to three same-origin commercial-action links with bounded requests and flags only explicit HTTP 404/410 responses as confirmed broken destinations; external, blocked, timed-out and other responses remain unverified.
 - Checkout abandonment metrics are calculated only from user-supplied same-cohort counts with a named reporting window. Invalid counts are rejected. Traffic-waste review lists missing spend/click/session/conversion evidence instead of fabricating financial loss.
 - Added authenticated persistence through `/api/intelligence/journey`: analyses are stored under the signed-in user's completed audit ownership, and the workspace restores the most recently saved analysis. Other users' analyses are not returned.
 - Added end-to-end coverage to save an analysis and retrieve it from history, plus unit tests for checkout-action aliases and invalid URL formats.
-- The workspace explicitly states that pasted content and URL references are not a live crawl; it does not claim broken-link detection, actual wasted ad spend, or a verified checkout unless supported by real evidence.
+- The workspace explicitly states that pasted campaign/destination text is not itself a live crawl. Actual wasted ad spend and the cause of abandonment are not inferred; link-status findings come only from bounded same-origin audit probes with explicit not-found/gone responses.
 - Production remains unchanged while validation runs.
 
 ### Phase 4 acceptance checklist

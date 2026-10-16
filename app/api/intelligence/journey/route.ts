@@ -35,7 +35,7 @@ export async function GET() {
   if (!user) return NextResponse.json({ message: 'Sign in to access saved journey analyses.' }, { status: 401 });
 
   const records = await db.messageMatch.findMany({
-    where: { audit: { userId: user.id } },
+    where: { audit: { is: { userId: user.id } } },
     orderBy: { createdAt: 'desc' },
     take: 10,
     include: { audit: { select: { url: true, createdAt: true } } },

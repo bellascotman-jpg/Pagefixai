@@ -36,7 +36,8 @@ export default function MessageMatchWorkspace() {
       };
       const valueSensitive = item.label === 'Percentage discount' || item.label === 'Currency price';
       const sourceValue = valueFor(item.text);
-      const exactValuePresent = sameCategory.some(dest => valueFor(dest.text) === sourceValue && sourceValue !== null);
+      const currencyFor = (text: string) => text.match(/[\\$₦€£]/)?.[0] ?? null;
+      const exactValuePresent = sameCategory.some(dest => valueFor(dest.text) === sourceValue && sourceValue !== null && (item.label !== 'Currency price' || currencyFor(dest.text) === currencyFor(item.text)));
       const matchingCategoryPresent = sameCategory.length > 0;
       const valueMismatch = valueSensitive && matchingCategoryPresent && !exactValuePresent;
       return { ...item, matchingCategoryPresent, exactValuePresent, valueMismatch };

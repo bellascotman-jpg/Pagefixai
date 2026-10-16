@@ -59,7 +59,13 @@ export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ message: 'Sign in to save a journey analysis.' }, { status: 401 });
 
-  const parsed = workspaceSchema.safeParse(await request.json());
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ message: 'Send a valid JSON request body.' }, { status: 400 });
+  }
+  const parsed = workspaceSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ message: 'Some fields are invalid or exceed the supported length. Review the inputs and try again.' }, { status: 400 });
   }

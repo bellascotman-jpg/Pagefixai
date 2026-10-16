@@ -10,6 +10,7 @@ type ExtractedPage = {
   title: string;
   canonical: string;
   description: string;
+  viewport: string;
   bodyText: string;
   buttons: string[];
   links: Array<{ text: string; href: string }>;
@@ -108,6 +109,7 @@ function extractHtml(html: string, statusCode: number | null): ExtractedPage {
     title: htmlText(title),
     canonical: canonicalTag ? attr(canonicalTag, 'href') : '',
     description: meta('description'),
+    viewport: meta('viewport'),
     bodyText: htmlText(body).slice(0, 50000),
     buttons,
     links,
@@ -206,7 +208,7 @@ export async function runAudit(auditId: string) {
     const evidence = await db.evidence.createManyAndReturn({
       data: [
         { auditId, type: 'TEXT', source: 'http.html_text', location: 'retrieved_html_body', content: primary.bodyText.slice(0, 20000), confidence: 'HIGH' },
-        { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical }), confidence: 'HIGH' },
+        { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical, viewport: primary.viewport }), confidence: 'HIGH' },
         { auditId, type: 'DOM', source: 'http.html_elements', location: 'buttons_forms_and_headings', content: JSON.stringify({ buttons: primary.buttons, forms: primary.forms, headings: primary.headings, unlabeledLinks: primary.links.filter((link) => !link.text).length }), confidence: 'HIGH' },
         { auditId, type: 'STRUCTURED_DATA', source: 'jsonld', location: 'script[type="application/ld+json"]', content: JSON.stringify(primary.structuredData), confidence: primary.structuredData.length ? 'HIGH' : 'LOW' },
         { auditId, type: 'SYSTEM_DETECTED', source: 'http.image_inventory', location: 'images', content: JSON.stringify({ totalVisible: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, images: primary.images }), confidence: 'HIGH' },
@@ -321,6 +323,12 @@ export async function runAudit(auditId: string) {
       textEvidenceId: textEvidence.id,
       domEvidenceId: domEvidence.id,
       linkEvidenceId: linkEvidence.id,
+      metadataEvidenceId: metadataEvidence.id,
+      imageEvidenceId: imageEvidence.id,
+      metaDescription: primary.description,
+      viewportMeta: primary.viewport,
+      imageCount: primary.images.length,
+      imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length,
     }));
 
     // Category-aware buyer-decision checks and conservative contradiction

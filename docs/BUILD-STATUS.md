@@ -25,7 +25,7 @@ The signed-in audit end-to-end suite passed on that run, including audit complet
 
 ## Phase 2 — Core Revenue Leak Detection Engine
 
-**Status: IN PROGRESS — implementation expanded; final branch CI verification pending.** The audit now runs deterministic product/landing-page rules for price, delivery, returns, decision-useful details, value proposition, benefits language, purchase actions, contact/support, trust/policy visibility, image coverage, mobile viewport metadata, and rendered mobile first-viewport behavior. Existing engine checks cover HTTP status, title/meta/canonical, headings, image alt text, accessible link labels, structured-data parsing, and missing imagery. The engine now persists browser-measured desktop/mobile viewport signals as evidence, including horizontal overflow, H1 visibility, and whether a commercial action is visible in the initial viewport. CTA checks include links and forms to reduce false positives. All findings are evidence-linked and do not claim actual conversion loss or financial outcomes.
+**Status: CI-VERIFIED COMPLETE on commit `2fb4b5ace7fd1d83d23f2d4897e89aaf22877e19`.** The audit now runs deterministic product/landing-page rules for price, delivery, returns, decision-useful details, value proposition, benefits language, purchase actions, contact/support, trust/policy visibility, image coverage, mobile viewport metadata, and rendered mobile first-viewport behavior. Existing engine checks cover HTTP status, title/meta/canonical, headings, image alt text, accessible link labels, structured-data parsing, and missing imagery. The engine now persists browser-measured desktop/mobile viewport signals as evidence, including horizontal overflow, H1 visibility, and whether a commercial action is visible in the initial viewport. CTA checks include links and forms to reduce false positives. All findings are evidence-linked and do not claim actual conversion loss or financial outcomes.
 
 ## Phase 2 acceptance checklist
 
@@ -35,9 +35,19 @@ The signed-in audit end-to-end suite passed on that run, including audit complet
 - [x] Browser-backed desktop/mobile evidence captures horizontal overflow, H1 visibility and above-the-fold commercial-action visibility when screenshots are successfully captured.
 - [x] Findings reference stored evidence and clearly distinguish directly measured viewport observations from inferred risks.
 - [x] Tests cover positive/negative signals, form/link CTAs, generic landing pages, mobile overflow and first-viewport CTA visibility.
-- [ ] Final Phase 2 commit passes typecheck, lint, unit tests, production build, and end-to-end CI.
-- [ ] Preview smoke test confirms a real product URL and landing-page URL generate and persist readable findings without regressions.
-- [ ] Existing audit submission, reports, history, founder access, entitlements, and pricing remain intact.
+- [x] Final Phase 2 commit passes Prisma validation/generation, typecheck, lint, unit tests, database schema push against disposable CI DB, production build, Playwright setup, and end-to-end CI (run `38961735598`).
+- [x] A preview deployment built successfully; the public home, pricing, auth, and methodology routes returned HTML successfully.
+- [!] An authenticated live preview audit was deliberately not submitted: Vercel currently assigns the same database environment variables to preview and production. Creating test users/audits there could write test data into production. The isolated CI end-to-end test creates a test user, audits `https://example.com/`, verifies persisted evidence/findings, and performs a fresh recheck against its disposable database.
+- [x] Existing audit submission, reports, history, founder access, entitlements, and pricing remain unchanged by this Phase 2 implementation.
+
+## Phase 2 implementation summary
+
+- Product and landing-page rule engine integrated into `lib/audit/engine.ts`.
+- Added evidence-grounded checks for price, delivery, returns, product details, value proposition, benefit language, purchase actions, trust/policy information, support routes, image coverage, viewport metadata, and mobile first-viewport usability.
+- Added browser-measured viewport evidence for mobile horizontal overflow, H1 visibility, and commercial-action visibility.
+- Corrected CTA detection to recognize link-based actions and forms, and limited Product structured-data warnings to product-like pages.
+- Added unit coverage for detection and non-detection cases, links/forms, mobile viewport evidence, and above-the-fold action visibility.
+- Production branch and production deployment remain unchanged. Preview deployment: `https://pagefixai-r2c3yiyga-bellascotman-7762.vercel.app`.
 
 ## Release safety
 

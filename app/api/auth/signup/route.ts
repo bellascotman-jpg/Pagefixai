@@ -64,7 +64,20 @@ export async function POST(request: Request) {
       },
     });
 
-    // Every new user is automatically enrolled in the referral program; no application or approval queue.\n    await db.affiliateProfile.create({ data: { userId: user.id, code: randomBytes(5).toString('hex').toUpperCase(), commissionRate: 25, status: 'APPROVED' } }).catch((error) => {\n      console.error('new_user_referral_profile_error', { name: error instanceof Error ? error.name : 'UnknownError' });\n    });\n\n    if (referringAffiliate) {
+    // Every new user is automatically enrolled in the referral program; no application or approval queue.
+    await db.affiliateProfile.create({
+      data: {
+        userId: user.id,
+        code: randomBytes(5).toString('hex').toUpperCase(),
+        commissionRate: 25,
+        status: 'APPROVED',
+      },
+    }).catch((error) => {
+      console.error('new_user_referral_profile_error', {
+        name: error instanceof Error ? error.name : 'UnknownError',
+      });
+    });
+\n    if (referringAffiliate) {
       await db.affiliateReferral.create({ data: { affiliateId: referringAffiliate.id, referredUserId: user.id } }).catch((error) => {
         console.error('referral_attribution_error', { name: error instanceof Error ? error.name : 'UnknownError' });
       });

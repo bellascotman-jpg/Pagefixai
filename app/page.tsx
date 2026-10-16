@@ -111,7 +111,7 @@ export default function HomePage() {
         <h2>Purpose-built checks for the problems sellers face every week.</h2>
         <p className="specialized-features-lead">These capabilities connect to the same evidence and remediation history. Availability depends on the inspected page, stored data, and the integrations actually enabled in your workspace.</p>
         <div className="specialized-features-grid">
-          <article><span>01</span><h3>Pre-Purchase Clarity & Return Risk</h3><p>Spot unclear sizing, compatibility, deliverables, shipping or return conditions that may create buyer uncertainty. This does not predict a product's actual return rate.</p></article>
+          <article><span>01</span><h3>Pre-Purchase Clarity & Return Risk</h3><p>Spot unclear sizing, compatibility, deliverables, shipping or return conditions that may create buyer uncertainty. This does not predict a product&apos;s actual return rate.</p></article>
           <article><span>02</span><h3>Visual & Mobile Inspection</h3><p>Review screenshots and captured page anatomy where supported, with viewport context and evidence. A screenshot is a record of one captured state, not proof of every dynamic interaction.</p></article>
           <article><span>03</span><h3>SEO, Product Data & AI Discovery Readiness</h3><p>Review visible metadata, page structure and structured-data signals. PageFix does not promise rankings, search traffic or inclusion in AI answers.</p></article>
           <article><span>04</span><h3>Grounded AI Copy Fixes</h3><p>Generate alternative headlines, descriptions and product copy from facts that are actually available. Missing specifications remain placeholders for the seller to confirm.</p></article>
@@ -142,7 +142,7 @@ export default function HomePage() {
       <div className="impact-inner">
         <div className="eyebrow eyebrow-light">COMMERCIAL CONTEXT WITHOUT FICTION</div>
         <h2>Show the risk.<br/><span>Never invent the revenue.</span></h2>
-        <p>PageFix separates what a page visibly shows from what might happen and what a seller's own business data can establish.</p>
+        <p>PageFix separates what a page visibly shows from what might happen and what a seller&apos;s own business data can establish.</p>
         <div className="impact-levels">
           <article><span>LEVEL 01</span><h3>Identified risk</h3><p>Explain the evidence-backed issue and its plausible relevance to a buyer decision. No financial estimate required.</p></article>
           <article><span>LEVEL 02</span><h3>Scenario analysis</h3><p>Use seller-provided traffic, conversion, order value or margin figures with explicit assumptions. Label outputs as illustrative scenarios.</p></article>

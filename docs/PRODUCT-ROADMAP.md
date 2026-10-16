@@ -46,7 +46,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - **Acceptance:** users see what appears wrong and which purchase questions remain unanswered.
 
 ## Phase 4 — Traffic, Advertising and Customer Journey Intelligence
-**Status: NEXT PHASE — not started.**
+**Status: IN PROGRESS — implementation and CI validation underway.**
 
 - Ad-to-Page: compare supplied ad copy to destination, offer, details, promises, and message consistency.
 - Social-to-Page: compare supplied social messaging with destination content and highlight discontinuities.

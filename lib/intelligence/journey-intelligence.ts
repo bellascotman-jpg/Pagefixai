@@ -31,7 +31,7 @@ export function analyzeJourneyStages(stages: JourneyStage[]): JourneyObservation
         stageId: stage.id,
         stageName: stage.name,
         kind: 'DESTINATION_UNVERIFIED',
-        label: 'Directly Observed Evidence',
+        label: 'Recommendation',
         detail: 'No page content was supplied for this journey step, so this step has not been inspected.',
         recommendation: 'Paste the visible page content or run an authorized PageFix inspection before drawing conclusions about this step.',
       });

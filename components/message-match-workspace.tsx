@@ -26,7 +26,6 @@ export default function MessageMatchWorkspace() {
   const [hasConversions, setHasConversions] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
-  const [restoredSavedAnalysis, setRestoredSavedAnalysis] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -50,7 +49,6 @@ export default function MessageMatchWorkspace() {
         if (typeof payload.hasClicks === 'boolean') setHasClicks(payload.hasClicks);
         if (typeof payload.hasSessions === 'boolean') setHasSessions(payload.hasSessions);
         if (typeof payload.hasConversions === 'boolean') setHasConversions(payload.hasConversions);
-        setRestoredSavedAnalysis(true);
         setSaveMessage('Restored your most recently saved journey analysis.');
       })
       .catch(() => undefined);
@@ -90,7 +88,6 @@ export default function MessageMatchWorkspace() {
         setSaveMessage(data.message || 'Could not save this analysis. Please try again.');
         return;
       }
-      setRestoredSavedAnalysis(false);
       setSaveMessage('Analysis saved to your PageFix workspace. You can return later and continue.');
     } catch {
       setSaveMessage('Could not reach PageFix to save this analysis. Your current inputs remain on this page.');

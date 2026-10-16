@@ -1,0 +1,1 @@
+.app-sidebar{overflow-y:auto;scrollbar-width:thin;scrollbar-color:#495368 #171d2b}.app-sidebar::-webkit-scrollbar{width:5px}.app-sidebar::-webkit-scrollbar-thumb{background:#495368;border-radius:8px}@media(max-width:760px){.app-sidebar{overflow:visible}}

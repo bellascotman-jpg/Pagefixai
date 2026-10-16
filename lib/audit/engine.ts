@@ -3,6 +3,7 @@ import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
 import { buildCoreRevenueFindings } from '@/lib/audit/revenue-leak-rules';
 import { buildBuyerDecisionFindings, buildBuyerQuestionChecks } from '@/lib/audit/buyer-decision-intelligence';
+import { isConfirmedBrokenDestination, selectInternalCommercialLinks } from '@/lib/intelligence/link-handoff';
 import { captureAuditScreenshots, type ViewportAuditSignals } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
@@ -239,6 +240,31 @@ export async function runAudit(auditId: string) {
     }
 
     const findings = [];
+    // Check only a few same-origin commercial destinations. This confirms
+    // explicit 404/410 responses without probing external links or inferring
+    // broken links from missing pasted text.
+    const internalCommercialLinks = selectInternalCommercialLinks(primary.links, target.toString(), 3);
+    for (const link of internalCommercialLinks) {
+      try {
+        const destination = await validateAuditUrl(link.href, validatedHosts);
+        const linkPage = await fetchStaticPage(destination);
+        if (isConfirmedBrokenDestination(linkPage.statusCode)) {
+          findings.push(makeFinding(
+            `Commercial action destination returned HTTP ${linkPage.statusCode}`,
+            'MEDIUM',
+            `The same-site commercial action link "${link.text}" resolved to ${destination.toString()} and the bounded HTTP capture returned ${linkPage.statusCode}. This is a status observed during this audit; temporary site conditions can change.`,
+            'A buyer following this action may reach a page that currently reports not found or gone instead of the intended next step.',
+            'Confirm the intended destination, restore the page or update the link to the correct live route. Recheck after changing it; external destinations and non-404 responses are not classified as broken by this check.',
+            'Does this action lead to the intended product, cart, or checkout step?',
+            linkEvidence.id,
+          ));
+        }
+      } catch {
+        // Unreachable, blocked, or timed-out destinations remain unverified;
+        // they must not be described as broken without a confirming response.
+      }
+    }
+
     // Detect access challenges so they are reported honestly rather than treated
     // as missing product content. PageFix does not bypass access controls.
     const challengeText = (primary.title + ' ' + primary.bodyText).toLowerCase();

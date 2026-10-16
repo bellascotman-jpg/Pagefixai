@@ -13,7 +13,6 @@ describe('literal message matching', () => {
   });
 });
 
-import { analyzeMessageContinuity } from '@/lib/intelligence/message-match';
 
 describe('literal message continuity', () => {
   it('shows exact campaign terms missing from destination copy without claiming semantic mismatch', () => {

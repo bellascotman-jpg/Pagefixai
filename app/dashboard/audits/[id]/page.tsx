@@ -44,9 +44,9 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
     try { const parsed = JSON.parse(linkEvidence?.content ?? '[]'); return Array.isArray(parsed) ? parsed : []; } catch { return []; }
   })();
   const trustSignals = summarizeTrustSignals({ title: page?.title ?? '', bodyText: capturedText, links: capturedLinks });
-  const candidatePromises = capturedText.split(/(?<=[.!?])\\s+/)
+  const candidatePromises = capturedText.split(/(?<=[.!?])\s+/)
     .map(sentence => sentence.trim())
-    .filter(sentence => /free shipping|free delivery|guarantee|warranty|return policy|refund|best[- ]selling|number one|#1|100%|clinically proven|same.day delivery|fast delivery|lifetime access|free trial|save \\d+/i.test(sentence))
+    .filter(sentence => /free shipping|free delivery|guarantee|warranty|return policy|refund|best[- ]selling|number one|#1|100%|clinically proven|same.day delivery|fast delivery|lifetime access|free trial|save \d+/i.test(sentence))
     .slice(0, 8);
   const seoFindings = audit.findings.filter(item => /title|meta description|canonical|h1|heading|structured data|image elements missing alternative text|accessible text label|http error|product structured data/i.test(item.title));
   const structuredEvidence = audit.evidence.find(item => item.type === 'STRUCTURED_DATA');

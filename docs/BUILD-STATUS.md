@@ -10,40 +10,30 @@ The full product scope and acceptance criteria live in [PRODUCT-ROADMAP.md](./PR
 - Production: `main` and the production deployment must remain unchanged until release checks pass.
 - Immediate scope: Phase 1 — Audit Engine and Processing Reliability.
 
-## Last confirmed CI result before the latest fixes
+## Phase 1 — latest confirmed verification
 
-On commit `b67d60c80256edee67dfb8d44cf302e2a4a664f4`:
-- Prisma validation/generation: passed.
-- TypeScript: passed.
-- ESLint: passed.
-- Unit tests: passed.
-- Prisma schema push against disposable CI database: passed.
-- Production build: passed.
-- Playwright browser install: passed.
-- End-to-end tests: failed. Six public-page tests passed; the signed-in audit smoke test remained `RUNNING` past its 65-second deadline instead of reaching `COMPLETED`.
+On commit `39d7340ceb6cfb9b34beede95ca8b68ca0013862`, GitHub Actions run `38956704829` completed with **success**. The quality job passed all listed steps:
+- Prisma validation and generation.
+- TypeScript typecheck and ESLint.
+- Unit tests.
+- Prisma schema push against the disposable CI database.
+- Production build.
+- Playwright Chromium installation.
+- End-to-end tests.
 
-This is a real Phase 1 failure. A successful build is not proof that audits work.
+The signed-in audit end-to-end suite passed on that run, including audit completion, persisted report findings, authenticated recheck, and stale-job recovery assertions. Phase 1 is treated as CI-verified complete. This is not a claim that every live production configuration has been smoke-tested; production remains unchanged until release validation.
 
-## Latest changes on the development branch
+## Phase 2 — Core Revenue Leak Detection Engine
 
-- Reduced per-viewport screenshot navigation and screenshot timeouts, and shortened the post-navigation wait, so best-effort screenshots are less likely to hold up the core audit.
-- Extended the audit end-to-end test deadline so it can exercise the existing stale-job recovery window rather than failing before recovery is eligible.
-- Added the complete ten-phase source-of-truth roadmap in `docs/PRODUCT-ROADMAP.md`.
+**Status: IN PROGRESS.** Added a deterministic, testable core rule module for product-page price visibility, shipping/delivery terms, return/refund terms, decision-useful product details, landing-page conversion-step visibility, and contact/support route visibility. Each rule is grounded in captured page text/links and explicitly says information was not observed in the capture; it does not claim actual conversion loss or revenue impact. Unit tests cover positive detection, signal-present cases, landing-page next steps, and form-based flows.
 
-These changes require a fresh CI run. Do not mark Phase 1 complete until the signed-in audit journey passes and report/evidence persistence, screenshot retrieval where available, recheck verification, and failure recovery are demonstrated.
+## Phase 2 acceptance checklist
 
-## Phase 1 acceptance checklist
-
-- [ ] Signed-in user can submit a supported public URL.
-- [ ] Audit job is created and claimed without duplicate processing.
-- [ ] Status moves out of queued and reaches a terminal state.
-- [ ] Findings and evidence persist and load from the report endpoint/dashboard.
-- [ ] Desktop/mobile screenshots are saved and securely retrievable when capture/storage is available; unavailable captures are not fabricated.
-- [ ] Refreshing does not lose the audit/report.
-- [ ] Recheck creates a fresh inspection and only marks issues resolved when evidence supports it.
-- [ ] Interrupted/stale jobs recover safely; failed audits show useful errors.
-- [ ] End-to-end tests cover successful and failure paths.
-- [ ] Production remains unchanged until preview and release validation pass.
+- [ ] Product and landing-page findings are category-aware and evidence-linked.
+- [ ] Price, delivery, returns, product details, and conversion-step checks are conservative and repeatable.
+- [ ] Findings preserve evidence-vs-inference distinctions and avoid fabricated metrics.
+- [ ] Unit tests pass and the full CI suite passes.
+- [ ] Existing audit submission, reports, history, and pricing remain intact.
 
 ## Release safety
 

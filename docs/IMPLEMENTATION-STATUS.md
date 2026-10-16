@@ -23,16 +23,17 @@ Production deployment: unchanged by this work. No manual deployment was triggere
 - Added a warm-white, ink-navy and signal-orange visual layer inspired by high-clarity SaaS marketing pages without copying another brand's page.
 - Expanded the authenticated sidebar with the Commerce Intelligence hub, buyer decisions, claims/promises, store intelligence, impact analysis, journey/message match, verification, workspaces and integrations.
 - Added an authenticated capability hub and detail pages. Each capability displays a maturity label and limitations to avoid representing roadmap items as working features.
+- Added sidebar entries for specialist checks, including pre-purchase/return risk, visual/mobile inspection, SEO/product data, grounded copy fixes, Promise Ledger, experimentation and governance.
 
 ### Evidence and scorecard
 - Added a qualitative Commerce Clarity Scorecard to completed audit reports.
 - The scorecard uses captured buyer-question signals and finding patterns; it deliberately avoids a universal numeric conversion score.
-- Added unit tests for scorecard behaviour and impact-scenario arithmetic. They are committed but have not been run in a verified build environment during this work.
+- Added unit tests for scorecard behaviour, impact-scenario arithmetic and literal message-match value comparisons. They are committed but have not been run in a verified build environment during this work.
 
 ### Promise Ledger
 - Added a Prisma persistence model linked to the owner and optionally to an owned audit.
 - Added authenticated create/list/update/delete API routes with input validation and owner checks.
-- Added a seller-facing Promise Ledger for saving exact claim text, source type, optional source URL, context and review status.
+- Added a seller-facing Promise Ledger for saving exact claim text, source type, optional HTTP(S) source URL, context and review status.
 - A recorded claim is not automatically certified as true. Automated cross-source contradiction detection remains separate.
 
 ### Store intelligence and message match

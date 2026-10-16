@@ -105,6 +105,24 @@ export default function HomePage() {
       </div>
     </section>
 
+    <section className="specialized-features-section" id="specialized-features">
+      <div className="specialized-features-inner">
+        <div className="eyebrow">SPECIALIST TOOLS INSIDE THE WORKFLOW</div>
+        <h2>Purpose-built checks for the problems sellers face every week.</h2>
+        <p className="specialized-features-lead">These capabilities connect to the same evidence and remediation history. Availability depends on the inspected page, stored data, and the integrations actually enabled in your workspace.</p>
+        <div className="specialized-features-grid">
+          <article><span>01</span><h3>Pre-Purchase Clarity & Return Risk</h3><p>Spot unclear sizing, compatibility, deliverables, shipping or return conditions that may create buyer uncertainty. This does not predict a product's actual return rate.</p></article>
+          <article><span>02</span><h3>Visual & Mobile Inspection</h3><p>Review screenshots and captured page anatomy where supported, with viewport context and evidence. A screenshot is a record of one captured state, not proof of every dynamic interaction.</p></article>
+          <article><span>03</span><h3>SEO, Product Data & AI Discovery Readiness</h3><p>Review visible metadata, page structure and structured-data signals. PageFix does not promise rankings, search traffic or inclusion in AI answers.</p></article>
+          <article><span>04</span><h3>Grounded AI Copy Fixes</h3><p>Generate alternative headlines, descriptions and product copy from facts that are actually available. Missing specifications remain placeholders for the seller to confirm.</p></article>
+          <article><span>05</span><h3>Competitor Context</h3><p>Organise public-page comparisons and visible content differences. Competitor revenue, traffic, conversion and private performance are not inferred from a page.</p></article>
+          <article><span>06</span><h3>Priority & Fix Effort</h3><p>Rank the work queue using defined severity, evidence confidence, buyer relevance and implementation effort—not invented financial impact.</p></article>
+          <article><span>07</span><h3>Agency & Client Reporting</h3><p>Extend the seller workflow across client projects, with clear report scope and privacy controls. Advanced permissions and white-label features must be verified before being promised.</p></article>
+          <article><span>08</span><h3>Experimentation & Outcome Learning</h3><p>A later-stage capability for controlled tests, sample-size planning and uncertainty-aware measurement. It requires reliable analytics and should not declare winners prematurely.</p></article>
+        </div>
+      </div>
+    </section>
+
     <section className="category-intelligence-section">
       <div className="category-intelligence-inner">
         <div><div className="eyebrow">CONTEXT-AWARE, NOT ONE-SIZE-FITS-ALL</div><h2>Different products.<br/><span>Different buyer questions.</span></h2><p>PageFix evaluates what is relevant to the product and buying context. It does not treat every possible checklist item as mandatory for every seller.</p></div>

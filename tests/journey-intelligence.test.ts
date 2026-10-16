@@ -9,6 +9,7 @@ describe('journey intelligence', () => {
     ]);
     expect(observations).toHaveLength(1);
     expect(observations[0].kind).toBe('DESTINATION_UNVERIFIED');
+    expect(observations[0].label).toBe('Recommendation');
     expect(observations[0].detail).toContain('has not been inspected');
   });
 

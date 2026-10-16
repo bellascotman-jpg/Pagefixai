@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import AuditStatusRefresh from '@/components/audit-status-refresh';
+import { buildCommerceClarityScorecard } from '@/lib/audit/scorecard';
 
 const classifications = ['Directly Observed Evidence', 'Inferred Risk', 'Hypothesis', 'Recommendation'];
 
@@ -30,6 +31,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
   const active = audit.status === 'QUEUED' || audit.status === 'RUNNING';
   const latestJob = audit.jobs[0];
   const page = audit.pages[0];
+  const scorecard = buildCommerceClarityScorecard({ category: audit.category, buyerQuestions: audit.buyerQuestions, findings: audit.findings });
 
   return <main className="dashboard">
     <AuditStatusRefresh active={active} auditId={audit.id} />

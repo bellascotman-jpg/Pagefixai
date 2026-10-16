@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { analyzeMessageContinuity, compareCommercialSignals } from '@/lib/intelligence/message-match';
 import { analyzeJourneyStages, calculateCheckoutMetrics, summarizeTrafficWasteRequirements, type JourneyStage } from '@/lib/intelligence/journey-intelligence';
 
@@ -24,6 +24,38 @@ export default function MessageMatchWorkspace() {
   const [hasClicks, setHasClicks] = useState(false);
   const [hasSessions, setHasSessions] = useState(false);
   const [hasConversions, setHasConversions] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [restoredSavedAnalysis, setRestoredSavedAnalysis] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/intelligence/journey', { cache: 'no-store' })
+      .then(async response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!active || !data?.analyses?.length) return;
+        const latest = data.analyses[0];
+        const payload = latest.payload && typeof latest.payload === 'object' ? latest.payload as Record<string, unknown> : null;
+        if (!payload) return;
+        if (typeof payload.sourceType === 'string') setSourceType(payload.sourceType === 'social' ? 'social' : 'ad');
+        if (typeof payload.sourceUrl === 'string') setSourceUrl(payload.sourceUrl);
+        if (typeof payload.source === 'string') setSource(payload.source);
+        if (typeof payload.destinationUrl === 'string') setDestinationUrl(payload.destinationUrl);
+        if (typeof payload.destination === 'string') setDestination(payload.destination);
+        if (Array.isArray(payload.stages)) setStages(payload.stages as JourneyStage[]);
+        if (typeof payload.checkoutStarts === 'number') setCheckoutStarts(String(payload.checkoutStarts));
+        if (typeof payload.completedOrders === 'number') setCompletedOrders(String(payload.completedOrders));
+        if (typeof payload.windowLabel === 'string') setWindowLabel(payload.windowLabel);
+        if (typeof payload.hasSpend === 'boolean') setHasSpend(payload.hasSpend);
+        if (typeof payload.hasClicks === 'boolean') setHasClicks(payload.hasClicks);
+        if (typeof payload.hasSessions === 'boolean') setHasSessions(payload.hasSessions);
+        if (typeof payload.hasConversions === 'boolean') setHasConversions(payload.hasConversions);
+        setRestoredSavedAnalysis(true);
+        setSaveMessage('Restored your most recently saved journey analysis.');
+      })
+      .catch(() => undefined);
+    return () => { active = false; };
+  }, []);
 
   const result = useMemo(() => compareCommercialSignals(source, destination), [source, destination]);
   const continuity = useMemo(() => analyzeMessageContinuity(source, destination), [source, destination]);
@@ -39,7 +71,42 @@ export default function MessageMatchWorkspace() {
     setStages(previous => previous.map(stage => stage.id === id ? { ...stage, [field]: value } : stage));
   }
 
+  async function saveAnalysis() {
+    setIsSaving(true);
+    setSaveMessage('');
+    try {
+      const response = await fetch('/api/intelligence/journey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sourceType, sourceUrl, source, destinationUrl, destination, stages,
+          checkoutStarts: checkoutStarts.trim() ? Number(checkoutStarts) : null,
+          completedOrders: completedOrders.trim() ? Number(completedOrders) : null,
+          windowLabel, hasSpend, hasClicks, hasSessions, hasConversions,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setSaveMessage(data.message || 'Could not save this analysis. Please try again.');
+        return;
+      }
+      setRestoredSavedAnalysis(false);
+      setSaveMessage('Analysis saved to your PageFix workspace. You can return later and continue.');
+    } catch {
+      setSaveMessage('Could not reach PageFix to save this analysis. Your current inputs remain on this page.');
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
   return <div className="message-match-workspace">
+    <section className="card">
+      <div className="message-match-result-head" style={{alignItems:'center',gap:12,flexWrap:'wrap'}}>
+        <div><div className="label">SAVED WORKSPACE</div><p className="muted" style={{margin:'6px 0 0'}}>Save campaign copy, journey steps, and supplied checkout metrics to your account.</p></div>
+        <button type="button" className="primary-button" onClick={saveAnalysis} disabled={isSaving} aria-busy={isSaving}>{isSaving ? 'Saving…' : 'Save analysis'}</button>
+      </div>
+      {saveMessage && <p className="muted" role="status" style={{marginTop:10}}>{saveMessage}</p>}
+    </section>
     <section className="card">
       <div className="label">01 / CAMPAIGN MESSAGE MATCH</div>
       <h2>Does the destination deliver the promise?</h2>

@@ -21,6 +21,21 @@ describe('journey intelligence', () => {
     expect(observations[0].label).toBe('Inferred Risk');
   });
 
+  it('recognises common equivalent checkout handoff labels without requiring exact phrasing', () => {
+    const observations = analyzeJourneyStages([
+      { id: 'cart', name: 'Cart', url: 'https://shop.example/cart', content: 'Your basket is ready. Continue to checkout.', expectedNextStep: 'Proceed to checkout' },
+    ]);
+    expect(observations.some(item => item.kind === 'HANDOFF_UNCLEAR')).toBe(false);
+  });
+
+  it('flags malformed destination URLs without claiming the link was fetched or broken', () => {
+    const observations = analyzeJourneyStages([
+      { id: 'checkout', name: 'Checkout', url: 'javascript:alert(1)', content: 'Checkout', expectedNextStep: 'Complete purchase' },
+    ]);
+    expect(observations.some(item => item.kind === 'INVALID_URL_FORMAT')).toBe(true);
+    expect(observations.find(item => item.kind === 'INVALID_URL_FORMAT')?.detail).toContain('No network request was made');
+  });
+
   it('calculates checkout rates only for a valid same-cohort input', () => {
     const result = calculateCheckoutMetrics({ checkoutStarts: 100, completedOrders: 63, windowLabel: 'Oct 1–7, same checkout cohort' });
     expect(result.valid).toBe(true);

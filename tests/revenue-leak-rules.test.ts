@@ -95,6 +95,43 @@ describe('core revenue-leak rules', () => {
     expect(findings.map((finding) => finding.title)).toContain('Only one image element was observed for this product page');
   });
 
+  it('flags directly measured mobile horizontal overflow with linked browser evidence', () => {
+    const findings = buildCoreRevenueFindings({
+      ...base,
+      viewportEvidenceId: 'e-viewport',
+      viewportSignals: [{
+        viewport: 'mobile',
+        viewportWidth: 390,
+        documentWidth: 520,
+        horizontalOverflow: true,
+        primaryHeadingVisible: true,
+        commercialActionVisible: true,
+        visibleTextLength: 140,
+      }],
+    });
+    const finding = findings.find((item) => item.title === 'Horizontal overflow was detected at the captured mobile viewport');
+    expect(finding?.hypothesis).toBe('Directly Observed Evidence');
+    expect(finding?.evidenceIds).toContain('e-viewport');
+    expect(finding?.observation).toContain('390px');
+  });
+
+  it('flags a page CTA that exists but is below the initial mobile viewport', () => {
+    const findings = buildCoreRevenueFindings({
+      ...base,
+      viewportEvidenceId: 'e-viewport',
+      viewportSignals: [{
+        viewport: 'mobile',
+        viewportWidth: 390,
+        documentWidth: 390,
+        horizontalOverflow: false,
+        primaryHeadingVisible: true,
+        commercialActionVisible: false,
+        visibleTextLength: 180,
+      }],
+    });
+    expect(findings.map((finding) => finding.title)).toContain('Commercial action was not visible in the initial mobile viewport');
+  });
+
   it('checks generic landing-page propositions and missing benefits conservatively', () => {
     const findings = buildCoreRevenueFindings({
       ...base,

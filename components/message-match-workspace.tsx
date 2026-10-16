@@ -23,8 +23,8 @@ function signals(text: string) {
 export default function MessageMatchWorkspace() {
   const [source, setSource] = useState('');
   const [destination, setDestination] = useState('');
-  const [sourceLabel, setSourceLabel] = useState('Advertisement / social post');
-  const [destinationLabel, setDestinationLabel] = useState('Destination page');
+  const sourceLabel = 'Advertisement / social post';
+  const destinationLabel = 'Destination page';
   const result = useMemo(() => {
     const sourceSignals = signals(source);
     const destinationSignals = signals(destination);

@@ -9,6 +9,7 @@ type MockRoute = {
 type MockPage = {
   goto: ReturnType<typeof vi.fn>;
   waitForTimeout: ReturnType<typeof vi.fn>;
+  evaluate: ReturnType<typeof vi.fn>;
   screenshot: ReturnType<typeof vi.fn>;
   close: ReturnType<typeof vi.fn>;
   route: ReturnType<typeof vi.fn>;
@@ -69,6 +70,14 @@ describe('captureAuditScreenshots', () => {
         const page = {
           goto: vi.fn(async () => undefined),
           waitForTimeout: vi.fn(async () => undefined),
+          evaluate: vi.fn(async () => ({
+            viewportWidth: viewport.width,
+            documentWidth: viewport.width,
+            horizontalOverflow: false,
+            primaryHeadingVisible: true,
+            commercialActionVisible: true,
+            visibleTextLength: 120,
+          })),
           screenshot: vi.fn(async () => Buffer.from('png-bytes')),
           close: vi.fn(async () => undefined),
           route: vi.fn(),

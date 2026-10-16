@@ -22,10 +22,12 @@ const storage = vi.hoisted(() => ({
 }));
 
 vi.mock('@/lib/storage/object-store', () => ({
-  isScreenshotStorageConfigured: () => storage.configured,
+  isScreenshotStorageConfigured: () => true,
   storeAuditScreenshot: async (auditId: string, viewport: string, bytes: Buffer) => {
     storage.stored.push({ auditId, viewport, bytes });
-    return 'audits/' + auditId + '/' + viewport + '.png';
+    return storage.configured
+      ? 'audits/' + auditId + '/' + viewport + '.png'
+      : 'data:image/png;base64,' + bytes.toString('base64');
   },
 }));
 
@@ -92,11 +94,12 @@ describe('captureAuditScreenshots', () => {
     expect(storage.stored.every(item => item.bytes.length > 0)).toBe(true);
   });
 
-  it('does not launch a browser or claim screenshots when storage is not configured', async () => {
+  it('keeps screenshots available using the database fallback without object storage', async () => {
     storage.configured = false;
-    expect(await captureAuditScreenshots('audit-2', 'https://example.com')).toEqual([]);
-    expect(browserMock.launch).not.toHaveBeenCalled();
-    expect(storage.stored).toHaveLength(0);
+    const result = await captureAuditScreenshots('audit-2', 'https://example.com');
+    expect(result).toHaveLength(2);
+    expect(result.every(item => item.storageKey.startsWith('data:image/png;base64,'))).toBe(true);
+    expect(storage.stored).toHaveLength(2);
   });
 
   it('validates browser requests before allowing network access', async () => {

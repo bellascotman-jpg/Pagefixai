@@ -31,7 +31,7 @@ export default function MessageMatchWorkspace() {
     const compared = sourceSignals.map(item => {
       const sameCategory = destinationSignals.filter(dest => dest.label === item.label);
       const valueFor = (text: string) => {
-        const match = text.match(/\\d+(?:[,.]\\d+)?/);
+        const match = text.match(/\d+(?:[,.]\d+)?/);
         return match ? Number(match[0].replace(',', '.')) : null;
       };
       const valueSensitive = item.label === 'Percentage discount' || item.label === 'Currency price';

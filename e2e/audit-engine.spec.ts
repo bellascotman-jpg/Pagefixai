@@ -58,4 +58,19 @@ test('a signed-in user can create an audit and receive persisted evidence', asyn
   expect(reportPayload.audit?.status).toBe('COMPLETED');
   expect(reportPayload.audit?.evidence?.length ?? 0, 'Completed audit must persist browser evidence').toBeGreaterThanOrEqual(5);
   expect(reportPayload.audit?.jobs?.[0]?.status).toBe('COMPLETED');
+  expect(reportPayload.audit?.findings?.length ?? 0, 'Completed audit should persist actionable findings').toBeGreaterThan(0);
+
+  // Exercise a real fresh recheck through the authenticated API, not just the
+  // pure verification helper. Recheck results must be explicit and persisted.
+  const recheckResponse = await request.post(`/api/audits/${auditId}/recheck`);
+  expect(recheckResponse.status(), await recheckResponse.text()).toBe(200);
+  const recheckPayload = await recheckResponse.json() as {
+    auditId?: string;
+    result?: string;
+    verifiedCount?: number;
+    stillDetectedCount?: number;
+    unableToVerifyCount?: number;
+  };
+  expect(recheckPayload.auditId).toBeTruthy();
+  expect(['RESOLVED', 'IMPROVED', 'STILL_DETECTED', 'UNABLE_TO_VERIFY']).toContain(recheckPayload.result);
 });

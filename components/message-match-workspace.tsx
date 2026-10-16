@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { compareCommercialSignals } from '@/lib/intelligence/message-match';
+import { analyzeMessageContinuity, compareCommercialSignals } from '@/lib/intelligence/message-match';
 import { analyzeJourneyStages, calculateCheckoutMetrics, summarizeTrafficWasteRequirements, type JourneyStage } from '@/lib/intelligence/journey-intelligence';
 
 const initialStages: JourneyStage[] = [
@@ -26,6 +26,7 @@ export default function MessageMatchWorkspace() {
   const [hasConversions, setHasConversions] = useState(false);
 
   const result = useMemo(() => compareCommercialSignals(source, destination), [source, destination]);
+  const continuity = useMemo(() => analyzeMessageContinuity(source, destination), [source, destination]);
   const journeyResults = useMemo(() => analyzeJourneyStages(stages), [stages]);
   const metrics = useMemo(() => calculateCheckoutMetrics({
     checkoutStarts: checkoutStarts.trim() ? Number(checkoutStarts) : null,
@@ -61,6 +62,7 @@ export default function MessageMatchWorkspace() {
       <section className="message-match-results">
         <div className="message-match-result-head"><div><div className="label">LITERAL COMMERCIAL SIGNAL COMPARISON</div><h3>Candidate message gaps</h3></div><span className="badge">{result.gaps.length} to review</span></div>
         {!source.trim() || !destination.trim() ? <p className="muted">Add both campaign and destination content to compare supported commercial signals.</p> : result.sourceSignals.length === 0 ? <p className="muted">No supported promise patterns were detected in the source text. This does not mean the message is consistent; the current check recognises a limited set of literal patterns.</p> : result.compared.map((item,index)=><article className="message-match-row" key={item.label+index}><span className={item.matchingCategoryPresent && !item.valueMismatch?'message-match-check':'message-match-alert'}>{item.matchingCategoryPresent && !item.valueMismatch?'✓':'!'}</span><div><strong>{item.label}</strong><p>Source signal: <q>{item.text}</q></p><small>{item.valueMismatch?'A signal of this type was found, but its numeric value differs from the source. Review the actual offer and conditions.':item.matchingCategoryPresent?'A signal from the same category was found. This does not establish that the terms or conditions match.':'No corresponding signal from this category was detected in the destination text.'}</small></div><span className={item.matchingCategoryPresent && !item.valueMismatch?'clarity-state clarity-partial':'clarity-state clarity-review'}>{item.valueMismatch?'Value mismatch':item.matchingCategoryPresent?'Review conditions':'Review gap'}</span></article>)}
+        {source.trim() && destination.trim() && <div className="card" style={{marginTop:14}}><div className="label">LITERAL COPY CONTINUITY</div><div className="grid grid-3" style={{marginTop:10}}><div><strong>Distinctive source terms</strong><div className="stat">{continuity.sourceTerms.length}</div></div><div><strong>Terms also on destination</strong><div className="stat">{continuity.sharedTerms.length}</div></div><div><strong>Literal overlap</strong><div className="stat">{continuity.literalCoveragePercent === null ? '—' : continuity.literalCoveragePercent + '%'}</div></div></div><p className="muted">{continuity.note}</p>{continuity.unmatchedSourceTerms.length > 0 && <p><strong>Source terms not found in destination text:</strong> {continuity.unmatchedSourceTerms.join(', ')}</p>}</div>}
         {source.trim() && destination.trim() && <div className="impact-assumption-note"><strong>Evidence to verify</strong><p>Confirm that the offer, eligibility, price, timing and exclusions match in the actual campaign and page. Similar wording does not prove identical conditions.</p></div>}
       </section>
     </section>

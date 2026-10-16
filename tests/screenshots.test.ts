@@ -30,7 +30,13 @@ vi.mock('@/lib/storage/object-store', () => ({
 }));
 
 vi.mock('@/lib/audit/ssrf', () => ({
-  validateAuditUrl: async (rawUrl: string) => new URL(rawUrl),
+  validateAuditUrl: async (rawUrl: string) => {
+    const url = new URL(rawUrl);
+    if (url.hostname === '127.0.0.1' || url.hostname === 'localhost') {
+      throw new Error('BLOCKED_PRIVATE_IP');
+    }
+    return url;
+  },
 }));
 
 const browserMock = vi.hoisted(() => ({

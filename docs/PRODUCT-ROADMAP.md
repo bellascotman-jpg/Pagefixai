@@ -22,7 +22,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - **Acceptance:** a real user can submit a URL, the job finishes, findings/evidence persist, screenshots are retrievable when available, the report loads, recheck works, and failure/recovery paths are exercised.
 
 ## Phase 2 — Core Revenue Leak Detection Engine
-**Status: IN PROGRESS.**
+**Status: CI-VERIFIED COMPLETE on commit `2fb4b5a`; preview deployment ready.**
 
 - Product page: title, product details, description, value proposition, price, benefits/specifications, image coverage, buying information, CTA, shipping/delivery/returns, and purchase-relevant trust information.
 - Landing page: above-fold value, headline, audience/offer clarity, benefits/proof, CTA, hierarchy, message consistency, and missing/unclear conversion steps.
@@ -33,7 +33,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - **Acceptance:** product/landing-page findings are category-aware, evidence-linked, repeatable, and tested; CTA links/forms are handled; mobile overflow/above-fold checks are evidence-backed; no invented analytics, reviews, conversion rates, or financial losses.
 
 ## Phase 3 — Customer Buying Decision Intelligence
-**Status: PLANNED.**
+**Status: NEXT PHASE — not started.**
 
 - Objection Coverage: answered/unanswered questions across benefits, price, delivery, returns, trust, and suitability, with evidence and unknowns.
 - Pre-Purchase Questions: structured likely buyer questions, explicitly hypotheses rather than claims of actual customer quotes.

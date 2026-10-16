@@ -28,7 +28,6 @@ export default function MessageMatchWorkspace() {
   const result = useMemo(() => {
     const sourceSignals = signals(source);
     const destinationSignals = signals(destination);
-    const normalizedDestination = destination.toLowerCase();
     const compared = sourceSignals.map(item => {
       const sameCategory = destinationSignals.filter(dest => dest.label === item.label);
       const valueFor = (text: string) => {

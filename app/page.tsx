@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 
 const capabilities = [
   { number: '01', title: 'Product Page Intelligence', body: 'Review visible product information, pricing clarity, primary actions, shipping and returns language, trust cues and unanswered buyer questions.' },
@@ -21,6 +22,12 @@ const audiences = [
   { title: 'SaaS and landing-page teams', body: 'Review above-the-fold messaging, page structure, call-to-action clarity and the match between a promise and its destination.' },
   { title: 'Agencies and consultants', body: 'Standardize page inspections, keep evidence visible and make remediation discussions more concrete across projects.' },
 ];
+
+export const metadata: Metadata = {
+  title: 'PageFix AI — Commerce Intelligence & Remediation for Sellers',
+  description: 'Inspect product pages, offers and ad-to-page journeys. Find evidence-backed issues, get practical fixes and verify changes without invented performance claims.',
+  openGraph: { title: 'PageFix AI — Find it. Fix it. Verify it.', description: 'Seller-first commerce intelligence for product pages, buying journeys and evidence-led remediation.', type: 'website' },
+};
 
 export default function HomePage() {
   return <main className="marketing">

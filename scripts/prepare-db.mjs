@@ -1,5 +1,10 @@
 import { spawnSync } from "node:child_process";
 
+if (process.env.VERCEL_ENV === "preview") {
+  console.log("[prepare-db] Skipping schema sync for preview deployment.");
+  process.exit(0);
+}
+
 const candidates = [
   ["Pagefixai_POSTGRES_URL", process.env.Pagefixai_POSTGRES_URL],
   ["POSTGRES_URL", process.env.POSTGRES_URL],

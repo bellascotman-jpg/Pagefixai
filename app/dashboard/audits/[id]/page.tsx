@@ -139,7 +139,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           </div>
           <section style={{marginTop:18}}>
             <h3>Recommended decision sequence</h3>
-            <p className="muted">Use this order as a review guide, not a claim about the page's exact visual order: (1) clear offer and audience, (2) verified benefits and suitability details, (3) supporting proof where authentic, (4) price and purchase conditions, (5) delivery/returns/support, (6) clear next action.</p>
+            <p className="muted">Use this order as a review guide, not a claim about the page&apos;s exact visual order: (1) clear offer and audience, (2) verified benefits and suitability details, (3) supporting proof where authentic, (4) price and purchase conditions, (5) delivery/returns/support, (6) clear next action.</p>
           </section>
           <section style={{marginTop:18}}>
             <h3>Friction debt — grouped issues</h3>

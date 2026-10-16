@@ -25,13 +25,19 @@ function getClient() {
   return { client, bucket: config.bucket };
 }
 
+// Screenshots can persist in the audit's database record when private object
+// storage credentials are not configured. This keeps previews and small
+// deployments functional without inventing screenshot URLs or requiring a
+// separate paid storage service.
 export function isScreenshotStorageConfigured() {
-  return getStorageConfig() !== null;
+  return true;
 }
 
 export async function storeAuditScreenshot(auditId: string, viewport: string, bytes: Buffer) {
   const storage = getClient();
-  if (!storage) return null;
+  if (!storage) {
+    return 'data:image/png;base64,' + bytes.toString('base64');
+  }
   const key = 'audits/' + auditId + '/' + viewport + '.png';
   await storage.client.send(new PutObjectCommand({
     Bucket: storage.bucket,
@@ -44,6 +50,9 @@ export async function storeAuditScreenshot(auditId: string, viewport: string, by
 }
 
 export async function readAuditScreenshot(key: string) {
+  if (key.startsWith('data:image/png;base64,')) {
+    return Buffer.from(key.slice('data:image/png;base64,'.length), 'base64');
+  }
   const storage = getClient();
   if (!storage) return null;
   const response = await storage.client.send(new GetObjectCommand({ Bucket: storage.bucket, Key: key }));

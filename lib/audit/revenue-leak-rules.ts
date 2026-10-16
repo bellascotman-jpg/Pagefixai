@@ -38,7 +38,7 @@ const RETURNS_SIGNAL = /return policy|returns?|refunds?|exchanges?|money.back gu
 const PRODUCT_DETAIL_SIGNAL = /product details|product information|specifications?|dimensions|materials?|ingredients|features|what.s included|what you get|size guide|size chart|technical details|how to use|benefits/i;
 const COMMERCIAL_ACTION = /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now|sign up|get started|download now|purchase|try (?:it )?free|schedule a demo/i;
 const SUPPORT_SIGNAL = /contact us|customer support|support@|mailto:|whatsapp|call us|help centre|help center|customer service|phone number/i;
-const TRUST_SIGNAL = /secure checkout|secure payment|payment methods|warranty|guarantee|verified|certified|privacy policy|terms and conditions|terms of service|return policy|money.back/i;
+const TRUST_SIGNAL = /secure checkout|secure payment|payment methods|warranty|guarantee|verified|certified|privacy policy|terms and conditions|terms of service/i;
 const BENEFIT_SIGNAL = /benefit|why choose|designed to|helps you|built for|made for|save time|save money|improve|reduce|faster|easier|durable|lightweight|long.lasting|features include|key features/i;
 const GENERIC_PROPOSITION = /^(home|welcome|welcome to our website|homepage|landing page|untitled|website|official website|main page)$/i;
 
@@ -206,16 +206,6 @@ export function buildCoreRevenueFindings(input: CoreRevenueInput): CoreRevenueFi
       'Without an appropriate viewport configuration, the page may not render at the intended device width on mobile browsers. This static check does not measure actual responsive layout.',
       'Review the page’s viewport meta tag and test the actual page at mobile widths. A common configuration uses width=device-width and an appropriate initial scale.',
       'Does the page render at the intended width on a mobile device?', [input.metadataEvidenceId ?? input.textEvidenceId],
-    ));
-  }
-
-  if (input.imagesWithoutAlt !== undefined && input.imagesWithoutAlt > 0 && input.imageEvidenceId) {
-    output.push(createFinding(
-      'Image alternative-text review needed', input.imagesWithoutAlt > 5 ? 'MEDIUM' : 'LOW',
-      `${input.imagesWithoutAlt} of ${input.imageCount ?? 'an unknown number of'} captured image elements had empty alt attributes. Empty alt is appropriate for decorative images, so this is a review cue rather than proof of an accessibility defect.`,
-      'Informative images need meaningful text alternatives for people using assistive technology.',
-      'Review each image in context. Add concise alt text to informative images and retain empty alt attributes for decorative images.',
-      'Do informative images communicate their relevant meaning to someone who cannot see them?', [input.imageEvidenceId],
     ));
   }
 

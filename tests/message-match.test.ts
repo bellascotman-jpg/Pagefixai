@@ -12,3 +12,20 @@ describe('literal message matching', () => {
     expect(result.gaps.length).toBe(2);
   });
 });
+
+import { analyzeMessageContinuity } from '@/lib/intelligence/message-match';
+
+describe('literal message continuity', () => {
+  it('shows exact campaign terms missing from destination copy without claiming semantic mismatch', () => {
+    const result = analyzeMessageContinuity('Lightweight linen trousers for travel comfort', 'Shop our cotton shirt collection');
+    expect(result.unmatchedSourceTerms).toContain('lightweight');
+    expect(result.unmatchedSourceTerms).toContain('linen');
+    expect(result.literalCoveragePercent).not.toBeNull();
+    expect(result.note).toContain('Literal keyword overlap only');
+  });
+
+  it('does not invent a percentage when either side has no distinctive terms', () => {
+    const result = analyzeMessageContinuity('Buy now and shop today', '');
+    expect(result.literalCoveragePercent).toBeNull();
+  });
+});

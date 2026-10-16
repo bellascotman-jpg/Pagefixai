@@ -61,6 +61,17 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           <div className="card"><div className="label">Page response</div><div className="stat" style={{ fontSize: 23 }}>{page?.statusCode ?? 'Not recorded'}</div><p className="muted">HTTP status observed during the primary navigation.</p></div>
         </div>
         <section className="card" style={{ marginTop: 24 }}>
+          <div className="label">COMMERCE CLARITY SCORECARD</div>
+          <h2>What the captured page tells us</h2>
+          <p className="muted" style={{ fontSize: 12, lineHeight: 1.8 }}>Qualitative, evidence-led assessments—not a universal conversion score. Each state reflects signals recorded during this inspection; it does not predict sales or prove that an issue causes customer behaviour.</p>
+          <div className="clarity-scorecard-grid">
+            {scorecard.map(item => <article className="clarity-scorecard-item" key={item.key}>
+              <div className="clarity-scorecard-top"><strong>{item.title}</strong><span className={`clarity-state ${item.state === 'Strong signals in capture' ? 'clarity-strong' : item.state === 'Partial signals' ? 'clarity-partial' : item.state === 'Needs review' ? 'clarity-review' : 'clarity-unknown'}`}>{item.state}</span></div>
+              <p>{item.explanation}</p><small>{item.basis}</small>
+            </article>)}
+          </div>
+        </section>
+        <section className="card" style={{ marginTop: 24 }}>
           <h2>Captured page views</h2>
           <p className="muted" style={{ fontSize: 12 }}>Viewport screenshots are stored privately and are available only to the owner of this audit. Screenshot storage must be configured for these images to be retained.</p>
           {audit.screenshots.filter(item => item.storageUrl).length === 0 && <p className="muted">No stored screenshots are available for this audit. Configure the S3-compatible storage settings and run a new audit to retain desktop and mobile captures.</p>}

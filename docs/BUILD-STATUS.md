@@ -8,7 +8,7 @@ The full product scope and acceptance criteria live in [PRODUCT-ROADMAP.md](./PR
 - Working branch: `build/pagefix-product-strategy`
 - Review: draft PR #7 against `main`
 - Production: `main` and the production deployment must remain unchanged until release checks pass.
-- Immediate scope: Phase 2 — Core Revenue Leak Detection Engine.
+- Immediate scope: Phase 3 — Customer Buying Decision Intelligence, plus correcting the intelligence-module navigation and SEO discoverability issue found in preview.
 
 ## Phase 1 — latest confirmed verification
 
@@ -48,6 +48,22 @@ The signed-in audit end-to-end suite passed on that run, including audit complet
 - Corrected CTA detection to recognize link-based actions and forms, and limited Product structured-data warnings to product-like pages.
 - Added unit coverage for detection and non-detection cases, links/forms, mobile viewport evidence, and above-the-fold action visibility.
 - Production branch and production deployment remain unchanged. Preview deployment: `https://pagefixai-r2c3yiyga-bellascotman-7762.vercel.app`.
+
+## Phase 3 — Customer Buying Decision Intelligence
+
+**Status: IMPLEMENTED ON DEVELOPMENT BRANCH; CI validation pending.** New deterministic buyer-decision rules are wired into the audit engine. They add evidence-linked likely-buyer questions, candidate commercial-claim substantiation prompts, browser-evidence-gated above-the-fold findings, and purchase-critical information order review. The audit report now groups related findings as friction debt, maps visible trust/reassurance signals, shows candidate promises extracted from captured text for human review, and provides a dedicated SEO & Product Data Readiness section.
+
+The intelligence module pages no longer stop at a capability explainer with generic Fix Center/workspace buttons. They now load the user's latest completed inspection, surface module-relevant findings and evidence, and deep-link to report sections. SEO & Product Data Readiness exposes the actual latest audit's HTTP status, title, meta description, canonical URL, JSON-LD parse counts and technical findings. Dashboard shortcuts make SEO, buyer decisions, visual inspection, Promise Ledger, Fix Center and audit history easier to discover.
+
+### Phase 3 acceptance checklist
+
+- [ ] New buyer-decision rules compile and pass unit tests.
+- [ ] Findings preserve evidence labels, identify hypotheses, and do not invent customer objections, revenue loss, or conversion outcomes.
+- [ ] Buyer question coverage, trust signals, above-the-fold signals, candidate promises and friction grouping render from real saved audit evidence.
+- [ ] SEO & Product Data Readiness shows saved metadata, structured-data status and technical findings.
+- [ ] Intelligence module routes show real audit data and actionable links rather than only explanations.
+- [ ] Full CI passes on the latest development commit.
+- [ ] Production remains unchanged until release checks pass.
 
 ## Release safety
 

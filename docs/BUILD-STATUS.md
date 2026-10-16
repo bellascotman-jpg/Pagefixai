@@ -8,7 +8,7 @@ The full product scope and acceptance criteria live in [PRODUCT-ROADMAP.md](./PR
 - Working branch: `build/pagefix-product-strategy`
 - Review: draft PR #7 against `main`
 - Production: `main` and the production deployment must remain unchanged until release checks pass.
-- Immediate scope: Phase 1 — Audit Engine and Processing Reliability.
+- Immediate scope: Phase 2 — Core Revenue Leak Detection Engine.
 
 ## Phase 1 — latest confirmed verification
 
@@ -25,15 +25,19 @@ The signed-in audit end-to-end suite passed on that run, including audit complet
 
 ## Phase 2 — Core Revenue Leak Detection Engine
 
-**Status: IN PROGRESS.** Added a deterministic, testable core rule module for product-page price visibility, shipping/delivery terms, return/refund terms, decision-useful product details, landing-page conversion-step visibility, and contact/support route visibility. Each rule is grounded in captured page text/links and explicitly says information was not observed in the capture; it does not claim actual conversion loss or revenue impact. Unit tests cover positive detection, signal-present cases, landing-page next steps, and form-based flows.
+**Status: IN PROGRESS — implementation expanded; final branch CI verification pending.** The audit now runs deterministic product/landing-page rules for price, delivery, returns, decision-useful details, value proposition, benefits language, purchase actions, contact/support, trust/policy visibility, image coverage, mobile viewport metadata, and rendered mobile first-viewport behavior. Existing engine checks cover HTTP status, title/meta/canonical, headings, image alt text, accessible link labels, structured-data parsing, and missing imagery. The engine now persists browser-measured desktop/mobile viewport signals as evidence, including horizontal overflow, H1 visibility, and whether a commercial action is visible in the initial viewport. CTA checks include links and forms to reduce false positives. All findings are evidence-linked and do not claim actual conversion loss or financial outcomes.
 
 ## Phase 2 acceptance checklist
 
-- [ ] Product and landing-page findings are category-aware and evidence-linked.
-- [ ] Price, delivery, returns, product details, and conversion-step checks are conservative and repeatable.
-- [ ] Findings preserve evidence-vs-inference distinctions and avoid fabricated metrics.
-- [ ] Unit tests pass and the full CI suite passes.
-- [ ] Existing audit submission, reports, history, and pricing remain intact.
+- [x] Deterministic product and landing-page rules are wired into the real audit engine.
+- [x] Price, delivery, returns, product details, value proposition, benefits language, purchase actions, trust/policy and support-route checks are implemented.
+- [x] Technical/SEO checks cover HTTP status, title/meta description, canonical, heading structure, image alt text, accessible link labels, structured-data JSON parsing, and product structured-data presence where relevant.
+- [x] Browser-backed desktop/mobile evidence captures horizontal overflow, H1 visibility and above-the-fold commercial-action visibility when screenshots are successfully captured.
+- [x] Findings reference stored evidence and clearly distinguish directly measured viewport observations from inferred risks.
+- [x] Tests cover positive/negative signals, form/link CTAs, generic landing pages, mobile overflow and first-viewport CTA visibility.
+- [ ] Final Phase 2 commit passes typecheck, lint, unit tests, production build, and end-to-end CI.
+- [ ] Preview smoke test confirms a real product URL and landing-page URL generate and persist readable findings without regressions.
+- [ ] Existing audit submission, reports, history, founder access, entitlements, and pricing remain intact.
 
 ## Release safety
 

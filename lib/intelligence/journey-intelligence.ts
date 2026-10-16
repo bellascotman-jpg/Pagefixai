@@ -9,7 +9,7 @@ export type JourneyStage = {
 export type JourneyObservation = {
   stageId: string;
   stageName: string;
-  kind: 'MISSING_CONTENT' | 'HANDOFF_UNCLEAR' | 'DESTINATION_UNVERIFIED' | 'POSSIBLE_FRICTION';
+  kind: 'MISSING_CONTENT' | 'HANDOFF_UNCLEAR' | 'DESTINATION_UNVERIFIED' | 'POSSIBLE_FRICTION' | 'INVALID_URL_FORMAT';
   label: 'Directly Observed Evidence' | 'Inferred Risk' | 'Hypothesis' | 'Recommendation';
   detail: string;
   recommendation: string;
@@ -21,11 +21,47 @@ const PAYMENT_SIGNAL = /payment|pay securely|card|bank transfer|checkout|billing
 const PRICE_SIGNAL = /(?:[$₦€£]\s?\d[\d,.]*|\b(?:USD|NGN|GBP|EUR)\s?\d[\d,.]*)/i;
 const RETURN_SIGNAL = /returns?|refunds?|exchange|money.back guarantee/i;
 
+function hasValidPublicHttpUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return (parsed.protocol === 'http:' || parsed.protocol === 'https:') &&
+      !parsed.username && !parsed.password && Boolean(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function expectedActionFound(expected: string, content: string): boolean {
+  const normalizedExpected = expected.trim().toLowerCase();
+  const normalizedContent = content.toLowerCase();
+  if (!normalizedExpected) return true;
+  const actionPatterns: Array<{ match: RegExp; content: RegExp }> = [
+    { match: /^(?:proceed to checkout|continue to checkout|go to checkout)$/, content: /\b(?:checkout|continue to checkout|proceed to checkout)\b/i },
+    { match: /^(?:add to cart|add to basket|add to bag)$/, content: /\b(?:add to (?:cart|basket|bag)|add item)\b/i },
+    { match: /^(?:complete purchase|complete order|place order)$/, content: /\b(?:place order|pay now|complete (?:purchase|order)|confirm order)\b/i },
+    { match: /^(?:start free trial|start a free trial|start trial)$/, content: /\b(?:start (?:a )?free trial|start trial|try for free)\b/i },
+    { match: /^(?:request a quote|get a quote)$/, content: /\b(?:request (?:a )?quote|get (?:a )?quote|contact sales)\b/i },
+    { match: /^(?:learn more|view details|see details)$/, content: /\b(?:learn more|view details|see details|explore details)\b/i },
+  ];
+  const alias = actionPatterns.find(item => item.match.test(normalizedExpected));
+  return alias ? alias.content.test(content) : normalizedContent.includes(normalizedExpected);
+}
+
 export function analyzeJourneyStages(stages: JourneyStage[]): JourneyObservation[] {
   const observations: JourneyObservation[] = [];
   const populated = stages.filter(stage => stage.content.trim());
   for (const stage of stages) {
     const content = stage.content.trim();
+    if (stage.url.trim() && !hasValidPublicHttpUrl(stage.url.trim())) {
+      observations.push({
+        stageId: stage.id,
+        stageName: stage.name,
+        kind: 'INVALID_URL_FORMAT',
+        label: 'Recommendation',
+        detail: 'The supplied destination is not a valid absolute HTTP(S) URL without embedded credentials. No network request was made to this address.',
+        recommendation: 'Correct the URL to a public https:// or http:// address. URL format validation does not establish that the destination is reachable or safe to purchase from.',
+      });
+    }
     if (!content) {
       observations.push({
         stageId: stage.id,
@@ -37,7 +73,7 @@ export function analyzeJourneyStages(stages: JourneyStage[]): JourneyObservation
       });
       continue;
     }
-    if (stage.expectedNextStep.trim() && !content.toLowerCase().includes(stage.expectedNextStep.trim().toLowerCase())) {
+    if (stage.expectedNextStep.trim() && !expectedActionFound(stage.expectedNextStep, content)) {
       observations.push({
         stageId: stage.id,
         stageName: stage.name,

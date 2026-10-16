@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
+import { captureAuditScreenshots } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
 
@@ -175,6 +176,31 @@ export async function runAudit(auditId: string) {
         visibleText: primary.bodyText,
       },
     });
+
+    // Screenshots are supplemental evidence: a capture/storage failure must not fail an otherwise valid HTML audit.
+    try {
+      const captures = await captureAuditScreenshots(auditId, target.toString());
+      for (const capture of captures) {
+        const screenshotUrl = '/api/audits/' + auditId + '/screenshots/' + capture.viewport;
+        await db.screenshot.create({
+          data: {
+            auditId,
+            viewport: capture.viewport,
+            kind: 'page_capture',
+            storageUrl: capture.storageKey,
+            mimeType: 'image/png',
+          },
+        });
+        await db.pageSnapshot.create({
+          data: { pageId: pageRecord.id, viewport: capture.viewport, screenshotUrl },
+        });
+      }
+    } catch (error) {
+      console.warn('pagefix_screenshot_capture_failed', {
+        auditId,
+        message: error instanceof Error ? error.message : 'SCREENSHOT_FAILED',
+      });
+    }
 
     const evidence = await db.evidence.createManyAndReturn({
       data: [

@@ -8,7 +8,7 @@ The full product scope and acceptance criteria live in [PRODUCT-ROADMAP.md](./PR
 - Working branch: `build/pagefix-product-strategy`
 - Review: draft PR #7 against `main`
 - Production: `main` and the production deployment must remain unchanged until release checks pass.
-- Immediate scope: Phase 3 — Customer Buying Decision Intelligence, plus correcting the intelligence-module navigation and SEO discoverability issue found in preview.
+- Immediate scope: Phase 4 — Traffic, Advertising and Customer Journey Intelligence.
 
 ## Phase 1 — latest confirmed verification
 

@@ -77,7 +77,7 @@ export async function POST(request: Request) {
         name: error instanceof Error ? error.name : 'UnknownError',
       });
     });
-\n    if (referringAffiliate) {
+    if (referringAffiliate) {
       await db.affiliateReferral.create({ data: { affiliateId: referringAffiliate.id, referredUserId: user.id } }).catch((error) => {
         console.error('referral_attribution_error', { name: error instanceof Error ? error.name : 'UnknownError' });
       });

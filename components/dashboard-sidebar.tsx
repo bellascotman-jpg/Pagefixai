@@ -15,6 +15,7 @@ const groups = [
     { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
     { href: '/dashboard/intelligence/return-risk', label: 'Pre-purchase & return risk', icon: '?' },
     { href: '/dashboard/intelligence/visual-inspection', label: 'Visual & mobile inspection', icon: '▧' },
+    { href: '/dashboard/intelligence/seo-data', label: 'SEO & product data', icon: '⌕' },
     { href: '/dashboard/intelligence/copy-fixes', label: 'Grounded copy fixes', icon: '✎' },
     { href: '/dashboard/intelligence/claims', label: 'Claims & promises', icon: '⇄' },
     { href: '/dashboard/intelligence/store', label: 'Store intelligence', icon: '▦' },

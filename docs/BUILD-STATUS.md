@@ -51,19 +51,19 @@ The signed-in audit end-to-end suite passed on that run, including audit complet
 
 ## Phase 3 — Customer Buying Decision Intelligence
 
-**Status: IMPLEMENTED ON DEVELOPMENT BRANCH; CI validation pending.** New deterministic buyer-decision rules are wired into the audit engine. They add evidence-linked likely-buyer questions, candidate commercial-claim substantiation prompts, browser-evidence-gated above-the-fold findings, and purchase-critical information order review. The audit report now groups related findings as friction debt, maps visible trust/reassurance signals, shows candidate promises extracted from captured text for human review, and provides a dedicated SEO & Product Data Readiness section.
+**Status: CI-VERIFIED COMPLETE on commit `053d9e38a90780b49f810136bd47ea39e95de234`.** New deterministic buyer-decision rules are wired into the audit engine. They add evidence-linked likely-buyer questions, candidate commercial-claim substantiation prompts, browser-evidence-gated above-the-fold findings, and purchase-critical information order review. The audit report now groups related findings as friction debt, maps visible trust/reassurance signals, shows candidate promises extracted from captured text with an action to save them to the source-linked Promise Ledger, and provides a dedicated SEO & Product Data Readiness section.
 
-The intelligence module pages no longer stop at a capability explainer with generic Fix Center/workspace buttons. They now load the user's latest completed inspection, surface module-relevant findings and evidence, and deep-link to report sections. SEO & Product Data Readiness exposes the actual latest audit's HTTP status, title, meta description, canonical URL, JSON-LD parse counts and technical findings. Dashboard shortcuts make SEO, buyer decisions, visual inspection, Promise Ledger, Fix Center and audit history easier to discover.
+The intelligence module pages no longer stop at a capability explainer with generic Fix Center/workspace buttons. They now load the user's latest completed inspection, surface module-relevant findings and evidence, and deep-link to report sections. SEO & Product Data Readiness exposes the actual latest audit's HTTP status, title, meta description, canonical URL, JSON-LD parse counts and technical findings. Preview deployment: `https://pagefixai-6onwxjhz2-bellascotman-7762.vercel.app`. Dashboard shortcuts make SEO, buyer decisions, visual inspection, Promise Ledger, Fix Center and audit history easier to discover.
 
 ### Phase 3 acceptance checklist
 
-- [ ] New buyer-decision rules compile and pass unit tests.
-- [ ] Findings preserve evidence labels, identify hypotheses, and do not invent customer objections, revenue loss, or conversion outcomes.
-- [ ] Buyer question coverage, trust signals, above-the-fold signals, candidate promises and friction grouping render from real saved audit evidence.
-- [ ] SEO & Product Data Readiness shows saved metadata, structured-data status and technical findings.
-- [ ] Intelligence module routes show real audit data and actionable links rather than only explanations.
-- [ ] Full CI passes on the latest development commit.
-- [ ] Production remains unchanged until release checks pass.
+- [x] New buyer-decision rules compile and pass unit tests.
+- [x] Findings preserve evidence labels, identify hypotheses, and do not invent customer objections, revenue loss, or conversion outcomes.
+- [x] Buyer question coverage, trust signals, above-the-fold signals, candidate promises and friction grouping render from real saved audit evidence.
+- [x] SEO & Product Data Readiness shows saved metadata, structured-data status and technical findings.
+- [x] Intelligence module routes show real audit data and actionable links rather than only explanations.
+- [x] Full CI passes on commit `053d9e38a90780b49f810136bd47ea39e95de234` (run `38976392244`).
+- [x] Production remains unchanged; a separate preview deployment is ready for review.
 
 ## Release safety
 

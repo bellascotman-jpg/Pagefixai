@@ -15,6 +15,16 @@ export type CoreRevenueInput = {
   linkEvidenceId: string;
   metadataEvidenceId?: string;
   imageEvidenceId?: string;
+  viewportEvidenceId?: string;
+  viewportSignals?: Array<{
+    viewport: 'desktop' | 'mobile';
+    viewportWidth: number;
+    documentWidth: number;
+    horizontalOverflow: boolean;
+    primaryHeadingVisible: boolean;
+    commercialActionVisible: boolean;
+    visibleTextLength: number;
+  }>;
 };
 
 export type CoreRevenueFinding = {
@@ -24,7 +34,7 @@ export type CoreRevenueFinding = {
   effort: 'LOW' | 'MEDIUM' | 'HIGH';
   priority: 'FIX_NOW' | 'FIX_NEXT' | 'FIX_LATER';
   observation: string;
-  hypothesis: 'Inferred Risk' | 'Recommendation';
+  hypothesis: 'Directly Observed Evidence' | 'Inferred Risk' | 'Hypothesis' | 'Recommendation';
   whyItMatters: string;
   recommendation: string;
   implementationSteps: string;
@@ -50,6 +60,7 @@ function createFinding(
   recommendation: string,
   buyerQuestion: string,
   evidenceIds: string[],
+  classification: CoreRevenueFinding['hypothesis'] = 'Inferred Risk',
 ): CoreRevenueFinding {
   return {
     title,
@@ -58,7 +69,7 @@ function createFinding(
     effort: 'LOW',
     priority: severity === 'HIGH' ? 'FIX_NOW' : severity === 'MEDIUM' ? 'FIX_NEXT' : 'FIX_LATER',
     observation,
-    hypothesis: 'Inferred Risk',
+    hypothesis: classification,
     whyItMatters,
     recommendation,
     implementationSteps: recommendation,
@@ -207,6 +218,40 @@ export function buildCoreRevenueFindings(input: CoreRevenueInput): CoreRevenueFi
       'Review the page’s viewport meta tag and test the actual page at mobile widths. A common configuration uses width=device-width and an appropriate initial scale.',
       'Does the page render at the intended width on a mobile device?', [input.metadataEvidenceId ?? input.textEvidenceId],
     ));
+  }
+
+  const mobileSignals = input.viewportSignals?.find((signal) => signal.viewport === 'mobile');
+  if (mobileSignals && input.viewportEvidenceId) {
+    if (mobileSignals.horizontalOverflow) {
+      output.push(createFinding(
+        'Horizontal overflow was detected at the captured mobile viewport', 'MEDIUM',
+        `At a ${mobileSignals.viewportWidth}px viewport, the captured document width was ${mobileSignals.documentWidth}px, exceeding the viewport by more than the 2px tolerance.`,
+        'Horizontal overflow can force sideways scrolling and may make some page content or controls harder to use on mobile.',
+        'Inspect wide images, tables, fixed-width containers, and positioned elements at mobile widths. Recheck after the layout is adjusted; some intentional carousels can also create overflow.',
+        'Can the main page content be used at mobile width without unintended sideways scrolling?',
+        [input.viewportEvidenceId], 'Directly Observed Evidence',
+      ));
+    }
+    if (input.headings.some((heading) => heading.tag.toUpperCase() === 'H1') && !mobileSignals.primaryHeadingVisible) {
+      output.push(createFinding(
+        'Primary heading was not visible in the initial mobile viewport', 'LOW',
+        'An H1 was present in the captured page structure but no H1 element intersected the initial mobile viewport during the browser capture.',
+        'Visitors may need to scroll before seeing the page’s primary proposition. The page may intentionally lead with navigation, media, or a campaign banner.',
+        'Review the first mobile screen and consider presenting the core offer earlier when that supports the page goal.',
+        'Can a mobile visitor identify the page’s main offer without first searching through the page?',
+        [input.viewportEvidenceId], 'Directly Observed Evidence',
+      ));
+    }
+    if (hasAction(input) && !mobileSignals.commercialActionVisible) {
+      output.push(createFinding(
+        'Commercial action was not visible in the initial mobile viewport', 'LOW',
+        'A commercial action label was found in the captured page, but no matching action element was visible in the initial mobile viewport. The action may be intentionally placed lower on the page.',
+        'Visitors may need to scroll before they can act on the offer, depending on the intended page flow.',
+        'Review whether the primary action should be visible sooner on mobile while preserving the information needed to make a decision.',
+        'Can a mobile visitor find the next step at the point where the offer becomes clear?',
+        [input.viewportEvidenceId], 'Inferred Risk',
+      ));
+    }
   }
 
   return output;

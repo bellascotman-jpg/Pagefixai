@@ -42,8 +42,7 @@ describe('captureAuditScreenshots', () => {
     browserMock.executablePath.mockResolvedValue('/tmp/chromium');
     browserMock.launch.mockResolvedValue({
       newPage: vi.fn(async ({ viewport }) => {
-        const page = {
-          route: vi.fn(async (_pattern, handler) => { page.routeHandler = handler; }),
+        const page: any = {
           goto: vi.fn(async () => undefined),
           waitForTimeout: vi.fn(async () => undefined),
           screenshot: vi.fn(async () => Buffer.from('png-bytes')),
@@ -51,6 +50,7 @@ describe('captureAuditScreenshots', () => {
           routeHandler: null as null | ((route: any) => Promise<void>),
           viewport,
         };
+        page.route = vi.fn(async (_pattern: string, handler: (route: any) => Promise<void>) => { page.routeHandler = handler; });
         browserMock.pages.push(page);
         return page;
       }),

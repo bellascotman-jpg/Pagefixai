@@ -10,8 +10,19 @@ const groups = [
     { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
     { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
   ]},
-  { label: 'INTELLIGENCE', items: [
-    { href: '/dashboard/competitors', label: 'Competitors', icon: '◎' },
+  { label: 'COMMERCE INTELLIGENCE', items: [
+    { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
+    { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
+    { href: '/dashboard/intelligence/claims', label: 'Claims & promises', icon: '⇄' },
+    { href: '/dashboard/intelligence/store', label: 'Store intelligence', icon: '▦' },
+    { href: '/dashboard/intelligence/impact', label: 'Impact analysis', icon: '↗' },
+    { href: '/dashboard/intelligence/journey', label: 'Journey & message match', icon: '⌁' },
+    { href: '/dashboard/intelligence/verification', label: 'Verification history', icon: '✓' },
+  ]},
+  { label: 'WORKSPACES', items: [
+    { href: '/dashboard/competitors', label: 'Competitors', icon: '⊙' },
+    { href: '/dashboard/intelligence/workspaces', label: 'Seller & agency workspaces', icon: '▣' },
+    { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
   ]},
   { label: 'ACCOUNT', items: [
     { href: '/dashboard/settings', label: 'Workspace settings', icon: '⚙' },

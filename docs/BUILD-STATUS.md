@@ -67,7 +67,7 @@ The intelligence module pages no longer stop at a capability explainer with gene
 
 ## Phase 4 — Traffic, Advertising and Customer Journey Intelligence
 
-**Status: IMPLEMENTED; final CI verification pending on the latest branch commits.**
+**Status: CI-VERIFIED COMPLETE on commit `0c47e78c` (run `38980076161`); preview deployment READY on commit `0b72d747`.**
 
 - The authenticated Journey & Message Match workspace compares user-supplied paid-ad or social copy with supplied destination-page text. It highlights literal commercial-signal gaps, discount/price mismatches, unmatched distinctive terms, and limitations of keyword-only comparison.
 - The customer journey workspace maps product/landing, cart and checkout steps, compares expected next-action wording against supplied content, marks unprovided stages as uninspected, and checks supplied destination URL format without pretending to test live reachability. The audit engine also probes up to three same-origin commercial-action links with bounded requests and flags only explicit HTTP 404/410 responses as confirmed broken destinations; external, blocked, timed-out and other responses remain unverified.

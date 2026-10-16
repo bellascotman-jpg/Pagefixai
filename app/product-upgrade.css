@@ -112,3 +112,23 @@ html,body{background:#fbfaf8;color:#171d2b}
 .clarity-scorecard-item p{font-size:12px;line-height:1.75;color:#667085;margin:12px 0 8px}
 .clarity-scorecard-item small{display:block;font-size:10px;line-height:1.7;color:#81899a}
 @media(max-width:760px){.clarity-scorecard-grid{grid-template-columns:1fr}}
+
+.promise-ledger-layout{display:grid;grid-template-columns:minmax(280px,.78fr) minmax(0,1.22fr);gap:18px;align-items:start;margin-top:22px}
+.promise-ledger-form{display:grid;gap:13px}
+.promise-ledger-form h2,.promise-ledger-list-head h2{margin:3px 0;font-size:22px;letter-spacing:-.04em}
+.promise-ledger-form>p{font-size:12px;line-height:1.8;margin:0 0 3px}
+.promise-ledger-form label{display:grid;gap:6px;font-size:11px;font-weight:800;color:#384052}
+.promise-ledger-form input,.promise-ledger-form textarea,.promise-ledger-form select,.promise-claim-head select{width:100%;border:1px solid #dfe2e9;border-radius:8px;background:#fff;color:#202638;padding:10px 11px;font:inherit;font-size:12px;outline:none}
+.promise-ledger-form input:focus,.promise-ledger-form textarea:focus,.promise-ledger-form select:focus{border-color:#f06428;box-shadow:0 0 0 3px rgba(240,100,40,.1)}
+.promise-ledger-message{font-size:11px;color:#4b5565;margin:0}
+.promise-ledger-list-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.promise-ledger-list>.muted{font-size:12px;line-height:1.8;margin:9px 0 15px}
+.promise-claim-card{margin-bottom:12px}
+.promise-claim-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.promise-claim-head select{width:auto;max-width:170px;padding:7px 8px;font-size:10px;font-weight:800}
+.promise-claim-card h3{font-size:17px;margin:15px 0 8px}
+.promise-claim-card blockquote{margin:0;padding:13px 15px;border-left:3px solid #f06428;background:#fff8f4;color:#394052;font-size:13px;line-height:1.8;white-space:pre-wrap}
+.promise-source-link{display:inline-block;margin-top:9px;color:#d94b16;font-size:11px;font-weight:800;overflow-wrap:anywhere}
+.promise-claim-meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;color:#81899a;font-size:10px}
+.promise-delete{margin-top:13px;color:#b33c2d}
+@media(max-width:900px){.promise-ledger-layout{grid-template-columns:1fr}}

@@ -265,9 +265,11 @@ export async function runAudit(auditId: string) {
     } else if (h1s.length > 1) {
       findings.push(makeFinding('Multiple visible H1 headings', 'LOW', `The rendered page contains ${h1s.length} visible H1 elements.`, 'Multiple H1 elements are valid in some HTML structures, but they can make the main page hierarchy harder to review.', 'Review the heading outline and ensure the primary page proposition is clear. Do not remove headings solely to meet an arbitrary count.', 'Which heading is the primary page proposition?', domEvidence.id));
     }
-    const ctaLabels = primary.buttons.filter((button) => /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now/i.test(button));
-    if (!ctaLabels.length) {
-      findings.push(makeFinding('No clearly labeled commercial action detected', 'MEDIUM', 'The button labels found in retrieved HTML did not match common purchase or lead-action labels.', 'A visitor may need to infer the next step if the main commercial action is not explicit. Custom labels and link-based actions may not be detected by this rule.', 'Review the primary action on the page and make its label specific to the next step, such as buying, booking, subscribing or requesting information.', 'What should I do next if I am interested?', domEvidence.id));
+    const commercialActionPattern = /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now|sign up|get started|download now|purchase|try (?:it )?free|schedule a demo/i;
+    const ctaLabels = primary.buttons.filter((button) => commercialActionPattern.test(button));
+    const ctaLinks = primary.links.filter((link) => commercialActionPattern.test(link.text));
+    if (!ctaLabels.length && !ctaLinks.length && primary.forms === 0) {
+      findings.push(makeFinding('No clearly labeled commercial action detected', 'MEDIUM', 'The captured button and link labels did not match common purchase or lead-action labels, and no HTML form was detected. Custom labels and script-rendered interactions may not be recognized.', 'A visitor may need to infer the next step if the main commercial action is not explicit.', 'Review the primary action on the page and make its label specific to the next step, such as buying, booking, subscribing or requesting information. Confirm the action works.', 'What should I do next if I am interested?', domEvidence.id));
     }
     const missingAlt = primary.images.filter((image) => !image.alt.trim()).length;
     if (primary.images.length && missingAlt > 0) {
@@ -283,8 +285,9 @@ export async function runAudit(auditId: string) {
     if (parsedStructuredData.some((valid) => !valid)) {
       findings.push(makeFinding('Structured data contains invalid JSON', 'MEDIUM', 'At least one non-empty JSON-LD script could not be parsed as JSON.', 'Invalid JSON prevents that script from being read as structured data.', 'Validate each JSON-LD script as JSON first, then check the schema properties against the relevant Schema.org type. This check does not validate every schema rule.', 'Can search systems parse the structured data on this page?', structuredEvidence.id));
     }
-    if (!primary.structuredData.join(' ').match(/"@type"\s*:\s*"Product"/i)) {
-      findings.push(makeFinding('Product structured data not detected', 'LOW', 'No JSON-LD Product type was detected by the current pattern check.', 'For a product detail page, valid product structured data can help search systems interpret product attributes. This finding may not apply to non-product pages.', 'If this is a product detail page, review whether accurate Product structured data is appropriate and reflects the visible product information.', 'Is this a product page, and are its key attributes machine-readable?', structuredEvidence.id));
+    const productPageDetected = /\/(products?|items?)\//i.test(new URL(target).pathname) || /add to cart|product details|\bsku\b|in stock/i.test(primary.title + ' ' + primary.bodyText);
+    if (productPageDetected && !primary.structuredData.join(' ').match(/"@type"\s*:\s*"Product"/i)) {
+      findings.push(makeFinding('Product structured data not detected', 'LOW', 'No JSON-LD Product type was detected by the current pattern check on a page classified as product-like.', 'For a product detail page, valid product structured data can help search systems interpret product attributes.', 'Review whether accurate Product structured data is appropriate and reflects the visible product information. Do not add values that are not verified.', 'Are the product attributes machine-readable and consistent with the visible offer?', structuredEvidence.id));
     }
     if (!primary.images.length) {
       findings.push(makeFinding('No visible images detected', 'LOW', 'No image elements were detected in the retrieved HTML.', 'For visually evaluated offers, missing imagery may leave buyers with less context. CSS backgrounds and lazy-loaded content may not be detected.', 'Confirm whether the offer needs product or contextual imagery. If so, provide relevant images and ensure the primary visual is visible.', 'What will I receive or experience?', imageEvidence.id));

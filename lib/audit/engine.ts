@@ -1,6 +1,7 @@
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
+import { buildCoreRevenueFindings } from '@/lib/audit/revenue-leak-rules';
 import { captureAuditScreenshots } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
@@ -306,6 +307,21 @@ export async function runAudit(auditId: string) {
         evidenceIds: item.evidenceIds,
       })),
     });
+
+    // Phase 2: category-aware core revenue-leak checks. Findings only describe
+    // what this captured public page did or did not expose; they do not infer analytics.
+    findings.push(...buildCoreRevenueFindings({
+      url: target.toString(),
+      title: primary.title,
+      bodyText: primary.bodyText,
+      headings: primary.headings,
+      buttons: primary.buttons,
+      links: primary.links,
+      forms: primary.forms,
+      textEvidenceId: textEvidence.id,
+      domEvidenceId: domEvidence.id,
+      linkEvidenceId: linkEvidence.id,
+    }));
 
     // Category-aware buyer-decision checks and conservative contradiction
     // hypotheses extend the deterministic audit without inventing analytics.

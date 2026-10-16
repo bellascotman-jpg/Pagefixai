@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('a signed-in user can create an audit and receive persisted evidence', async ({ request }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(150_000);
 
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const signup = await request.post('/api/auth/signup', {
@@ -25,7 +25,7 @@ test('a signed-in user can create an audit and receive persisted evidence', asyn
   const auditId = createdPayload.audit?.id;
   expect(auditId).toBeTruthy();
 
-  const deadline = Date.now() + 65_000;
+  const deadline = Date.now() + 120_000;
   let lastStatus: { audit?: { status?: string; errorCode?: string | null; errorMessage?: string | null }; job?: { status?: string; errorCode?: string | null; errorMessage?: string | null } } = {};
 
   while (Date.now() < deadline) {

@@ -1,4 +1,4 @@
-import { after, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { processNextAuditJob } from '@/lib/jobs/audit-worker';
@@ -72,22 +72,21 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     }
   }
 
-  // Return the status immediately, then trigger the queued worker after the
-  // response. The browser work must not hold the polling request open.
+  // Re  // Process queued audits from the polling request itself. This avoids relying on
+  // post-response callbacks being kept alive by every hosting/runtime configuration.
+  // The worker claims jobs atomically, so concurrent poll requests cannot double-run it.
   if (audit.status === 'QUEUED' && job?.status === 'QUEUED') {
-    after(async () => {
-      try {
-        await processNextAuditJob(id);
-      } catch (error) {
-        console.error('pagefix_audit_status_worker_failed', {
-          auditId: id,
-          message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
-        });
-      }
-    });
+    try {
+      await processNextAuditJob(id);
+    } catch (error) {
+      console.error('pagefix_audit_status_worker_failed', {
+        auditId: id,
+        message: error instanceof Error ? error.message : 'UNKNOWN_ERROR',
+      });
+    }
   }
 
-  const latest = await db.audit.findFirst({
+ latest = await db.audit.findFirst({
     where: { id, userId: user.id },
     include: { jobs: { orderBy: { createdAt: 'desc' }, take: 1 } },
   });

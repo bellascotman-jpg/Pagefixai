@@ -27,7 +27,7 @@ Production deployment: unchanged by this work. No manual deployment was triggere
 ### Evidence and scorecard
 - Added a qualitative Commerce Clarity Scorecard to completed audit reports.
 - The scorecard uses captured buyer-question signals and finding patterns; it deliberately avoids a universal numeric conversion score.
-- Added unit tests for scorecard behaviour. These tests are committed but have not been run in a build environment during this work.
+- Added unit tests for scorecard behaviour and impact-scenario arithmetic. They are committed but have not been run in a verified build environment during this work.
 
 ### Promise Ledger
 - Added a Prisma persistence model linked to the owner and optionally to an owned audit.
@@ -81,3 +81,11 @@ Production deployment: unchanged by this work. No manual deployment was triggere
 ## Important operational note
 
 The Promise Ledger adds a Prisma model. A future build may regenerate Prisma Client and the current prebuild script synchronizes the schema. This branch has not been deployed and the production database has not been changed by these commits.
+
+
+## Deployment safeguards
+
+- Git-connected Vercel preview builds were triggered automatically by commits to this development branch and failed during linting before a usable preview was produced. Production was not deployed.
+- Preview deployments have been disabled temporarily while implementation continues, per the no-deploy-before-finish requirement.
+- The current preview build log showed the Prisma schema was already in sync. The prebuild script now skips schema sync when `VERCEL_ENV` is `preview` so future previews cannot push schema changes to a shared database. Production schema sync behaviour remains unchanged and must be reviewed before release.
+- Known preview lint failures at an earlier commit included unescaped apostrophes in JSX. These were corrected in later commits. A fresh full build is still required after the implementation is complete.

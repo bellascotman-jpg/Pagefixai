@@ -52,6 +52,7 @@ test('a signed-in user can create an audit and receive persisted evidence', asyn
       status?: string;
       evidence?: Array<{ id: string; content: string }>;
       jobs?: Array<{ status: string }>;
+      findings?: Array<{ id: string; title: string }>;
     };
   };
 

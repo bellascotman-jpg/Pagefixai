@@ -1,7 +1,8 @@
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
+import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
 
-export const ENGINE_VERSION = '1.3.0';
+export const ENGINE_VERSION = '1.3.1';
 
 type ExtractedPage = {
   title: string;
@@ -205,7 +206,7 @@ export async function runAudit(auditId: string) {
     const domEvidence = evidence.find((item) => item.type === 'DOM');
     const metadataEvidence = evidence.find((item) => item.type === 'METADATA');
     const structuredEvidence = evidence.find((item) => item.type === 'STRUCTURED_DATA');
-    const imageEvidence = evidence.find((item) => item.source === 'browser.image_inventory');
+    const imageEvidence = evidence.find((item) => item.source === 'http.image_inventory');
     const linkEvidence = evidence.find((item) => item.type === 'LINK');
     if (!textEvidence || !domEvidence || !metadataEvidence || !structuredEvidence || !imageEvidence || !linkEvidence) {
       throw new Error('EVIDENCE_CREATION_FAILED');
@@ -294,6 +295,17 @@ export async function runAudit(auditId: string) {
         evidenceIds: item.evidenceIds,
       })),
     });
+
+    // Category-aware buyer-decision checks and conservative contradiction
+    // hypotheses extend the deterministic audit without inventing analytics.
+    findings.push(...buildCommerceIntelligenceFindings({
+      url: target.toString(),
+      title: primary.title,
+      bodyText: primary.bodyText,
+      headings: primary.headings,
+      buttons: primary.buttons,
+      evidenceId: textEvidence.id,
+    }));
 
     for (const item of findings) {
       await db.finding.create({

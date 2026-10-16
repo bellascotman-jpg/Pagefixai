@@ -29,7 +29,8 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - Experience: observable mobile layout/usability, navigation, button/link labels, interactive elements, image/content presentation, and purchase-journey friction.
 - Technical/SEO: HTTP status, title/meta description, canonical, headings, image alt text, accessible link names, structured-data parsing, and other supported observable checks.
 - Attach evidence and location whenever available; use the four mandatory finding labels; make diagnostics repeatable and evidence-grounded.
-- **Acceptance:** no invented analytics, reviews, conversion rates, or financial losses.
+- Evidence includes page-text and DOM checks plus browser-measured desktop/mobile first-viewport signals where screenshot capture succeeds; capture limitations remain explicit.
+- **Acceptance:** product/landing-page findings are category-aware, evidence-linked, repeatable, and tested; CTA links/forms are handled; mobile overflow/above-fold checks are evidence-backed; no invented analytics, reviews, conversion rates, or financial losses.
 
 ## Phase 3 — Customer Buying Decision Intelligence
 **Status: PLANNED.**

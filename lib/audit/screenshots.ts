@@ -22,12 +22,17 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
   const target = await validateAuditUrl(rawUrl, validatedHosts);
   let browser: Browser | null = null;
   const stored: StoredAuditScreenshot[] = [];
+  // Screenshots are supplemental. A hostile/slow page or constrained serverless
+  // browser must never hold the core audit open indefinitely.
+  const hardStop = setTimeout(() => { void browser?.close().catch(() => undefined); }, 12_000);
+  hardStop.unref?.();
 
   try {
     browser = await playwrightChromium.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath(),
       headless: true,
+      timeout: 7_000,
     });
 
     for (const capture of CAPTURES) {
@@ -56,13 +61,13 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
           }
         });
 
-        await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 5_000 });
-        await page.waitForTimeout(150);
+        await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 3_500 });
+        await page.waitForTimeout(100);
         const bytes = await page.screenshot({
           type: 'png',
           fullPage: false,
           animations: 'disabled',
-          timeout: 3_500,
+          timeout: 2_500,
         });
         const storageKey = await storeAuditScreenshot(auditId, capture.viewport, Buffer.from(bytes));
         if (storageKey) stored.push({ viewport: capture.viewport, storageKey });
@@ -77,6 +82,7 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
       }
     }
   } finally {
+    clearTimeout(hardStop);
     await browser?.close().catch(() => undefined);
   }
 

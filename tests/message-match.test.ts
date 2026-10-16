@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compareCommercialSignals } from '@/lib/intelligence/message-match';
+import { analyzeMessageContinuity, compareCommercialSignals } from '@/lib/intelligence/message-match';
 
 describe('literal message matching', () => {
   it('flags discount and price value mismatches', () => {

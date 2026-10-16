@@ -19,6 +19,7 @@ function dimension(
   relevant: BuyerQuestion[],
   findings: Finding[],
   explanation: string,
+  relatedFindingPattern: RegExp,
 ): ScorecardDimension {
   if (!relevant.length) {
     return { key, title, state: 'Unable to assess', explanation, basis: 'No relevant buyer-question signals were recorded in this inspection.', signalsObserved: 0, signalsReviewed: 0 };
@@ -53,7 +54,6 @@ export function buildCommerceClarityScorecard(input: {
 }): ScorecardDimension[] {
   const { buyerQuestions, findings } = input;
   const questions = (terms: RegExp) => buyerQuestions.filter(item => terms.test(item.question));
-  const hasFinding = (terms: RegExp) => findings.some(item => terms.test(item.title + ' ' + (item.observation ?? '')));
   const productInfo = questions(/product details|specifications|dimensions|ingredients|size|fit|compatibility|what exactly|included/i);
   const buyerCoverage = buyerQuestions.filter(item => /what does this product|shipping|return|product details|contact|commercial next action|images|compatibility|size|ingredients|dimensions/i.test(item.question));
   const offer = questions(/cost|price|commercial next action/i);

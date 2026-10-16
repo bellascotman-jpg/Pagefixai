@@ -33,7 +33,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - **Acceptance:** product/landing-page findings are category-aware, evidence-linked, repeatable, and tested; CTA links/forms are handled; mobile overflow/above-fold checks are evidence-backed; no invented analytics, reviews, conversion rates, or financial losses.
 
 ## Phase 3 — Customer Buying Decision Intelligence
-**Status: NEXT PHASE — not started.**
+**Status: IN PROGRESS — implementation and CI validation underway.**
 
 - Objection Coverage: answered/unanswered questions across benefits, price, delivery, returns, trust, and suitability, with evidence and unknowns.
 - Pre-Purchase Questions: structured likely buyer questions, explicitly hypotheses rather than claims of actual customer quotes.
@@ -46,7 +46,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - **Acceptance:** users see what appears wrong and which purchase questions remain unanswered.
 
 ## Phase 4 — Traffic, Advertising and Customer Journey Intelligence
-**Status: PLANNED.**
+**Status: PLANNED — begin after Phase 3 acceptance passes.**
 
 - Ad-to-Page: compare supplied ad copy to destination, offer, details, promises, and message consistency.
 - Social-to-Page: compare supplied social messaging with destination content and highlight discontinuities.

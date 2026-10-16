@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
 import { buildCoreRevenueFindings } from '@/lib/audit/revenue-leak-rules';
-import { captureAuditScreenshots } from '@/lib/audit/screenshots';
+import { captureAuditScreenshots, type ViewportAuditSignals } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
 
@@ -181,8 +181,10 @@ export async function runAudit(auditId: string) {
     });
 
     // Screenshots are supplemental evidence: a capture/storage failure must not fail an otherwise valid HTML audit.
+    const viewportSignals: ViewportAuditSignals[] = [];
     try {
       const captures = await captureAuditScreenshots(auditId, target.toString());
+      viewportSignals.push(...captures.map((capture) => capture.signals));
       for (const capture of captures) {
         const screenshotUrl = '/api/audits/' + auditId + '/screenshots/' + capture.viewport;
         await db.screenshot.create({
@@ -213,6 +215,14 @@ export async function runAudit(auditId: string) {
         { auditId, type: 'STRUCTURED_DATA', source: 'jsonld', location: 'script[type="application/ld+json"]', content: JSON.stringify(primary.structuredData), confidence: primary.structuredData.length ? 'HIGH' : 'LOW' },
         { auditId, type: 'SYSTEM_DETECTED', source: 'http.image_inventory', location: 'images', content: JSON.stringify({ totalVisible: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, images: primary.images }), confidence: 'HIGH' },
         { auditId, type: 'LINK', source: 'http.link_inventory', location: 'visible_links', content: JSON.stringify(primary.links), confidence: 'HIGH' },
+        ...(viewportSignals.length ? [{
+          auditId,
+          type: 'SYSTEM_DETECTED' as const,
+          source: 'browser.viewport_signals',
+          location: 'desktop_mobile_first_viewport',
+          content: JSON.stringify(viewportSignals),
+          confidence: 'HIGH' as const,
+        }] : []),
       ],
     });
 
@@ -222,6 +232,7 @@ export async function runAudit(auditId: string) {
     const structuredEvidence = evidence.find((item) => item.type === 'STRUCTURED_DATA');
     const imageEvidence = evidence.find((item) => item.source === 'http.image_inventory');
     const linkEvidence = evidence.find((item) => item.type === 'LINK');
+    const viewportEvidence = evidence.find((item) => item.source === 'browser.viewport_signals');
     if (!textEvidence || !domEvidence || !metadataEvidence || !structuredEvidence || !imageEvidence || !linkEvidence) {
       throw new Error('EVIDENCE_CREATION_FAILED');
     }
@@ -332,6 +343,8 @@ export async function runAudit(auditId: string) {
       viewportMeta: primary.viewport,
       imageCount: primary.images.length,
       imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length,
+      viewportEvidenceId: viewportEvidence?.id,
+      viewportSignals,
     }));
 
     // Category-aware buyer-decision checks and conservative contradiction

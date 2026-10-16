@@ -1,7 +1,6 @@
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
-import { captureAuditScreenshots } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
 
@@ -176,26 +175,6 @@ export async function runAudit(auditId: string) {
         visibleText: primary.bodyText,
       },
     });
-
-    // Screenshot capture is best-effort: a storage/browser failure must not
-    // discard a valid static inspection. Only persist rows for images actually stored.
-    const screenshotKeys = await captureAuditScreenshots(auditId, target.toString()).catch((error) => {
-      console.error('pagefix_screenshot_capture_failed', {
-        auditId,
-        message: error instanceof Error ? error.message : 'SCREENSHOT_CAPTURE_FAILED',
-      });
-      return [] as Array<{ viewport: 'desktop' | 'mobile'; storageKey: string }>;
-    });
-
-    for (const screenshot of screenshotKeys) {
-      const screenshotUrl = '/api/audits/' + auditId + '/screenshots/' + screenshot.viewport;
-      await db.pageSnapshot.create({
-        data: { pageId: pageRecord.id, viewport: screenshot.viewport, screenshotUrl },
-      });
-      await db.screenshot.create({
-        data: { auditId, viewport: screenshot.viewport, kind: 'viewport', storageUrl: screenshot.storageKey, mimeType: 'image/png' },
-      });
-    }
 
     const evidence = await db.evidence.createManyAndReturn({
       data: [

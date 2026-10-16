@@ -34,7 +34,7 @@ export default function FindingStatusControl({ id, initialStatus }: { id: string
   }
   return <div className="finding-status-control">
     <label htmlFor={`status-${id}`}>Remediation status</label>
-    {verificationLabels[initialStatus] && <p className="finding-verification-state" role="status">{verificationLabels[initialStatus]}. The seller's workflow status can still be updated separately.</p>}
+    {verificationLabels[initialStatus] && <p className="finding-verification-state" role="status">{verificationLabels[initialStatus]}. The seller&apos;s workflow status can still be updated separately.</p>}
     <select id={`status-${id}`} value={status} disabled={saving} onChange={e => update(e.target.value)}>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
     <span role="status">{saving ? 'Saving…' : message}</span>
   </div>;

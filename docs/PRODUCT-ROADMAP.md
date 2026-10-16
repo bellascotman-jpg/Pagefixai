@@ -11,7 +11,7 @@ PageFix AI is an evidence-based revenue-leak detection and remediation system fo
 Never fabricate analytics, reviews, conversion rates, revenue losses, customer data, testimonials, certifications, capabilities, or outcomes. Distinguish public observations from private metrics that require integrations or user-supplied data. Every finding must use exactly one evidence label: **Directly Observed Evidence**, **Inferred Risk**, **Hypothesis**, or **Recommendation**. State limitations and inconclusive verification honestly.
 
 ## Phase 1 — Audit Engine and Processing Reliability
-**Status: IN PROGRESS — immediate priority.**
+**Status: CI-VERIFIED COMPLETE on commit `39d7340` (quality + end-to-end workflow passed).**
 
 - Validate supported public URLs; reject invalid/unsupported targets; defend against SSRF, unsafe redirects, and unsafe browser requests; give clear errors.
 - Create persistent audit jobs and expose QUEUED, processing, COMPLETED, and FAILED states; prevent duplicate claims; handle timeouts, retries, interrupted jobs, and stale-job recovery; show progress rather than endless loading.
@@ -22,7 +22,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 - **Acceptance:** a real user can submit a URL, the job finishes, findings/evidence persist, screenshots are retrievable when available, the report loads, recheck works, and failure/recovery paths are exercised.
 
 ## Phase 2 — Core Revenue Leak Detection Engine
-**Status: PARTIAL; finish and verify after Phase 1.**
+**Status: IN PROGRESS.**
 
 - Product page: title, product details, description, value proposition, price, benefits/specifications, image coverage, buying information, CTA, shipping/delivery/returns, and purchase-relevant trust information.
 - Landing page: above-fold value, headline, audience/offer clarity, benefits/proof, CTA, hierarchy, message consistency, and missing/unclear conversion steps.
@@ -124,7 +124,7 @@ Never fabricate analytics, reviews, conversion rates, revenue losses, customer d
 
 ## Working rules for every phase
 
-1. Build in phase order. Phase 1 is the immediate blocker; do not jump ahead while URL submissions can remain queued or reports fail.
+1. Build in phase order. Phase 1 passed the repository's latest CI quality and end-to-end workflow; continue hardening if real production/preview evidence exposes a regression.
 2. A successful TypeScript check or production build does not mean the phase is complete.
 3. Keep production stable. Use the development branch and preview until validated; do not merge/deploy unfinished work.
 4. Preserve existing features, audit history, entitlements, and pricing unless a change is necessary and explicitly documented.

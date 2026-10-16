@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import AuditStatusRefresh from '@/components/audit-status-refresh';
 import { buildCommerceClarityScorecard } from '@/lib/audit/scorecard';
 import RecheckAuditButton from '@/components/recheck-audit-button';
+import CaptureScreenshotsButton from '@/components/capture-screenshots-button';
 
 const classifications = ['Directly Observed Evidence', 'Inferred Risk', 'Hypothesis', 'Recommendation'];
 
@@ -74,8 +75,8 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         </section>
         <section className="card" style={{ marginTop: 24 }}>
           <h2>Captured page views</h2>
-          <p className="muted" style={{ fontSize: 12 }}>Viewport screenshots are stored privately and are available only to the owner of this audit. Screenshot storage must be configured for these images to be retained.</p>
-          {audit.screenshots.filter(item => item.storageUrl).length === 0 && <p className="muted">No stored screenshots are available for this audit. Configure the S3-compatible storage settings and run a new audit to retain desktop and mobile captures.</p>}
+          <p className="muted" style={{ fontSize: 12 }}>Screenshots are captured on demand after the report is ready, so browser rendering cannot hold up the audit. Stored images are private and accessible only to the audit owner.</p>
+          {audit.screenshots.filter(item => item.storageUrl).length === 0 && <div><p className="muted">No stored screenshots are available yet. Capture desktop and mobile views when you need visual evidence.</p><CaptureScreenshotsButton auditId={audit.id} /></div>}
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))' }}>
             {audit.screenshots.filter(item => item.storageUrl).map(item => <article key={item.id}>
               <h3 style={{ textTransform: 'capitalize' }}>{item.viewport} view</h3>

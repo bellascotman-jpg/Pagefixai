@@ -24,6 +24,9 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
   if (audit.status !== 'COMPLETED') {
     return NextResponse.json({ error: 'AUDIT_NOT_COMPLETED', message: 'Wait for the audit to finish before capturing screenshots.' }, { status: 409 });
   }
+  if (!audit.pages[0]) {
+    return NextResponse.json({ error: 'NO_PAGE_CAPTURE', message: 'This audit has no saved page capture to screenshot.' }, { status: 409 });
+  }
   if (!isScreenshotStorageConfigured()) {
     return NextResponse.json({
       error: 'SCREENSHOT_STORAGE_NOT_CONFIGURED',
@@ -37,7 +40,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
   }
 
   try {
-    const captures = await captureAuditScreenshots(id, audit.pages[0] ? (await db.audit.findUniqueOrThrow({ where: { id }, select: { url: true } })).url : '');
+    const captures = await captureAuditScreenshots(id, audit.url);
     for (const capture of captures) {
       const existing = await db.screenshot.findFirst({ where: { auditId: id, viewport: capture.viewport } });
       if (existing) {

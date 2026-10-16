@@ -56,13 +56,13 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
           }
         });
 
-        await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 12_000 });
-        await page.waitForTimeout(450);
+        await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 5_000 });
+        await page.waitForTimeout(150);
         const bytes = await page.screenshot({
           type: 'png',
           fullPage: false,
           animations: 'disabled',
-          timeout: 8_000,
+          timeout: 3_500,
         });
         const storageKey = await storeAuditScreenshot(auditId, capture.viewport, Buffer.from(bytes));
         if (storageKey) stored.push({ viewport: capture.viewport, storageKey });

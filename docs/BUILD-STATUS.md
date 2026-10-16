@@ -1,37 +1,50 @@
-# Build verification status
+# PageFix AI — Build and Verification Status
 
-## Current branch
+The full product scope and acceptance criteria live in [PRODUCT-ROADMAP.md](./PRODUCT-ROADMAP.md). That roadmap is the source of truth for every phase.
 
-Work is being prepared on build/production-readiness. The main branch has not been changed by this work.
+## Current development state
 
-## Implemented in this branch
+- Repository: `bellascotman-jpg/Pagefixai`
+- Working branch: `build/pagefix-product-strategy`
+- Review: draft PR #7 against `main`
+- Production: `main` and the production deployment must remain unchanged until release checks pass.
+- Immediate scope: Phase 1 — Audit Engine and Processing Reliability.
 
-- Rebuilt the public landing page with responsive marketing sections and clear evidence/limitations messaging.
-- Reworked public pricing presentation while retaining the six existing monthly/annual prices.
-- Removed the lifetime plan from public checkout choices and added server-side rejection for new lifetime purchases.
-- Retained the historic lifetime plan definition so old subscription records and entitlements are not deleted.
-- Corrected the reserved founder email to wisdomfrankceo@gmail.com in the plan configuration and seed source.
-- Expanded deterministic page checks for HTTP error responses, titles, meta descriptions, canonical links, heading structure, commercial actions, image alt text, link names and JSON-LD parse errors.
-- Revalidates browser network request URLs to reduce server-side request forgery exposure.
-- Added baseline metadata and updated sign-in navigation behavior.
-- Added/updated tests for the public plan catalog.
-- Added password-recovery and one-time password-reset routes with configured Resend delivery and token invalidation.
-- Added optional private S3-compatible screenshot storage and an owner-authorized screenshot retrieval route.
-- Added evidence-linked buyer question coverage to audit reports.
+## Last confirmed CI result before the latest fixes
 
-## Not yet verified
+On commit `b67d60c80256edee67dfb8d44cf302e2a4a664f4`:
+- Prisma validation/generation: passed.
+- TypeScript: passed.
+- ESLint: passed.
+- Unit tests: passed.
+- Prisma schema push against disposable CI database: passed.
+- Production build: passed.
+- Playwright browser install: passed.
+- End-to-end tests: failed. Six public-page tests passed; the signed-in audit smoke test remained `RUNNING` past its 65-second deadline instead of reaching `COMPLETED`.
 
-The current environment could not clone the repository or install dependencies because outbound DNS/network access is unavailable. Therefore no claim is made that TypeScript, lint, tests, production build, browser execution, database migrations, payment flows or the deployed application have passed.
+This is a real Phase 1 failure. A successful build is not proof that audits work.
 
-Before public launch, run the GitHub Actions workflow and fix every failure. In particular, verify:
+## Latest changes on the development branch
 
-1. Playwright browser availability and serverless resource limits on the chosen hosting platform.
-2. Database schema synchronization and data preservation.
-3. Authentication, password reset delivery and account recovery.
-4. Flutterwave sandbox and live webhook verification, idempotency, currency and amount checks.
-5. Audit queue retries, duplicate-work prevention, timeouts and usage accounting.
-6. Configure S3-compatible storage credentials and verify screenshot upload/retrieval and retention. PDF/report export and other persistent report formats still require separate verification.
-7. Tenant isolation, URL security, rate limits and authorization.
-8. Mobile/desktop end-to-end flows on the actual deployed domain.
+- Reduced per-viewport screenshot navigation and screenshot timeouts, and shortened the post-navigation wait, so best-effort screenshots are less likely to hold up the core audit.
+- Extended the audit end-to-end test deadline so it can exercise the existing stale-job recovery window rather than failing before recovery is eligible.
+- Added the complete ten-phase source-of-truth roadmap in `docs/PRODUCT-ROADMAP.md`.
 
-A feature is considered complete only after its happy path, failure path, authorization and persistence behavior are verified.
+These changes require a fresh CI run. Do not mark Phase 1 complete until the signed-in audit journey passes and report/evidence persistence, screenshot retrieval where available, recheck verification, and failure recovery are demonstrated.
+
+## Phase 1 acceptance checklist
+
+- [ ] Signed-in user can submit a supported public URL.
+- [ ] Audit job is created and claimed without duplicate processing.
+- [ ] Status moves out of queued and reaches a terminal state.
+- [ ] Findings and evidence persist and load from the report endpoint/dashboard.
+- [ ] Desktop/mobile screenshots are saved and securely retrievable when capture/storage is available; unavailable captures are not fabricated.
+- [ ] Refreshing does not lose the audit/report.
+- [ ] Recheck creates a fresh inspection and only marks issues resolved when evidence supports it.
+- [ ] Interrupted/stale jobs recover safely; failed audits show useful errors.
+- [ ] End-to-end tests cover successful and failure paths.
+- [ ] Production remains unchanged until preview and release validation pass.
+
+## Release safety
+
+Do not run destructive schema synchronization against production. Verify database compatibility and required environment variables before release. Preserve existing audit history, working features, founder access, entitlements, and configured pricing during these engineering fixes. Never claim an unverified check or workflow is complete.

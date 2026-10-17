@@ -62,8 +62,8 @@ const EMAIL_ACTION_SIGNAL = /click|start|continue|complete|finish|connect|import
 
 function expectedActionObserved(expected: string, text: string): boolean {
   const normalize = (value: string) => value.toLowerCase()
-    .replace(/[^a-z0-9\\s]/g, ' ')
-    .split(/\\s+/)
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
     .filter(word => word && !['a', 'an', 'the', 'your', 'my', 'our', 'to', 'for', 'please'].includes(word));
   const wanted = normalize(expected);
   const available = new Set(normalize(text));

@@ -111,7 +111,7 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           {latestJob?.errorCode === 'AI_REASONING_UNAVAILABLE' ? <>
             <p className="muted">The deterministic audit completed, but optional AI text enrichment was skipped or failed for this run.</p>
             {latestJob.errorMessage && <p role="status" className="muted">{latestJob.errorMessage}</p>}
-            <p className="muted">To enable AI interpretation, configure a valid OPENAI_API_KEY or AI_PROVIDER_KEY in Vercel project environment variables and redeploy. Do not paste secret keys into chat. The report's evidence-backed checks remain available without AI.</p>
+            <p className="muted">To enable AI interpretation, configure a valid OPENAI_API_KEY or AI_PROVIDER_KEY in Vercel project environment variables and redeploy. Do not paste secret keys into chat. The report&apos;s evidence-backed checks remain available without AI.</p>
           </> : <>
             <p className="muted">No AI provider error was recorded for this audit. Optional AI interpretation uses captured text and evidence; it does not currently inspect screenshot pixels. Findings still require evidence IDs and do not establish revenue or conversion impact.</p>
           </>}

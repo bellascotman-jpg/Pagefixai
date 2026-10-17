@@ -46,3 +46,23 @@ export function filterEvidenceGroundedFindings(
 
   return { accepted, rejected };
 }
+
+/** Extract text from raw Responses REST payloads and SDK-shaped test payloads. */
+export function extractResponsesOutputText(payload: unknown): string | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const record = payload as { output_text?: unknown; output?: unknown };
+  if (typeof record.output_text === 'string' && record.output_text.trim()) return record.output_text.trim();
+  if (!Array.isArray(record.output)) return null;
+  const parts: string[] = [];
+  for (const item of record.output) {
+    if (!item || typeof item !== 'object') continue;
+    const content = (item as { content?: unknown }).content;
+    if (!Array.isArray(content)) continue;
+    for (const block of content) {
+      if (!block || typeof block !== 'object') continue;
+      const entry = block as { type?: unknown; text?: unknown };
+      if ((entry.type === 'output_text' || entry.type === 'text') && typeof entry.text === 'string' && entry.text.trim()) parts.push(entry.text.trim());
+    }
+  }
+  return parts.length ? parts.join('\n') : null;
+}

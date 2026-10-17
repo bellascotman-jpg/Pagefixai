@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { readAuditScreenshot } from '@/lib/storage/object-store';
-import { aiOutputSchema, filterEvidenceGroundedFindings } from '@/lib/ai/validation';
+import { aiOutputSchema, extractResponsesOutputText, filterEvidenceGroundedFindings } from '@/lib/ai/validation';
 
 const responseSchema = {
   type: 'object', additionalProperties: false,
@@ -19,7 +19,7 @@ const responseSchema = {
   required: ['findings'],
 } as const;
 
-type ResponsesPayload = { output_text?: string };
+type ResponsesPayload = unknown;
 
 export async function interpretAuditVisuals(auditId: string) {
   const key = process.env.AI_VISION_KEY || process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_KEY;
@@ -61,9 +61,10 @@ export async function interpretAuditVisuals(auditId: string) {
   if (!response.ok) throw new Error(`AI_VISION_PROVIDER_${response.status}`);
   let payload: ResponsesPayload;
   try { payload = await response.json() as ResponsesPayload; } catch { throw new Error('AI_VISION_INVALID_RESPONSE'); }
-  if (typeof payload.output_text !== 'string' || !payload.output_text.trim()) throw new Error('AI_VISION_EMPTY_OUTPUT');
+  const outputText = extractResponsesOutputText(payload);
+  if (!outputText) throw new Error('AI_VISION_EMPTY_OUTPUT');
   let parsedJson: unknown;
-  try { parsedJson = JSON.parse(payload.output_text); } catch { throw new Error('AI_VISION_SCHEMA_INVALID'); }
+  try { parsedJson = JSON.parse(outputText); } catch { throw new Error('AI_VISION_SCHEMA_INVALID'); }
   const parsed = aiOutputSchema.safeParse(parsedJson);
   if (!parsed.success) throw new Error('AI_VISION_SCHEMA_INVALID');
 

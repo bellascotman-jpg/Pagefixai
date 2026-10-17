@@ -1,19 +1,17 @@
 # Phase 8 — Status
 
-Status: **Implementation started; not release-verified.**
+Status: **Merged and deployed to production on 17 October 2026.**
 
-## Delivered in the feature branch
+## Delivered
 - Searchable Reports workspace.
-- Workspace-wide completed report, recorded finding, and high-severity finding counts.
-- Owner-scoped per-audit CSV export alongside existing JSON export.
-- Safe CSV serializer and unit tests for quoting, newline handling, formula injection, dates, nulls, BOM and CRLF.
-- Phase 8 plan and release gates.
+- Completed-report, recorded-finding and high-severity-finding counts.
+- Owner-scoped per-audit CSV export alongside JSON export.
+- CSV formula-injection protection, quoting, newline, UTF-8 BOM and CRLF handling.
+- CI validation, production build, unit tests and Playwright E2E passed for the Phase 8 change set.
 
-## Not yet complete
-- Fresh CI and full Playwright suite for this branch.
-- Vercel preview build and desktop/mobile visual review.
-- Isolated database tests for owner-scope and export authorization.
-- Client/project organization, PDF/print-ready report, branding, and share-permission audit.
-- Dedicated paired competitor capture remains separate follow-up work.
+## Follow-up work
+- Dedicated client/project organization, PDF/print-ready reports, branding and share-permission review remain future work.
+- Dedicated paired competitor capture remains a separate follow-up.
+- Visual review and isolated database authorization tests should continue as part of subsequent hardening.
 
-Do not merge or promote this branch until release gates pass. No Prisma schema changes have been made in this phase.
+No Prisma schema migration was introduced by Phase 8.

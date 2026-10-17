@@ -589,3 +589,11 @@ html,body{background:var(--paper);color:var(--ink)}
 @media(prefers-reduced-motion:reduce){.app-sidebar,.sidebar-link{transition:none!important}}
 
 @media(min-width:761px){.app-main .site-nav{display:none!important}.referral-workspace-page{padding-top:22px}.referral-workspace-page .referral-hero{padding-top:22px}}
+
+.sidebar-desktop-brand{display:flex!important;margin-bottom:4px}
+.sidebar-section-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 10px;border:0;background:transparent;text-align:left;cursor:pointer}
+.sidebar-section-toggle .sidebar-section-label{padding:14px 0 8px}
+.sidebar-section-chevron{font-size:13px;color:#c89aa7;line-height:1;padding:4px}
+.sidebar-section-toggle:hover .sidebar-section-label{color:#f2c3d0!important}
+.sidebar-group.is-collapsed{margin-bottom:1px}
+@media(max-width:760px){.sidebar-desktop-brand{display:none!important}.sidebar-mobile-heading{display:flex!important}.app-main .site-nav{display:none!important}}

@@ -56,6 +56,7 @@ export default function RetentionWorkspace() {
       const response = await fetch('/api/intelligence/retention', { cache: 'no-store' });
       const payload = await response.json() as { analyses?: SavedAnalysis[]; message?: string };
       if (!response.ok) throw new Error(payload.message || 'Could not load saved analyses.');
+      setError('');
       setHistory(payload.analyses ?? []);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not load saved analyses.');

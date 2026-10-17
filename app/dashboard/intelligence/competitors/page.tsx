@@ -12,7 +12,13 @@ export default async function CompetitorIntelligencePage() {
     take: 30,
     select: { id: true, url: true, createdAt: true, pages: { select: { statusCode: true, title: true, metaDescription: true, canonical: true, visibleText: true } }, findings: { select: { title: true, severity: true } } },
   });
-  const rows = audits.map(a => ({...a, page:a.pages[0]}));
+  const seenUrls = new Set<string>();
+  const rows = audits.map(a => ({...a, page:a.pages[0]})).filter(row => {
+    const key = row.url.trim().replace(/\\/+$/, '').toLowerCase();
+    if (seenUrls.has(key)) return false;
+    seenUrls.add(key);
+    return true;
+  });
   return <main className="dashboard">
     <header className="topbar"><div><div className="label">PAGEFIX AI / PHASE 7</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>Competitor intelligence</h1></div><Link className="button button-secondary" href="/dashboard/intelligence">Intelligence hub</Link></header>
     <div className="container dashboard-main">

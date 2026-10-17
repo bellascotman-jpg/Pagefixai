@@ -98,7 +98,7 @@ The intelligence module pages no longer stop at a capability explainer with gene
 - Added an interactive `/dashboard/intelligence/retention` workspace: journey type selection, step editor, add/remove steps, onboarding email/message editor, pricing/cancellation text fields, optional cohort metrics, analyse-and-save action, clear-results action, saved-history refresh and restore.
 - Added retention and onboarding navigation in the dashboard sidebar, Intelligence Hub capability registry, and dashboard shortcuts.
 - Metric rates are calculated only when user-supplied cohort counts are consistent and a reporting window is named. Findings do not claim measured churn or fabricate retention outcomes. The workspace clearly states that private analytics are not automatically connected.
-- Added unit tests for rate calculation, unclear next steps, pricing/cancellation checks, and invalid metrics, plus an authenticated end-to-end test for analysis creation and history retrieval.
+- Added unit tests for rate calculation, unclear next steps, pricing/cancellation checks, plan differentiation, email CTAs, and invalid metrics, plus authenticated API and browser end-to-end tests for analysis persistence, add/remove controls, clear results, history refresh, and restore.
 
 ### Phase 5 acceptance checklist
 

@@ -57,6 +57,7 @@ export type RetentionAnalysisResult = {
 const NEXT_STEP = /continue|next|start|create|connect|import|invite|finish|complete|activate|verify|confirm|submit|save|book|shop|buy|checkout|open|try|use|launch|go to|view|explore|cancel|manage/i;
 const VALUE_SIGNAL = /first value|first result|aha moment|activate|activation|publish|launch|connect|import|invite|create|complete|use your|see your|generate|send your first|place your first|first order|first campaign|first report/i;
 const BILLING_SIGNAL = /price|pricing|billing|bill|renew|renewal|monthly|annual|yearly|per user|per seat|trial|free trial|subscription|tax|fee|charged|payment/i;
+const PLAN_DETAILS_SIGNAL = /compare|plan|tier|included|what.s included|feature|limit|usage|seat|upgrade|downgrade|starter|growth|business|enterprise/i;
 const CANCELLATION_SIGNAL = /cancel|cancellation|end plan|end subscription|downgrade|refund|notice period|billing period|renewal date|delete account/i;
 const EMAIL_ACTION_SIGNAL = /click|start|continue|complete|finish|connect|import|invite|create|activate|verify|confirm|book|view|open|use|reply|sign in|log in|return to|try/i;
 
@@ -157,7 +158,7 @@ export function analyzeRetentionJourney(input: RetentionInput): RetentionAnalysi
     const email = input.emails[index];
     const emailText = `${email.subject} ${email.body}`;
     if (!emailText.trim()) continue;
-    if (!email.callToAction.trim() || !EMAIL_ACTION_SIGNAL.test(email.callToAction)) {
+    if (!EMAIL_ACTION_SIGNAL.test(email.callToAction.trim() || emailText)) {
       findings.push(finding(
         `email-cta-${index + 1}`, `Onboarding message ${index + 1} has no clear action supplied`, 'MEDIUM', 'Inferred Risk',
         'The supplied email/message has no recognizable next-action CTA. The actual email may include a button or link not pasted into this analysis.',
@@ -174,6 +175,16 @@ export function analyzeRetentionJourney(input: RetentionInput): RetentionAnalysi
       'The supplied pricing text did not contain common price, billing, renewal, trial, or fee terms. The pricing page has not been independently crawled by this workspace.',
       'Customers may be unsure what they will pay, when charges recur, or what a trial includes.',
       'State the actual price and currency, billing interval, renewal behaviour, trial conversion, applicable taxes/fees, and plan limits where relevant. Use verified terms only.',
+      'User-supplied pricing text',
+    ));
+  }
+
+  if (input.flowType === 'pricing' && BILLING_SIGNAL.test(input.pricingText) && !PLAN_DETAILS_SIGNAL.test(input.pricingText)) {
+    findings.push(finding(
+      'plan-comparison-clarity', 'Plan differences or limits were not observed in the supplied pricing text', 'MEDIUM', 'Inferred Risk',
+      'The supplied pricing text contains a billing or price cue but no recognizable plan comparison, included-feature, usage-limit, or tier wording. This check may not apply to a product with only one plan.',
+      'When several plans exist, buyers need to understand what changes between tiers and which limits apply before choosing.',
+      'If multiple plans are offered, state the meaningful differences, usage limits, included features, seats, and upgrade conditions in comparable language. Use the actual product entitlements.',
       'User-supplied pricing text',
     ));
   }

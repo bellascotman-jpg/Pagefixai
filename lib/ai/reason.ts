@@ -1,5 +1,5 @@
 import { db } from '@/lib/db';
-import { aiOutputSchema, filterEvidenceGroundedFindings } from '@/lib/ai/validation';
+import { aiOutputSchema, extractResponsesOutputText, filterEvidenceGroundedFindings } from '@/lib/ai/validation';
 
 const responseSchema = {
   type: 'object',
@@ -36,7 +36,7 @@ const responseSchema = {
   required: ['findings'],
 } as const;
 
-type ResponsesPayload = { output_text?: string };
+type ResponsesPayload = unknown;
 
 export async function interpretAudit(auditId: string) {
   const key = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_KEY;
@@ -92,13 +92,12 @@ export async function interpretAudit(auditId: string) {
   } catch {
     throw new Error('AI_INVALID_RESPONSE');
   }
-  if (typeof payload.output_text !== 'string' || !payload.output_text.trim()) {
-    throw new Error('AI_EMPTY_OUTPUT');
-  }
+  const outputText = extractResponsesOutputText(payload);
+  if (!outputText) throw new Error('AI_EMPTY_OUTPUT');
 
   let parsedJson: unknown;
   try {
-    parsedJson = JSON.parse(payload.output_text);
+    parsedJson = JSON.parse(outputText);
   } catch {
     throw new Error('AI_SCHEMA_INVALID');
   }

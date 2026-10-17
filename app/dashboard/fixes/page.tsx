@@ -35,7 +35,13 @@ export default async function FixCenterPage() {
   );
   const verified = findings.filter(f => f.status === 'VERIFIED').length;
   const inProgress = findings.filter(f => f.status === 'IN_PROGRESS').length;
-  const awaitingVerification = findings.filter(f => !['VERIFIED'].includes(f.status)).length;
+  const sourceAuditIds = [...new Set(findings.map(f => f.audit.id))];
+  const remediationHistory = sourceAuditIds.length ? await db.recheck.findMany({
+    where: { previousAuditId: { in: sourceAuditIds } },
+    orderBy: { createdAt: 'desc' },
+    take: 30,
+    select: { id: true, previousAuditId: true, auditId: true, result: true, engineVersion: true, createdAt: true },
+  }) : [];
   const groups = new Map<string, typeof ordered>();
   for (const finding of ordered) {
     const category = categoryFor(finding.title);
@@ -78,6 +84,11 @@ export default async function FixCenterPage() {
           </div>
         </section>
       )}
+      <section className="card" style={{marginTop:28}}>
+        <div className="section-heading"><div><div className="label">AUDIT-BASED HISTORY</div><h2>Remediation recheck history</h2></div><span className="badge">{remediationHistory.length} records</span></div>
+        <p className="muted">These records show rechecks linked to the original audits in your current Fix Center queue. A recheck result is a record of inspection evidence, not a commercial outcome.</p>
+        {remediationHistory.length ? <div className="grid" style={{gap:10}}>{remediationHistory.map(item=><div key={item.id} style={{border:'1px solid var(--border, #ddd)',borderRadius:10,padding:12}}><div className="section-heading"><strong>{item.result.replaceAll('_',' ')}</strong><span className="muted">{item.createdAt.toLocaleString()}</span></div><p className="muted">Engine {item.engineVersion}</p><Link href={`/dashboard/audits/${item.auditId}`}>Open recheck report →</Link></div>)}</div> : <p className="muted">No rechecks are recorded for the audits currently represented in this queue. Recheck history is retained with the relevant audit records.</p>}
+      </section>
       <p className="muted" style={{fontSize:12}}>Prioritization is based on recorded priority, severity, confidence and recency—not a prediction of ROI or conversion lift. Category labels are a navigation aid inferred from finding titles.</p>
     </div>
   </main>;

@@ -106,6 +106,17 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
           </div>
         </section>
         <section className="card" style={{ marginTop: 24 }}>
+          <div className="label">AI ENRICHMENT STATUS</div>
+          <h2>{latestJob?.errorCode === 'AI_REASONING_UNAVAILABLE' ? 'AI interpretation was unavailable' : 'AI interpretation status'}</h2>
+          {latestJob?.errorCode === 'AI_REASONING_UNAVAILABLE' ? <>
+            <p className="muted">The deterministic audit completed, but optional AI text enrichment was skipped or failed for this run.</p>
+            {latestJob.errorMessage && <p role="status" className="muted">{latestJob.errorMessage}</p>}
+            <p className="muted">To enable AI interpretation, configure a valid OPENAI_API_KEY or AI_PROVIDER_KEY in Vercel project environment variables and redeploy. Do not paste secret keys into chat. The report's evidence-backed checks remain available without AI.</p>
+          </> : <>
+            <p className="muted">No AI provider error was recorded for this audit. Optional AI interpretation uses captured text and evidence; it does not currently inspect screenshot pixels. Findings still require evidence IDs and do not establish revenue or conversion impact.</p>
+          </>}
+        </section>
+        <section className="card" style={{ marginTop: 24 }}>
           <h2>Captured page views</h2>
           <p className="muted" style={{ fontSize: 12 }}>PageFix attempts a desktop and mobile screenshot during the audit. If capture or storage is blocked by the target page or runtime, use the retry button; no screenshot is invented. Stored images are private and accessible only to the audit owner.</p>
           {(!hasDesktopScreenshot || !hasMobileScreenshot) && <div><p className="muted">{hasDesktopScreenshot || hasMobileScreenshot ? 'One viewport is stored. Retry to capture any missing desktop or mobile view.' : 'No stored screenshots are available yet. Capture desktop and mobile views when you need visual evidence.'}</p><CaptureScreenshotsButton auditId={audit.id} /></div>}

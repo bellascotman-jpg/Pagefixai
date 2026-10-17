@@ -11,8 +11,8 @@
   --dark: #111827;
   --dark-2: #1d2433;
 }
-html, body { background:#fff; color:#101828; font-family:Inter, "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-h1,h2,h3,.brand { font-family:Inter, "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing:-.045em; }
+html, body { background:#fff; color:#101828; font-family:"DM Sans", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+h1,h2,h3,.brand { font-family:"Manrope", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing:-.045em; }
 ::selection { background:#e6e4ff; color:#25205c; }
 .site-nav {
   width:100%; height:76px; padding:0 max(28px,calc((100vw - 1240px)/2));
@@ -296,3 +296,5 @@ h1,h2,h3,.brand { font-family:Inter, "Manrope", -apple-system, BlinkMacSystemFon
 @media(prefers-reduced-motion:reduce) {
   .app-sidebar,.workspace-sidebar-backdrop { transition:none!important; }
 }
+
+@media(max-width:760px){.nav-links a:nth-child(n){display:inline-flex}}

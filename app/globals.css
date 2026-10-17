@@ -587,3 +587,5 @@ html,body{background:var(--paper);color:var(--ink)}
  .auth-mobile-brand{display:block!important;margin-bottom:25px}
 }
 @media(prefers-reduced-motion:reduce){.app-sidebar,.sidebar-link{transition:none!important}}
+
+@media(min-width:761px){.app-main .site-nav{display:none!important}.referral-workspace-page{padding-top:22px}.referral-workspace-page .referral-hero{padding-top:22px}}

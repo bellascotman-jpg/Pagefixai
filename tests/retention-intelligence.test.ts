@@ -35,6 +35,15 @@ describe('retention and onboarding intelligence', () => {
     expect(result.findings.every(item => !/measured churn|will increase retention|lost revenue/i.test(item.detail + item.whyItMatters))).toBe(true);
   });
 
+  it('does not flag a next action when the supplied wording is present with harmless filler words', () => {
+    const result = analyzeRetentionJourney({
+      ...base,
+      steps: [{ id: 'welcome', name: 'Welcome', content: 'Welcome to the app. Start your setup.', expectedNextStep: 'Start setup', expectedOutcome: 'Setup started' }],
+      metrics: { usersStarted: null, usersCompleted: null, activatedUsers: null, windowLabel: '' },
+    });
+    expect(result.findings.some(item => item.id === 'next-step-welcome')).toBe(false);
+  });
+
   it('checks pricing and cancellation text only for the corresponding flow', () => {
     const pricing = analyzeRetentionJourney({ ...base, flowType: 'pricing', pricingText: '', metrics: { usersStarted: null, usersCompleted: null, activatedUsers: null, windowLabel: '' } });
     expect(pricing.findings.some(item => item.id === 'pricing-billing-clarity')).toBe(true);

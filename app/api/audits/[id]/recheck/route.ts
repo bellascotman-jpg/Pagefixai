@@ -79,7 +79,6 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       // A missing title alone cannot prove a fix; rule output can vary. Without a finding-specific evidence comparator, absence is inconclusive.
       const titleStillPresent = afterTitles.has(finding.title.trim().toLowerCase());
       const status = !decision.canVerify || !titleStillPresent ? 'UNABLE_TO_VERIFY' : 'STILL_DETECTED';
-      if (status === 'VERIFIED') verifiedCount += 1;
       if (status === 'STILL_DETECTED') stillDetectedCount += 1;
       if (status === 'UNABLE_TO_VERIFY') unableToVerifyCount += 1;
       await db.finding.updateMany({
@@ -88,15 +87,12 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       });
     }
 
-    const result = !decision.canVerify
+    // Current evidence comparison can prove that a matching title remains, but
+    // cannot prove that a missing title was fixed. Never emit RESOLVED/IMPROVED
+    // until a finding-specific before/after evidence comparator exists.
+    const result = !decision.canVerify || unableToVerifyCount > 0
       ? 'UNABLE_TO_VERIFY'
-      : verifiedCount === before.length
-        ? 'RESOLVED'
-        : verifiedCount > 0
-          ? 'IMPROVED'
-          : unableToVerifyCount > 0
-            ? 'UNABLE_TO_VERIFY'
-            : 'STILL_DETECTED';
+      : 'STILL_DETECTED';
 
     await db.recheck.create({
       data: {
@@ -118,11 +114,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       verificationReason: decision.reason,
       message: result === 'UNABLE_TO_VERIFY'
         ? 'The fresh inspection did not provide enough finding-specific evidence to prove resolution. Missing titles are inconclusive, not proof of a fix. Review the before/after evidence; no absent finding was marked resolved.'
-        : result === 'RESOLVED'
-          ? 'Every previous finding was verified against finding-specific evidence in the fresh inspection. This does not establish a business outcome.'
-          : result === 'IMPROVED'
-            ? 'Some previous findings were verified resolved and others remain detectable. Review each finding and its new evidence.'
-            : 'The previous finding titles remain detectable in the fresh inspection.',
+        : 'The previous finding titles remain detectable in the fresh inspection. Review the evidence before changing remediation status.',
       workerFailed: Boolean(workerResult && 'failed' in workerResult && workerResult.failed),
     });
   } catch (error) {

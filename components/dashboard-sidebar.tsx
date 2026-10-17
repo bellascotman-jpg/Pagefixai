@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const groups = [
   { label: 'WORKSPACE', items: [
@@ -41,19 +42,51 @@ const groups = [
 
 export default function DashboardSidebar() {
   const pathname = usePathname();
-  return <aside className="app-sidebar">
-    <Link href="/dashboard" className="sidebar-brand">PageFix<span>AI</span></Link>
-    {groups.map(group => <div key={group.label}>
-      <div className="sidebar-section-label">{group.label}</div>
-      <nav className="sidebar-nav" aria-label={group.label}>
-        {group.items.map(item => {
-          const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
-          return <Link key={item.href} href={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`} aria-current={active ? 'page' : undefined}>
-            <span className="sidebar-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
-          </Link>;
-        })}
-      </nav>
-    </div>)}
-    <div className="sidebar-bottom"><p>Evidence first. Honest limits. Fix what you can verify.</p><Link href="/security">Security & privacy ↗</Link></div>
-  </aside>;
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', closeOnEscape);
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
+  return <>
+    <div className="mobile-workspace-bar">
+      <button className="workspace-menu-button" type="button" aria-label={open ? 'Close workspace menu' : 'Open workspace menu'} aria-expanded={open} aria-controls="workspace-sidebar" onClick={() => setOpen(value => !value)}>
+        <span /><span /><span />
+      </button>
+      <Link href="/dashboard" className="sidebar-brand">PageFix<span>AI</span></Link>
+      <span className="workspace-bar-label">WORKSPACE</span>
+    </div>
+    <button type="button" aria-label="Close workspace navigation" className={`workspace-sidebar-backdrop ${open ? 'is-open' : ''}`} onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} />
+    <aside id="workspace-sidebar" className={`app-sidebar ${open ? 'is-open' : ''}`}>
+      <div className="sidebar-mobile-heading">
+        <Link href="/dashboard" className="sidebar-brand" onClick={() => setOpen(false)}>PageFix<span>AI</span></Link>
+        <button type="button" className="sidebar-close-button" aria-label="Close workspace menu" onClick={() => setOpen(false)}>×</button>
+      </div>
+      {groups.map(group => <div key={group.label}>
+        <div className="sidebar-section-label">{group.label}</div>
+        <nav className="sidebar-nav" aria-label={group.label}>
+          {group.items.map(item => {
+            const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
+            return <Link key={item.href} href={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`} aria-current={active ? 'page' : undefined} onClick={() => setOpen(false)}>
+              <span className="sidebar-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
+            </Link>;
+          })}
+        </nav>
+      </div>)}
+      <div className="sidebar-bottom"><p>Evidence first. Honest limits. Fix what you can verify.</p><Link href="/security" onClick={() => setOpen(false)}>Security & privacy ↗</Link></div>
+    </aside>
+  </>;
 }

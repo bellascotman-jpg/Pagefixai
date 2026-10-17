@@ -182,7 +182,7 @@ export default function RetentionWorkspace() {
       </form>
     </section>
 
-    {(findings.length > 0 || metrics) && <section className="card">
+    {(selectedId || findings.length > 0 || metrics) && <section className="card">
       <div className="label">SAVED ANALYSIS {selectedId ? `/ ${selectedId.slice(0, 8)}` : ''}</div>
       <h2>Findings and next actions</h2>
       {metrics && <div className="grid grid-3" style={{ margin: '16px 0' }}>

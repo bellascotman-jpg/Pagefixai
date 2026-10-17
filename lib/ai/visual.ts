@@ -22,7 +22,7 @@ const responseSchema = {
 type ResponsesPayload = { output_text?: string };
 
 export async function interpretAuditVisuals(auditId: string) {
-  const key = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_KEY;
+  const key = process.env.AI_VISION_KEY || process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_KEY;
   if (!key) return { skipped: true, reason: 'AI_PROVIDER_NOT_CONFIGURED' };
   const audit = await db.audit.findUnique({ where: { id: auditId }, include: { evidence: true, findings: true, screenshots: true } });
   if (!audit) throw new Error('AUDIT_NOT_FOUND');

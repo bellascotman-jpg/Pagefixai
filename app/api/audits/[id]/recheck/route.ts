@@ -71,7 +71,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       findings: after,
     });
     const afterTitles = new Set(after.map(f => f.title.trim().toLowerCase()));
-    let verifiedCount = 0;
+    const verifiedCount = 0;
     let stillDetectedCount = 0;
     let unableToVerifyCount = 0;
 

@@ -29,6 +29,10 @@ const groups = [
     { href: '/dashboard/intelligence/retention', label: 'Retention & onboarding', icon: '↻' },
     { href: '/dashboard/intelligence/verification', label: 'Verification history', icon: '✓' },
   ]},
+  { label: 'GROWTH', items: [
+    { href: '/dashboard/referrals', label: 'Referrals & earnings', icon: '↗' },
+    { href: '/partners/affiliate', label: 'Affiliate program', icon: '◎' },
+  ]},
   { label: 'WORKSPACES', items: [
     { href: '/dashboard/competitors', label: 'Competitors', icon: '⊙' },
     { href: '/dashboard/intelligence/workspaces', label: 'Seller & agency workspaces', icon: '▣' },

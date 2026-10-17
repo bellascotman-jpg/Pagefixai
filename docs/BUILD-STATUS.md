@@ -8,7 +8,7 @@ The full product scope and acceptance criteria live in [PRODUCT-ROADMAP.md](./PR
 - Working branch: `build/pagefix-product-strategy`
 - Review: draft PR #7 against `main`
 - Production: `main` and the production deployment must remain unchanged until release checks pass.
-- Immediate scope: Phase 4 — Traffic, Advertising and Customer Journey Intelligence.
+- Current scope: Phase 5 — Retention, SaaS Onboarding and Churn Intelligence.
 
 ## Phase 1 — latest confirmed verification
 
@@ -87,6 +87,31 @@ The intelligence module pages no longer stop at a capability explainer with gene
 - [x] Unit and end-to-end tests added for the new behavior.
 - [ ] Latest full CI run passes on the final Phase 4 commit.
 - [ ] Preview deployment succeeds and routes build without regression.
+
+## Phase 5 — Retention, SaaS Onboarding and Churn Intelligence
+
+**Status: IMPLEMENTED; final CI verification pending. Production remains unchanged.**
+
+- Added `lib/intelligence/retention.ts` with deterministic, evidence-limited checks for missing journey content, unclear next steps, undefined step outcomes, possible signup-promise continuity gaps, onboarding message CTAs, pricing/billing clarity, cancellation terms, and retention return-use cues.
+- Added authenticated `/api/intelligence/retention` GET/POST endpoints. Analyses are persisted per signed-in user; history queries are user-scoped. Payload lengths and aggregate metric counts are validated.
+- Added `RetentionAnalysis` persistence to the Prisma schema. CI's disposable database schema push validates the model; do not synchronize it destructively against production.
+- Added an interactive `/dashboard/intelligence/retention` workspace: journey type selection, step editor, add/remove steps, onboarding email/message editor, pricing/cancellation text fields, optional cohort metrics, analyse-and-save action, clear-results action, saved-history refresh and restore.
+- Added retention and onboarding navigation in the dashboard sidebar, Intelligence Hub capability registry, and dashboard shortcuts.
+- Metric rates are calculated only when user-supplied cohort counts are consistent and a reporting window is named. Findings do not claim measured churn or fabricate retention outcomes. The workspace clearly states that private analytics are not automatically connected.
+- Added unit tests for rate calculation, unclear next steps, pricing/cancellation checks, and invalid metrics, plus an authenticated end-to-end test for analysis creation and history retrieval.
+
+### Phase 5 acceptance checklist
+
+- [x] Signup/onboarding/activation/retention/pricing/cancellation workflow input.
+- [x] Journey-step clarity, expected next action, and success-outcome checks.
+- [x] Onboarding email/message CTA review.
+- [x] Pricing/billing and cancellation copy checks for relevant flow types.
+- [x] Optional user-supplied cohort completion/activation rates with validation.
+- [x] Authenticated, user-scoped persistence and saved-history restoration.
+- [x] UI actions for add/remove step, add/remove message, analyse/save, clear current results, refresh history, and load a saved analysis.
+- [x] Unit and end-to-end regression tests added.
+- [ ] Latest CI passes Prisma validation, typecheck, lint, unit tests, schema push, production build and Playwright E2E.
+- [ ] Preview deployment succeeds and workspace smoke test passes without touching production data.
 
 ## Release safety
 

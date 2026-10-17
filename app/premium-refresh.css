@@ -17,26 +17,26 @@
   --pagefix-blush:#f2c3d0;
   --pagefix-cream:#f5d9b8;
 }
-html,body { background:var(--paper); color:var(--ink); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-h1,h2,h3,.brand { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:-.045em; }
-::selection { background:#f2d6df; color:#2a1018; }
+.marketing { background:var(--paper); color:var(--ink); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+.marketing h1,.marketing h2,.marketing h3,.marketing .brand { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; letter-spacing:-.045em; }
+.marketing ::selection { background:#f2d6df; color:#2a1018; }
 .marketing { overflow:clip; }
 .site-nav {
   height:78px; padding:0 max(28px,calc((100vw - 1240px)/2)); background:rgba(251,247,248,.88);
   border-bottom:1px solid rgba(231,220,224,.82); box-shadow:none; backdrop-filter:blur(18px);
 }
-.brand { font-size:25px; font-weight:750; letter-spacing:-.075em; color:var(--ink); }
-.brand span { color:var(--teal); }
+.marketing .brand { font-size:25px; font-weight:750; letter-spacing:-.075em; color:var(--ink); }
+.marketing .brand span { color:var(--teal); }
 .nav-links,.nav-actions { color:#5d4850; font-size:13px; font-weight:600; gap:22px; }
 .nav-links a,.site-footer a { transition:color .2s ease; }
 .nav-links a:hover,.site-footer a:hover { color:var(--teal); }
 .nav-signin { color:var(--ink); }
-.button { border-radius:8px; min-height:46px; padding:12px 19px; font-weight:650; letter-spacing:-.015em; transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease; }
-.button:hover { transform:translateY(-2px); }
-.button-primary,.primary-button { background:var(--teal); color:#fff; border:1px solid var(--teal); box-shadow:none; }
-.button-primary:hover,.primary-button:hover { background:var(--teal-dark); box-shadow:0 8px 22px rgba(109,20,45,.14); }
-.button-secondary { border:1px solid #d8c6cc; background:rgba(255,255,255,.76); color:var(--ink); }
-.button-secondary:hover { border-color:#b77a8c; background:#fff; box-shadow:none; }
+.marketing .button { border-radius:8px; min-height:46px; padding:12px 19px; font-weight:650; letter-spacing:-.015em; transition:transform .2s ease,background .2s ease,border-color .2s ease,box-shadow .2s ease; }
+.marketing .button:hover { transform:translateY(-2px); }
+.marketing .button-primary,.marketing .primary-button { background:var(--teal); color:#fff; border:1px solid var(--teal); box-shadow:none; }
+.marketing .button-primary:hover,.marketing .primary-button:hover { background:var(--teal-dark); box-shadow:0 8px 22px rgba(109,20,45,.14); }
+.marketing .button-secondary { border:1px solid #d8c6cc; background:rgba(255,255,255,.76); color:var(--ink); }
+.marketing .button-secondary:hover { border-color:#b77a8c; background:#fff; box-shadow:none; }
 .hero-section {
   position:relative; isolation:isolate; width:min(1240px,calc(100% - 56px)); padding:clamp(78px,8vw,120px) 0 96px;
   grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr); gap:clamp(34px,5vw,70px); align-items:center;
@@ -128,9 +128,6 @@ h1,h2,h3,.brand { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",
 .site-footer { background:#210b12; color:#f8e9ee; border-top:1px solid rgba(255,255,255,.08); }
 .site-footer a { color:#e4cbd3; }
 .site-footer p,.site-footer small { color:#c2a7b1; }
-.app-sidebar { background:#fff; border-right:1px solid #e7dce0; }
-.app-sidebar a[aria-current="page"],.app-sidebar a.active { color:var(--teal); background:#f8edf1; }
-.app-main { background:#fbf7f8; }
 @media(max-width:1100px) {
  .nav-links { gap:14px; font-size:12px; }
  .hero-section { grid-template-columns:minmax(0,1fr) minmax(0,.9fr); gap:32px; }

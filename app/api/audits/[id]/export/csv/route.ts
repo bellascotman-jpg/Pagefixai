@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
+import { toCsv } from '@/lib/reports/csv';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-function csvCell(value: unknown) {
-  let text = value == null ? '' : value instanceof Date ? value.toISOString() : String(value);
-  // Prevent spreadsheet formula execution when a report is opened in Excel/Sheets.
-  if (/^[\s]*[=+@-]/.test(text)) text = "'" + text;
-  return '"' + text.replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
-}
 
 export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
@@ -24,7 +18,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
         orderBy: [{ priority: 'asc' }, { severity: 'asc' }],
         include: { evidence: { include: { evidence: true } } },
       },
-      pages: { select: { url: true, statusCode: true, title: true, canonical: true, metaDescription: true, createdAt: true } },
     },
   });
   if (!audit) return NextResponse.json({ error: 'NOT_FOUND', message: 'This report could not be found.' }, { status: 404 });
@@ -45,11 +38,8 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       return [evidence.type, evidence.source, evidence.location, evidence.content].filter(Boolean).join(' — ');
     }).join(' | '),
   ]);
-  const limitations = [
-    [],
-    ['LIMITATIONS', 'This export contains only evidence saved by PageFix for this audit. Public page inspection does not establish private revenue, conversion rate, traffic quality, customer behaviour or actual checkout abandonment. Recommendations do not guarantee commercial outcomes.'],
-  ];
-  const csv = '\uFEFF' + [headers, ...rows, ...limitations].map((row) => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
+  const limitation = 'This export contains only evidence saved by PageFix for this audit. Public page inspection does not establish private revenue, conversion rate, traffic quality, customer behaviour or actual checkout abandonment. Recommendations do not guarantee commercial outcomes.';
+  const csv = toCsv([headers, ...rows, ['LIMITATIONS', limitation, ...Array(16).fill('')]]);
 
   return new Response(csv, {
     status: 200,

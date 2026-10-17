@@ -81,7 +81,7 @@ export async function POST(request: Request) {
       flowType: input.flowType,
       input: input as unknown as Prisma.InputJsonValue,
       findings: result.findings as unknown as Prisma.InputJsonValue,
-      metrics: result.metrics as unknown as Prisma.InputJsonValue,
+      metrics: result.metrics === null ? Prisma.DbNull : result.metrics as unknown as Prisma.InputJsonValue,
     },
     select: { id: true, name: true, flowType: true, createdAt: true },
   });

@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { blogPosts } from "@/lib/blog-posts";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.APP_URL || "https://pagefixai.vercel.app";
@@ -10,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: new URL("/security", baseUrl).toString(), lastModified: now, changeFrequency: "yearly", priority: 0.4 },
     { url: new URL("/compare", baseUrl).toString(), lastModified: now, changeFrequency: "monthly", priority: 0.85 },
     { url: new URL("/resources", baseUrl).toString(), lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    { url: new URL("/blog", baseUrl).toString(), lastModified: now, changeFrequency: "weekly", priority: 0.85 },
+    ...blogPosts.map((post) => ({ url: new URL(`/blog/${post.slug}`, baseUrl).toString(), lastModified: new Date(post.publishedAt), changeFrequency: "monthly" as const, priority: 0.75 })),
     { url: new URL("/resources/how-to-audit-product-pages", baseUrl).toString(), lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: new URL("/resources/pagefix-vs-seo-audit-tools", baseUrl).toString(), lastModified: now, changeFrequency: "monthly", priority: 0.75 },
     { url: new URL("/resources/evidence-led-conversion-optimization", baseUrl).toString(), lastModified: now, changeFrequency: "monthly", priority: 0.75 },

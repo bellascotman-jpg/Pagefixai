@@ -25,6 +25,7 @@ const groups = [
     { href: '/dashboard/intelligence/experiments', label: 'Experimentation', icon: '⌁' },
     { href: '/dashboard/intelligence/governance', label: 'Evidence & governance', icon: '✓' },
     { href: '/dashboard/intelligence/journey', label: 'Journey & message match', icon: '⌁' },
+    { href: '/dashboard/intelligence/retention', label: 'Retention & onboarding', icon: '↻' },
     { href: '/dashboard/intelligence/verification', label: 'Verification history', icon: '✓' },
   ]},
   { label: 'WORKSPACES', items: [

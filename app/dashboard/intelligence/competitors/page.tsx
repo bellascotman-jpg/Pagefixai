@@ -14,7 +14,7 @@ export default async function CompetitorIntelligencePage() {
   });
   const seenUrls = new Set<string>();
   const rows = audits.map(a => ({...a, page:a.pages[0]})).filter(row => {
-    const key = row.url.trim().replace(/\\/+$/, '').toLowerCase();
+    const key = row.url.trim().replace(/\/+$/, '').toLowerCase();
     if (seenUrls.has(key)) return false;
     seenUrls.add(key);
     return true;

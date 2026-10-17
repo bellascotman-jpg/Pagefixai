@@ -51,6 +51,23 @@ describe('retention and onboarding intelligence', () => {
     expect(cancellation.findings.some(item => item.id === 'cancellation-clarity')).toBe(true);
   });
 
+  it('reviews plan differentiation and recognizes a CTA in supplied message body text', () => {
+    const pricing = analyzeRetentionJourney({
+      ...base,
+      flowType: 'pricing',
+      pricingText: 'Subscription costs $20 monthly.',
+      metrics: { usersStarted: null, usersCompleted: null, activatedUsers: null, windowLabel: '' },
+    });
+    expect(pricing.findings.some(item => item.id === 'plan-comparison-clarity')).toBe(true);
+
+    const messages = analyzeRetentionJourney({
+      ...base,
+      emails: [{ subject: 'Finish setup', body: 'Click to connect your store and start setup.', callToAction: '' }],
+      metrics: { usersStarted: null, usersCompleted: null, activatedUsers: null, windowLabel: '' },
+    });
+    expect(messages.findings.some(item => item.id === 'email-cta-1')).toBe(false);
+  });
+
   it('does not calculate rates for inconsistent counts', () => {
     const result = analyzeRetentionJourney({ ...base, metrics: { usersStarted: 10, usersCompleted: 11, activatedUsers: 12, windowLabel: 'Bad cohort' } });
     expect(result.metrics).toBeNull();

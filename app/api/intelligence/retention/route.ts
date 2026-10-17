@@ -39,13 +39,27 @@ const schema = z.object({
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ message: 'Sign in to view saved retention analyses.' }, { status: 401 });
-  const records = await db.retentionAnalysis.findMany({
-    where: { userId: user.id },
+  const records = await db.feedback.findMany({
+    where: { userId: user.id, type: 'retention_analysis' },
     orderBy: { createdAt: 'desc' },
     take: 20,
-    select: { id: true, name: true, flowType: true, input: true, findings: true, metrics: true, createdAt: true },
+    select: { id: true, message: true, metadata: true, createdAt: true },
   });
-  return NextResponse.json({ analyses: records });
+  const analyses = records.map(record => {
+    const payload = record.metadata && typeof record.metadata === 'object' && !Array.isArray(record.metadata)
+      ? record.metadata as Record<string, unknown>
+      : {};
+    return {
+      id: record.id,
+      name: record.message,
+      flowType: typeof payload.flowType === 'string' ? payload.flowType : 'onboarding',
+      input: payload.input,
+      findings: payload.findings,
+      metrics: payload.metrics,
+      createdAt: record.createdAt,
+    };
+  });
+  return NextResponse.json({ analyses });
 }
 
 export async function POST(request: Request) {
@@ -74,16 +88,21 @@ export async function POST(request: Request) {
   }
 
   const result = analyzeRetentionJourney(input);
-  const record = await db.retentionAnalysis.create({
+  const payload = {
+    flowType: input.flowType,
+    input,
+    findings: result.findings,
+    metrics: result.metrics,
+    evidenceLimit: 'Based on user-supplied journey text and aggregate metrics; this is not an automated product analytics integration.',
+  };
+  const record = await db.feedback.create({
     data: {
       userId: user.id,
-      name: input.name,
-      flowType: input.flowType,
-      input: input as unknown as Prisma.InputJsonValue,
-      findings: result.findings as unknown as Prisma.InputJsonValue,
-      metrics: result.metrics === null ? Prisma.DbNull : result.metrics as unknown as Prisma.InputJsonValue,
+      type: 'retention_analysis',
+      message: input.name,
+      metadata: payload as unknown as Prisma.InputJsonValue,
     },
-    select: { id: true, name: true, flowType: true, createdAt: true },
+    select: { id: true, message: true, createdAt: true },
   });
-  return NextResponse.json({ saved: true, analysis: { ...record, findings: result.findings, metrics: result.metrics } }, { status: 201 });
+  return NextResponse.json({ saved: true, analysis: { id: record.id, name: record.message, flowType: input.flowType, input, findings: result.findings, metrics: result.metrics, createdAt: record.createdAt } }, { status: 201 });
 }

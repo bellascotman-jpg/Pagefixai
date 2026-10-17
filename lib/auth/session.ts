@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 
 const COOKIE = 'pagefix_session';
-const SESSION_DAYS = 30;
+const SESSION_DAYS = 180;
 
 function hashToken(token: string) {
   return createHash('sha256').update(token).digest('hex');

@@ -433,7 +433,7 @@ html,body{background:var(--paper);color:var(--ink)}
 .nav-links,.nav-actions{color:#5d4850}
 .nav-links a:hover,.site-footer a:hover{color:var(--teal)}
 .brand{color:#2a1018}.brand span{color:var(--teal)}
-.button-primary,.primary-button{background:linear-gradient(135deg,#6d142d,#4b0d20);color:#fff;box-shadow:0 8px 22px rgba(49,94,251,.18)}
+.button-primary,.primary-button{background:linear-gradient(135deg,#6d142d,#4b0d20);color:#fff;box-shadow:0 8px 22px rgba(109,20,45,.18)}
 .button-primary:hover,.primary-button:hover{background:#4b0d20}
 .button-secondary{border:1px solid #d6deea;background:#fff;color:#2a1018}
 .hero-section{gap:clamp(36px,5vw,72px);padding-top:clamp(56px,7vw,92px)}
@@ -471,12 +471,12 @@ html,body{background:var(--paper);color:var(--ink)}
 .badge{background:#f5e6eb;color:#6d142d;border-color:#e7dce0}
 .text-button{color:#52627a}
 .pricing-page{background:#fbf7f8}
-.pricing-card{background:#fff!important;border:1px solid #e1e8f2!important;border-radius:18px!important;box-shadow:0 12px 36px rgba(17,38,72,.055)!important}
-.pricing-card.popular,.pricing-card.featured{border-color:#6d142d!important;box-shadow:0 18px 44px rgba(49,94,251,.11)!important}
+.pricing-card{background:#fff!important;border:1px solid #e1e8f2!important;border-radius:18px!important;box-shadow:0 12px 36px rgba(42,16,24,.055)!important}
+.pricing-card.popular,.pricing-card.featured{border-color:#6d142d!important;box-shadow:0 18px 44px rgba(109,20,45,.11)!important}
 .editorial-page{background:#fbf7f8}
-.editorial-hero,.partner-hero,.referral-hero{background:radial-gradient(circle at 82% 18%,rgba(49,94,251,.08),transparent 32%)}
+.editorial-hero,.partner-hero,.referral-hero{background:radial-gradient(circle at 82% 18%,rgba(200,91,121,.08),transparent 32%)}
 .partner-hero,.referral-hero{border-bottom:1px solid #e7dce0}
-.partner-hero .partner-hero-stats>div{background:#fff;border:1px solid #e1e8f2;border-radius:14px;box-shadow:0 8px 24px rgba(17,38,72,.04)}
+.partner-hero .partner-hero-stats>div{background:#fff;border:1px solid #e1e8f2;border-radius:14px;box-shadow:0 8px 24px rgba(42,16,24,.04)}
 .referral-link-card,.referral-panel{background:#fff;border:1px solid #e1e8f2;border-radius:16px}
 .application-note{color:#74656a}
 @media(max-width:900px){

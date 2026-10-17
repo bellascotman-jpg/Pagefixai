@@ -19,5 +19,5 @@ Status: merged to `main` and deployed to production. Provider-backed runtime ver
 - Vercel production deployment reached `READY`; public homepage smoke check returned HTTP 200.
 
 ## Remaining runtime limitation
-- Actual AI text/vision analysis requires a valid configured provider key, a vision-capable model, and successfully stored screenshot captures. These live provider conditions have not been independently verified. If optional AI is unavailable, deterministic findings remain available.
+- Actual AI text reasoning uses OPENAI_API_KEY or AI_PROVIDER_KEY. Visual reasoning uses AI_VISION_KEY first, then falls back to OPENAI_API_KEY or AI_PROVIDER_KEY; AI_VISION_MODEL optionally selects the vision model. Visual analysis also requires stored screenshots. These live provider conditions have not been independently verified. If optional AI is unavailable, deterministic findings remain available.
 - Payment work remains deferred to Phase 11.

@@ -5,7 +5,7 @@
 - Reject unknown or duplicate evidence references and duplicate finding titles.
 - Handle provider HTTP errors, invalid JSON, empty output, and bounded request timeouts.
 - Preserve deterministic audit completion when optional AI enrichment is unavailable.
-- Record screenshot evidence IDs and optionally pass actual stored desktop/mobile first-viewport images to a vision-capable OpenAI Responses model.
+- Record screenshot evidence IDs and optionally pass actual stored desktop/mobile first-viewport images to a vision-capable OpenAI Responses model. Visual reasoning accepts a dedicated AI_VISION_KEY and can run independently from text reasoning.
 - Visual findings are constrained to screenshots actually captured, cite screenshot evidence IDs, and cannot claim tested interactions, below-the-fold content, analytics, conversions, or revenue.
 - If screenshot storage, image retrieval, provider configuration, or the vision request fails, keep deterministic findings and report the limitation.
 - Keep SEO and commerce findings grounded in captured public-page evidence.

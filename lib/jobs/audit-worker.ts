@@ -43,23 +43,25 @@ export async function processNextAuditJob(auditId?: string) {
       ai = await bounded(interpretAudit(job.auditId), 5_000, 'AI_REASONING_TIMEOUT');
       if (ai && typeof ai === 'object' && 'skipped' in ai && ai.skipped) {
         warnings.push('AI text reasoning was skipped; evidence-based checks remain available.');
-      } else {
-        try {
-          visualAi = await bounded(interpretAuditVisuals(job.auditId), 8_000, 'AI_VISUAL_REASONING_TIMEOUT');
-          if (visualAi && typeof visualAi === 'object' && 'skipped' in visualAi && visualAi.skipped) {
-            const reason = 'reason' in visualAi && typeof visualAi.reason === 'string' ? visualAi.reason : 'UNKNOWN';
-            if (reason !== 'AI_PROVIDER_NOT_CONFIGURED') warnings.push(`AI visual reasoning was skipped (${reason}); evidence-based checks remain available.`);
-          }
-        } catch (error) {
-          const message = error instanceof Error ? error.message : 'AI visual reasoning failed.';
-          warnings.push(message);
-          console.error('pagefix_ai_visual_reasoning_failed', { auditId: job.auditId, message });
-        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'AI reasoning failed.';
       warnings.push(message);
       console.error('pagefix_ai_reasoning_failed', { auditId: job.auditId, message });
+    }
+
+    // Run visual reasoning independently so AI_VISION_KEY can be configured
+    // even when the text-reasoning provider key is not present.
+    try {
+      visualAi = await bounded(interpretAuditVisuals(job.auditId), 8_000, 'AI_VISUAL_REASONING_TIMEOUT');
+      if (visualAi && typeof visualAi === 'object' && 'skipped' in visualAi && visualAi.skipped) {
+        const reason = 'reason' in visualAi && typeof visualAi.reason === 'string' ? visualAi.reason : 'UNKNOWN';
+        if (reason !== 'AI_PROVIDER_NOT_CONFIGURED') warnings.push(`AI visual reasoning was skipped (${reason}); evidence-based checks remain available.`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'AI visual reasoning failed.';
+      warnings.push(message);
+      console.error('pagefix_ai_visual_reasoning_failed', { auditId: job.auditId, message });
     }
 
     const aiWarning = warnings.length ? warnings.join('; ').slice(0, 1000) : null;

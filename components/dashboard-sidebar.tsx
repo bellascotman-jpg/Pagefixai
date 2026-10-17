@@ -47,9 +47,13 @@ const groups = [
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'COMMERCE INTELLIGENCE': true });
 
   useEffect(() => {
     setOpen(false);
+    if (pathname.startsWith('/dashboard/intelligence')) {
+      setCollapsed(current => ({ ...current, 'COMMERCE INTELLIGENCE': false }));
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -75,20 +79,21 @@ export default function DashboardSidebar() {
     </div>
     <button type="button" aria-label="Close workspace navigation" className={`workspace-sidebar-backdrop ${open ? 'is-open' : ''}`} onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} />
     <aside id="workspace-sidebar" className={`app-sidebar ${open ? 'is-open' : ''}`}>
+      <Link href="/dashboard" className="sidebar-brand sidebar-desktop-brand">PageFix<span>AI</span></Link>
       <div className="sidebar-mobile-heading">
         <Link href="/dashboard" className="sidebar-brand" onClick={() => setOpen(false)}>PageFix<span>AI</span></Link>
         <button type="button" className="sidebar-close-button" aria-label="Close workspace menu" onClick={() => setOpen(false)}>×</button>
       </div>
-      {groups.map(group => <div key={group.label}>
-        <div className="sidebar-section-label">{group.label}</div>
-        <nav className="sidebar-nav" aria-label={group.label}>
+      {groups.map(group => <div key={group.label} className={`sidebar-group ${collapsed[group.label] ? 'is-collapsed' : ''}`}>
+        <button type="button" className="sidebar-section-toggle" aria-expanded={!collapsed[group.label]} onClick={() => setCollapsed(current => ({ ...current, [group.label]: !current[group.label] }))}><span className="sidebar-section-label">{group.label}</span><span className="sidebar-section-chevron" aria-hidden="true">{collapsed[group.label] ? '+' : '−'}</span></button>
+        {!collapsed[group.label] && <nav className="sidebar-nav" aria-label={group.label}>
           {group.items.map(item => {
             const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
             return <Link key={item.href} href={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`} aria-current={active ? 'page' : undefined} onClick={() => setOpen(false)}>
               <span className="sidebar-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
             </Link>;
           })}
-        </nav>
+        </nav>}
       </div>)}
       <div className="sidebar-bottom"><p>Evidence first. Honest limits. Fix what you can verify.</p><Link href="/security" onClick={() => setOpen(false)}>Security & privacy ↗</Link></div>
     </aside>

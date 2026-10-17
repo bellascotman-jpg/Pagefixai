@@ -94,7 +94,7 @@ The intelligence module pages no longer stop at a capability explainer with gene
 
 - Added `lib/intelligence/retention.ts` with deterministic, evidence-limited checks for missing journey content, unclear next steps, undefined step outcomes, possible signup-promise continuity gaps, onboarding message CTAs, pricing/billing clarity, cancellation terms, and retention return-use cues.
 - Added authenticated `/api/intelligence/retention` GET/POST endpoints. Analyses are persisted per signed-in user; history queries are user-scoped. Payload lengths and aggregate metric counts are validated.
-- Added `RetentionAnalysis` persistence to the Prisma schema. CI's disposable database schema push validates the model; do not synchronize it destructively against production.
+- Persisted analyses in the existing feedback-record store using a dedicated `retention_analysis` type, scoped by the authenticated user. This avoids a schema migration for this feature; CI validates the existing schema against a disposable database.
 - Added an interactive `/dashboard/intelligence/retention` workspace: journey type selection, step editor, add/remove steps, onboarding email/message editor, pricing/cancellation text fields, optional cohort metrics, analyse-and-save action, clear-results action, saved-history refresh and restore.
 - Added retention and onboarding navigation in the dashboard sidebar, Intelligence Hub capability registry, and dashboard shortcuts.
 - Metric rates are calculated only when user-supplied cohort counts are consistent and a reporting window is named. Findings do not claim measured churn or fabricate retention outcomes. The workspace clearly states that private analytics are not automatically connected.

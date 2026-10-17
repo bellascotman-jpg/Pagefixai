@@ -31,7 +31,7 @@ const groups = [
   ]},
   { label: 'GROWTH', items: [
     { href: '/dashboard/referrals', label: 'Referrals & earnings', icon: '↗' },
-    { href: '/partners/affiliate', label: 'Affiliate program', icon: '◎' },
+    { href: '/dashboard/affiliate', label: 'Affiliate program', icon: '◎' },
   ]},
   { label: 'WORKSPACES', items: [
     { href: '/dashboard/competitors', label: 'Competitors', icon: '⊙' },

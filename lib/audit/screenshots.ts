@@ -36,7 +36,7 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
   const stored: StoredAuditScreenshot[] = [];
   // Screenshots are supplemental. A hostile/slow page or constrained serverless
   // browser must never hold the core audit open indefinitely.
-  const hardStop = setTimeout(() => { void browser?.close().catch(() => undefined); }, 25_000);
+  const hardStop = setTimeout(() => { void browser?.close().catch(() => undefined); }, 12_000);
   hardStop.unref?.();
 
   try {
@@ -73,7 +73,7 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
           }
         });
 
-        await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 4_500 });
+        await page.goto(target.toString(), { waitUntil: 'domcontentloaded', timeout: 3_500 });
         await page.waitForTimeout(100);
         const signals = await page.evaluate(() => {
           const viewportWidth = window.innerWidth;
@@ -113,7 +113,7 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
           type: 'png',
           fullPage: false,
           animations: 'disabled',
-          timeout: 3_000,
+          timeout: 2_500,
         });
         const storageKey = await storeAuditScreenshot(auditId, capture.viewport, Buffer.from(bytes));
         if (storageKey) stored.push({ viewport: capture.viewport, storageKey, signals: { viewport: capture.viewport, ...signals } });

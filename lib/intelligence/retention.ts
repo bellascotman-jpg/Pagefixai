@@ -208,9 +208,9 @@ export function analyzeRetentionJourney(input: RetentionInput): RetentionAnalysi
       usersStarted: m.usersStarted,
       usersCompleted: m.usersCompleted,
       activatedUsers: m.activatedUsers,
-      completionRatePercent: m.usersCompleted / m.usersStarted * 100,
-      incompleteRatePercent: (m.usersStarted - m.usersCompleted) / m.usersStarted * 100,
-      activationRatePercent: m.activatedUsers === null ? null : m.activatedUsers / m.usersStarted * 100,
+      completionRatePercent: Math.round(m.usersCompleted / m.usersStarted * 10000) / 100,
+      incompleteRatePercent: Math.round((m.usersStarted - m.usersCompleted) / m.usersStarted * 10000) / 100,
+      activationRatePercent: m.activatedUsers === null ? null : Math.round(m.activatedUsers / m.usersStarted * 10000) / 100,
       windowLabel: m.windowLabel.trim(),
       source: 'User-supplied aggregate metrics',
     };

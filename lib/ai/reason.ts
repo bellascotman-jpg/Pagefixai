@@ -58,7 +58,7 @@ export async function interpretAudit(auditId: string) {
 
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
-    signal: AbortSignal.timeout(8_000),
+    signal: AbortSignal.timeout(4_000),
     headers: {
       Authorization: `Bearer ${key}`,
       'Content-Type': 'application/json',

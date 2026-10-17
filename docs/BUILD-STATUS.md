@@ -90,7 +90,7 @@ The intelligence module pages no longer stop at a capability explainer with gene
 
 ## Phase 5 — Retention, SaaS Onboarding and Churn Intelligence
 
-**Status: IMPLEMENTED; final CI verification pending. Production remains unchanged.**
+**Status: CI-VERIFIED COMPLETE on commit `154bf4f77a1030825342263cd30c8862230feea8` (run `39016770935`). Preview deployment READY. Production remains unchanged.**
 
 - Added `lib/intelligence/retention.ts` with deterministic, evidence-limited checks for missing journey content, unclear next steps, undefined step outcomes, possible signup-promise continuity gaps, onboarding message CTAs, pricing/billing clarity, cancellation terms, and retention return-use cues.
 - Added authenticated `/api/intelligence/retention` GET/POST endpoints. Analyses are persisted per signed-in user; history queries are user-scoped. Payload lengths and aggregate metric counts are validated.
@@ -110,8 +110,9 @@ The intelligence module pages no longer stop at a capability explainer with gene
 - [x] Authenticated, user-scoped persistence and saved-history restoration.
 - [x] UI actions for add/remove step, add/remove message, analyse/save, clear current results, refresh history, and load a saved analysis.
 - [x] Unit and end-to-end regression tests added.
-- [ ] Latest CI passes Prisma validation, typecheck, lint, unit tests, schema push, production build and Playwright E2E.
-- [ ] Preview deployment succeeds and workspace smoke test passes without touching production data.
+- [x] GitHub Actions run `39016770935` passes Prisma validation/generation, typecheck, lint, unit tests, disposable CI database schema push, production build, Playwright installation, and all end-to-end tests including retention API persistence and browser UI controls.
+- [x] Preview deployment `pagefixai-rbf8say4r-bellascotman-7762.vercel.app` is READY on the verified code commit. Vercel deployment protection redirects unauthenticated inspection to Vercel login; authenticated workflow behavior is verified in isolated CI rather than writing test data into the shared production database.
+- [x] Browser E2E caught and fixed a report-state edge case: a successfully saved analysis with zero detected gaps now still displays the completed report and honest no-gaps message.
 
 ## Release safety
 

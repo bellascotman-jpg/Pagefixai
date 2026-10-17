@@ -16,9 +16,8 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   const audit = await db.audit.findFirst({ where: { id, userId: user.id }, select: { id: true } });
   if (!audit) return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
 
-  const expectedKey = 'audits/' + id + '/' + viewport + '.png';
   const screenshot = await db.screenshot.findFirst({
-    where: { auditId: id, viewport, storageUrl: expectedKey },
+    where: { auditId: id, viewport },
     select: { storageUrl: true, mimeType: true },
   });
   if (!screenshot?.storageUrl) return NextResponse.json({ error: 'SCREENSHOT_NOT_AVAILABLE' }, { status: 404 });

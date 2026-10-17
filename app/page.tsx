@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 
 const capabilities = [
   { number: '01', title: 'Product Page Intelligence', body: 'Review visible product information, pricing clarity, primary actions, shipping and returns language, trust cues and unanswered buyer questions.' },
@@ -22,19 +23,25 @@ const audiences = [
   { title: 'Agencies and consultants', body: 'Standardize page inspections, keep evidence visible and make remediation discussions more concrete across projects.' },
 ];
 
+export const metadata: Metadata = {
+  title: 'PageFix AI — Commerce Intelligence & Remediation for Sellers',
+  description: 'Inspect product pages, offers and ad-to-page journeys. Find evidence-backed issues, get practical fixes and verify changes without invented performance claims.',
+  openGraph: { title: 'PageFix AI — Find it. Fix it. Verify it.', description: 'Seller-first commerce intelligence for product pages, buying journeys and evidence-led remediation.', type: 'website' },
+};
+
 export default function HomePage() {
   return <main className="marketing">
     <header className="site-nav">
       <Link href="/" className="brand" aria-label="PageFix AI home">PageFix<span>AI</span></Link>
-      <nav className="nav-links" aria-label="Main navigation"><a href="#capabilities">Capabilities</a><a href="#how-it-works">How it works</a><a href="#trust">Trust & security</a><Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link></nav>
+      <nav className="nav-links" aria-label="Main navigation"><a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a><Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link></nav>
       <div className="nav-actions"><Link href="/auth?mode=login" className="nav-signin">Sign in</Link><Link href="/auth" className="button button-primary button-small">Start an audit ↗</Link></div>
     </header>
 
     <section className="hero-section">
       <div className="hero-copy">
-        <div className="eyebrow"><span className="status-dot" /> EVIDENCE-LED WEBSITE INTELLIGENCE</div>
-        <h1>Find what’s blocking a clearer <span>customer decision.</span></h1>
-        <p className="hero-description">PageFix AI inspects public product pages and landing pages, surfaces observable friction, explains why it deserves attention and turns supported findings into practical fixes you can recheck.</p>
+        <div className="eyebrow"><span className="status-dot" /> COMMERCE INTELLIGENCE & REMEDIATION</div>
+        <h1>Find what’s holding your store back. <span>Fix it. Verify it.</span></h1>
+        <p className="hero-description">PageFix AI inspects product pages, offers, landing pages and advertising-to-page journeys. It shows sellers evidence-backed problems, explains buyer-facing risks, gives practical fixes and helps verify what changed.</p>
         <div className="hero-actions"><Link href="/auth" className="button button-primary">Create your workspace <span>→</span></Link><Link href="/pricing" className="button button-secondary">Explore plans</Link></div>
         <div className="hero-proof"><div className="proof-mark">✓</div><p><strong>Evidence before opinions.</strong><br/>No fabricated analytics, reviews, conversion lifts or customer behaviour.</p></div>
       </div>
@@ -74,7 +81,76 @@ export default function HomePage() {
 
     <section className="section-block audience-section"><div className="section-intro"><div className="eyebrow">BUILT FOR PEOPLE RESPONSIBLE FOR THE PAGE</div><h2>Make better-informed<br/><span>website decisions.</span></h2></div><div className="audience-grid">{audiences.map((item,index)=><article key={item.title}><span>{['↗','⌘','▦'][index]}</span><h3>{item.title}</h3><p>{item.body}</p></article>)}</div></section>
 
-    <section className="detail-section"><div className="detail-heading"><div className="eyebrow">WHAT THE REPORT SHOULD CONTAIN</div><h2>Every finding needs a reason<br/>and a next step.</h2><p>Findings are designed around evidence and action, not unsupported scores or inflated claims.</p></div><div className="detail-grid">{[['Classification','Directly Observed Evidence, Inferred Risk, Hypothesis or Recommendation.'],['Evidence location','The captured text, page element, URL, metadata or other observable signal behind the finding.'],['Why it matters','A plain-language explanation of the possible consequence, without claiming a measured conversion impact.'],['Confidence & unknowns','A clear confidence level and the information the audit cannot establish from a public page.'],['Implementation guidance','Concrete steps and optional copy suggestions tied to the specific issue.'],['Verification objective','What should be inspected again after the fix and what would count as resolved, improved or unverified.']].map(([title,body])=><article key={title}><span>✓</span><h3>{title}</h3><p>{body}</p></article>)}</div></section>
+
+    <section className="product-system-section" id="product-system">
+      <div className="product-system-inner">
+        <div className="eyebrow">THE PAGEFIX COMMERCE SYSTEM</div>
+        <h2>One connected workflow.<br/><span>Not another pile of audit reports.</span></h2>
+        <p className="product-system-lead">PageFix is designed to connect inspection, buyer decision intelligence, claim consistency, practical fixes and verification. Individual sellers can use the core workflow independently; teams and agencies can extend it across products and clients.</p>
+        <div className="product-system-grid">
+          <article className="system-card system-card-featured"><span className="system-number">01</span><h3>Commerce Inspection</h3><p>Inspect public product pages, landing pages, visible content, page structure and supported desktop/mobile captures. Every report states what was and was not inspected.</p><ul><li>Product and landing-page intelligence</li><li>Visual evidence and page anatomy</li><li>Inspection coverage and limitations</li></ul></article>
+          <article className="system-card"><span className="system-number">02</span><h3>Buyer Decision Intelligence</h3><p>Review the information shoppers may need to decide, with rules adapted to the product category rather than a universal checklist.</p><ul><li>Buyer objection coverage</li><li>Product information completeness</li><li>Offer clarity and trust information</li></ul></article>
+          <article className="system-card"><span className="system-number">03</span><h3>Claim & Contradiction Intelligence</h3><p>Compare claims across ads, product descriptions, specifications and visible policy content. Show both sides of a suspected discrepancy.</p><ul><li>Ad-to-page message match</li><li>Specification and offer consistency</li><li>Promise Ledger foundation</li></ul></article>
+          <article className="system-card"><span className="system-number">04</span><h3>Commerce Risk Intelligence</h3><p>Surface clarity, trust, usability and post-purchase expectation risks without pretending that a public page proves actual customer behaviour.</p><ul><li>Mobile and page-friction review</li><li>Category-aware expectation gaps</li><li>Confidence and uncertainty labels</li></ul></article>
+          <article className="system-card"><span className="system-number">05</span><h3>Fix Center</h3><p>Turn findings into a manageable work queue, with seller-friendly instructions and copy suggestions grounded in known product facts.</p><ul><li>Prioritised actions and status history</li><li>Nontechnical, operator and developer guidance</li><li>Fix attempts separated from verification</li></ul></article>
+          <article className="system-card"><span className="system-number">06</span><h3>Verification & Rechecks</h3><p>Run a fresh inspection, compare it with prior evidence and record whether the issue was resolved, remains, reappeared or could not be verified.</p><ul><li>Versioned inspection history</li><li>Before-and-after evidence</li><li>Clear verification outcomes</li></ul></article>
+          <article className="system-card"><span className="system-number">07</span><h3>Store Intelligence</h3><p>Build a store-level view across products and pages so sellers can identify recurring patterns instead of treating every audit as isolated.</p><ul><li>Recurring issue groups</li><li>Prioritised multi-product queue</li><li>Historical progress summaries</li></ul></article>
+          <article className="system-card"><span className="system-number">08</span><h3>Commercial Impact Analysis</h3><p>Use seller-provided figures to model transparent scenarios. Separate illustrative estimates from measured business outcomes.</p><ul><li>Explicit inputs and assumptions</li><li>Sensitivity analysis</li><li>No invented revenue-loss figures</li></ul></article>
+          <article className="system-card"><span className="system-number">09</span><h3>Reports & Sharing</h3><p>Create inspection, fix-plan and verification reports that show evidence, coverage, limitations and changes over time.</p><ul><li>Evidence-linked reporting</li><li>Client-ready summaries</li><li>Controlled, revocable sharing</li></ul></article>
+          <article className="system-card"><span className="system-number">10</span><h3>Integrations & Controlled Actions</h3><p>Build toward authorised read-only commerce and analytics connections first, followed by approved changes only where permissions and rollback support exist.</p><ul><li>Seller-authorised data access</li><li>Least-privilege permissions</li><li>Approval and audit logging</li></ul></article>
+          <article className="system-card"><span className="system-number">11</span><h3>Seller, Team & Agency Workspaces</h3><p>Keep the individual seller experience simple while supporting multiple products, collaborators and client-separated workspaces.</p><ul><li>Seller-first core workflow</li><li>Multi-client agency structure</li><li>Role-based access as supported</li></ul></article>
+          <article className="system-card"><span className="system-number">12</span><h3>Governance & Measurement</h3><p>Protect trust with access controls, activity history, evidence provenance and outcome measurement only when reliable data is available.</p><ul><li>Finding and change audit trail</li><li>Data provenance and privacy controls</li><li>Experimentation as a later-stage capability</li></ul></article>
+        </div>
+        <div className="system-footnote"><strong>Important:</strong> This describes the product architecture and capability roadmap. Some advanced capabilities require further implementation, verified data access or third-party integrations; PageFix will identify those limits rather than present planned functionality as live.</div>
+      </div>
+    </section>
+
+    <section className="specialized-features-section" id="specialized-features">
+      <div className="specialized-features-inner">
+        <div className="eyebrow">SPECIALIST TOOLS INSIDE THE WORKFLOW</div>
+        <h2>Purpose-built checks for the problems sellers face every week.</h2>
+        <p className="specialized-features-lead">These capabilities connect to the same evidence and remediation history. Availability depends on the inspected page, stored data, and the integrations actually enabled in your workspace.</p>
+        <div className="specialized-features-grid">
+          <article><span>01</span><h3>Pre-Purchase Clarity & Return Risk</h3><p>Spot unclear sizing, compatibility, deliverables, shipping or return conditions that may create buyer uncertainty. This does not predict a product&apos;s actual return rate.</p></article>
+          <article><span>02</span><h3>Visual & Mobile Inspection</h3><p>Review screenshots and captured page anatomy where supported, with viewport context and evidence. A screenshot is a record of one captured state, not proof of every dynamic interaction.</p></article>
+          <article><span>03</span><h3>SEO, Product Data & AI Discovery Readiness</h3><p>Review visible metadata, page structure and structured-data signals. PageFix does not promise rankings, search traffic or inclusion in AI answers.</p></article>
+          <article><span>04</span><h3>Grounded AI Copy Fixes</h3><p>Generate alternative headlines, descriptions and product copy from facts that are actually available. Missing specifications remain placeholders for the seller to confirm.</p></article>
+          <article><span>05</span><h3>Competitor Context</h3><p>Organise public-page comparisons and visible content differences. Competitor revenue, traffic, conversion and private performance are not inferred from a page.</p></article>
+          <article><span>06</span><h3>Priority & Fix Effort</h3><p>Rank the work queue using defined severity, evidence confidence, buyer relevance and implementation effort—not invented financial impact.</p></article>
+          <article><span>07</span><h3>Agency & Client Reporting</h3><p>Extend the seller workflow across client projects, with clear report scope and privacy controls. Advanced permissions and white-label features must be verified before being promised.</p></article>
+          <article><span>08</span><h3>Experimentation & Outcome Learning</h3><p>A later-stage capability for controlled tests, sample-size planning and uncertainty-aware measurement. It requires reliable analytics and should not declare winners prematurely.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section className="category-intelligence-section">
+      <div className="category-intelligence-inner">
+        <div><div className="eyebrow">CONTEXT-AWARE, NOT ONE-SIZE-FITS-ALL</div><h2>Different products.<br/><span>Different buyer questions.</span></h2><p>PageFix evaluates what is relevant to the product and buying context. It does not treat every possible checklist item as mandatory for every seller.</p></div>
+        <div className="category-table">
+          <div className="category-row category-head"><span>SELLER CATEGORY</span><span>WHAT PAGEFIX CAN REVIEW</span></div>
+          <div className="category-row"><strong>Clothing & accessories</strong><span>Size and fit guidance, material details, care instructions, colour representation and visible variants.</span></div>
+          <div className="category-row"><strong>Electronics</strong><span>Specifications, compatibility, power requirements, included accessories and visible warranty terms.</span></div>
+          <div className="category-row"><strong>Furniture & home</strong><span>Dimensions, materials, assembly requirements, delivery conditions and installation clarity.</span></div>
+          <div className="category-row"><strong>Beauty & skincare</strong><span>Ingredients, directions, suitability information, relevant warnings and substantiation of visible claims.</span></div>
+          <div className="category-row"><strong>Digital products & SaaS</strong><span>Deliverables, supported platforms, prerequisites, access conditions, onboarding and commercial terms.</span></div>
+          <div className="category-row"><strong>B2B products</strong><span>Use cases, implementation requirements, integrations, service conditions and support expectations.</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section className="impact-section">
+      <div className="impact-inner">
+        <div className="eyebrow eyebrow-light">COMMERCIAL CONTEXT WITHOUT FICTION</div>
+        <h2>Show the risk.<br/><span>Never invent the revenue.</span></h2>
+        <p>PageFix separates what a page visibly shows from what might happen and what a seller&apos;s own business data can establish.</p>
+        <div className="impact-levels">
+          <article><span>LEVEL 01</span><h3>Identified risk</h3><p>Explain the evidence-backed issue and its plausible relevance to a buyer decision. No financial estimate required.</p></article>
+          <article><span>LEVEL 02</span><h3>Scenario analysis</h3><p>Use seller-provided traffic, conversion, order value or margin figures with explicit assumptions. Label outputs as illustrative scenarios.</p></article>
+          <article><span>LEVEL 03</span><h3>Measured outcome</h3><p>Compare authorised analytics or transaction data with appropriate caveats. Do not claim causation from a simple before-and-after comparison.</p></article>
+        </div>
+      </div>
+    </section>
+\n    <section className="detail-section"><div className="detail-heading"><div className="eyebrow">WHAT THE REPORT SHOULD CONTAIN</div><h2>Every finding needs a reason<br/>and a next step.</h2><p>Findings are designed around evidence and action, not unsupported scores or inflated claims.</p></div><div className="detail-grid">{[['Classification','Directly Observed Evidence, Inferred Risk, Hypothesis or Recommendation.'],['Evidence location','The captured text, page element, URL, metadata or other observable signal behind the finding.'],['Why it matters','A plain-language explanation of the possible consequence, without claiming a measured conversion impact.'],['Confidence & unknowns','A clear confidence level and the information the audit cannot establish from a public page.'],['Implementation guidance','Concrete steps and optional copy suggestions tied to the specific issue.'],['Verification objective','What should be inspected again after the fix and what would count as resolved, improved or unverified.']].map(([title,body])=><article key={title}><span>✓</span><h3>{title}</h3><p>{body}</p></article>)}</div></section>
 
     <section className="honesty-section" id="trust"><div className="honesty-symbol">i</div><div><div className="eyebrow">EVIDENCE, PRIVACY AND SECURITY</div><h2>A public-page audit cannot see private business metrics.</h2><p>Revenue, margins, traffic quality, conversion rates, customer lifetime value, actual abandonment and private customer records require authorized data connections. PageFix must not guess these values. Audit websites you are authorized to inspect, keep credentials server-side and treat every finding according to its actual evidence.</p><div className="trust-links"><Link href="/privacy">Read privacy information →</Link><Link href="/security">Read security practices →</Link></div></div></section>
 

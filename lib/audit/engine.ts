@@ -1,6 +1,10 @@
 import { db } from '@/lib/db';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 import { buildCommerceIntelligenceFindings } from '@/lib/audit/commerce-intelligence';
+import { buildCoreRevenueFindings } from '@/lib/audit/revenue-leak-rules';
+import { buildBuyerDecisionFindings, buildBuyerQuestionChecks } from '@/lib/audit/buyer-decision-intelligence';
+import { isConfirmedBrokenDestination, selectInternalCommercialLinks } from '@/lib/intelligence/link-handoff';
+import { captureAuditScreenshots, type ViewportAuditSignals } from '@/lib/audit/screenshots';
 
 export const ENGINE_VERSION = '1.3.1';
 
@@ -8,6 +12,7 @@ type ExtractedPage = {
   title: string;
   canonical: string;
   description: string;
+  viewport: string;
   bodyText: string;
   buttons: string[];
   links: Array<{ text: string; href: string }>;
@@ -106,6 +111,7 @@ function extractHtml(html: string, statusCode: number | null): ExtractedPage {
     title: htmlText(title),
     canonical: canonicalTag ? attr(canonicalTag, 'href') : '',
     description: meta('description'),
+    viewport: meta('viewport'),
     bodyText: htmlText(body).slice(0, 50000),
     buttons,
     links,
@@ -162,12 +168,7 @@ export async function runAudit(auditId: string) {
     // browser. This keeps the initial evidence pass predictable on serverless
     // runtimes and still reports access challenges honestly.
     const data = await fetchStaticPage(target);
-    const results: Array<{ viewport: string; data: ExtractedPage; screenshotKey: string | null }> = [
-      { viewport: 'static-html', data, screenshotKey: null },
-    ];
-
-    const primary = results[0]?.data;
-    if (!primary) throw new Error('PAGE_RENDER_FAILED');
+    const primary = data;
 
     const pageRecord = await db.page.create({
       data: {
@@ -181,24 +182,49 @@ export async function runAudit(auditId: string) {
       },
     });
 
-    for (const result of results) {
-      const screenshotUrl = result.screenshotKey ? '/api/audits/' + auditId + '/screenshots/' + result.viewport : null;
-      await db.pageSnapshot.create({
-        data: { pageId: pageRecord.id, viewport: result.viewport, screenshotUrl },
-      });
-      await db.screenshot.create({
-        data: { auditId, viewport: result.viewport, kind: 'viewport', storageUrl: result.screenshotKey, mimeType: 'image/png' },
+    // Screenshots are supplemental evidence: a capture/storage failure must not fail an otherwise valid HTML audit.
+    const viewportSignals: ViewportAuditSignals[] = [];
+    try {
+      const captures = await captureAuditScreenshots(auditId, target.toString());
+      viewportSignals.push(...captures.map((capture) => capture.signals));
+      for (const capture of captures) {
+        const screenshotUrl = '/api/audits/' + auditId + '/screenshots/' + capture.viewport;
+        await db.screenshot.create({
+          data: {
+            auditId,
+            viewport: capture.viewport,
+            kind: 'page_capture',
+            storageUrl: capture.storageKey,
+            mimeType: 'image/png',
+          },
+        });
+        await db.pageSnapshot.create({
+          data: { pageId: pageRecord.id, viewport: capture.viewport, screenshotUrl },
+        });
+      }
+    } catch (error) {
+      console.warn('pagefix_screenshot_capture_failed', {
+        auditId,
+        message: error instanceof Error ? error.message : 'SCREENSHOT_FAILED',
       });
     }
 
     const evidence = await db.evidence.createManyAndReturn({
       data: [
         { auditId, type: 'TEXT', source: 'http.html_text', location: 'retrieved_html_body', content: primary.bodyText.slice(0, 20000), confidence: 'HIGH' },
-        { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical }), confidence: 'HIGH' },
+        { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical, viewport: primary.viewport }), confidence: 'HIGH' },
         { auditId, type: 'DOM', source: 'http.html_elements', location: 'buttons_forms_and_headings', content: JSON.stringify({ buttons: primary.buttons, forms: primary.forms, headings: primary.headings, unlabeledLinks: primary.links.filter((link) => !link.text).length }), confidence: 'HIGH' },
         { auditId, type: 'STRUCTURED_DATA', source: 'jsonld', location: 'script[type="application/ld+json"]', content: JSON.stringify(primary.structuredData), confidence: primary.structuredData.length ? 'HIGH' : 'LOW' },
         { auditId, type: 'SYSTEM_DETECTED', source: 'http.image_inventory', location: 'images', content: JSON.stringify({ totalVisible: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, images: primary.images }), confidence: 'HIGH' },
         { auditId, type: 'LINK', source: 'http.link_inventory', location: 'visible_links', content: JSON.stringify(primary.links), confidence: 'HIGH' },
+        ...(viewportSignals.length ? [{
+          auditId,
+          type: 'SYSTEM_DETECTED' as const,
+          source: 'browser.viewport_signals',
+          location: 'desktop_mobile_first_viewport',
+          content: JSON.stringify(viewportSignals),
+          confidence: 'HIGH' as const,
+        }] : []),
       ],
     });
 
@@ -208,11 +234,37 @@ export async function runAudit(auditId: string) {
     const structuredEvidence = evidence.find((item) => item.type === 'STRUCTURED_DATA');
     const imageEvidence = evidence.find((item) => item.source === 'http.image_inventory');
     const linkEvidence = evidence.find((item) => item.type === 'LINK');
+    const viewportEvidence = evidence.find((item) => item.source === 'browser.viewport_signals');
     if (!textEvidence || !domEvidence || !metadataEvidence || !structuredEvidence || !imageEvidence || !linkEvidence) {
       throw new Error('EVIDENCE_CREATION_FAILED');
     }
 
     const findings = [];
+    // Check only a few same-origin commercial destinations. This confirms
+    // explicit 404/410 responses without probing external links or inferring
+    // broken links from missing pasted text.
+    const internalCommercialLinks = selectInternalCommercialLinks(primary.links, target.toString(), 3);
+    for (const link of internalCommercialLinks) {
+      try {
+        const destination = await validateAuditUrl(link.href, validatedHosts);
+        const linkPage = await fetchStaticPage(destination);
+        if (isConfirmedBrokenDestination(linkPage.statusCode)) {
+          findings.push(makeFinding(
+            `Commercial action destination returned HTTP ${linkPage.statusCode}`,
+            'MEDIUM',
+            `The same-site commercial action link "${link.text}" resolved to ${destination.toString()} and the bounded HTTP capture returned ${linkPage.statusCode}. This is a status observed during this audit; temporary site conditions can change.`,
+            'A buyer following this action may reach a page that currently reports not found or gone instead of the intended next step.',
+            'Confirm the intended destination, restore the page or update the link to the correct live route. Recheck after changing it; external destinations and non-404 responses are not classified as broken by this check.',
+            'Does this action lead to the intended product, cart, or checkout step?',
+            linkEvidence.id,
+          ));
+        }
+      } catch {
+        // Unreachable, blocked, or timed-out destinations remain unverified;
+        // they must not be described as broken without a confirming response.
+      }
+    }
+
     // Detect access challenges so they are reported honestly rather than treated
     // as missing product content. PageFix does not bypass access controls.
     const challengeText = (primary.title + ' ' + primary.bodyText).toLowerCase();
@@ -251,9 +303,11 @@ export async function runAudit(auditId: string) {
     } else if (h1s.length > 1) {
       findings.push(makeFinding('Multiple visible H1 headings', 'LOW', `The rendered page contains ${h1s.length} visible H1 elements.`, 'Multiple H1 elements are valid in some HTML structures, but they can make the main page hierarchy harder to review.', 'Review the heading outline and ensure the primary page proposition is clear. Do not remove headings solely to meet an arbitrary count.', 'Which heading is the primary page proposition?', domEvidence.id));
     }
-    const ctaLabels = primary.buttons.filter((button) => /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now/i.test(button));
-    if (!ctaLabels.length) {
-      findings.push(makeFinding('No clearly labeled commercial action detected', 'MEDIUM', 'The button labels found in retrieved HTML did not match common purchase or lead-action labels.', 'A visitor may need to infer the next step if the main commercial action is not explicit. Custom labels and link-based actions may not be detected by this rule.', 'Review the primary action on the page and make its label specific to the next step, such as buying, booking, subscribing or requesting information.', 'What should I do next if I am interested?', domEvidence.id));
+    const commercialActionPattern = /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now|sign up|get started|download now|purchase|try (?:it )?free|schedule a demo/i;
+    const ctaLabels = primary.buttons.filter((button) => commercialActionPattern.test(button));
+    const ctaLinks = primary.links.filter((link) => commercialActionPattern.test(link.text));
+    if (!ctaLabels.length && !ctaLinks.length && primary.forms === 0) {
+      findings.push(makeFinding('No clearly labeled commercial action detected', 'MEDIUM', 'The captured button and link labels did not match common purchase or lead-action labels, and no HTML form was detected. Custom labels and script-rendered interactions may not be recognized.', 'A visitor may need to infer the next step if the main commercial action is not explicit.', 'Review the primary action on the page and make its label specific to the next step, such as buying, booking, subscribing or requesting information. Confirm the action works.', 'What should I do next if I am interested?', domEvidence.id));
     }
     const missingAlt = primary.images.filter((image) => !image.alt.trim()).length;
     if (primary.images.length && missingAlt > 0) {
@@ -269,8 +323,9 @@ export async function runAudit(auditId: string) {
     if (parsedStructuredData.some((valid) => !valid)) {
       findings.push(makeFinding('Structured data contains invalid JSON', 'MEDIUM', 'At least one non-empty JSON-LD script could not be parsed as JSON.', 'Invalid JSON prevents that script from being read as structured data.', 'Validate each JSON-LD script as JSON first, then check the schema properties against the relevant Schema.org type. This check does not validate every schema rule.', 'Can search systems parse the structured data on this page?', structuredEvidence.id));
     }
-    if (!primary.structuredData.join(' ').match(/"@type"\s*:\s*"Product"/i)) {
-      findings.push(makeFinding('Product structured data not detected', 'LOW', 'No JSON-LD Product type was detected by the current pattern check.', 'For a product detail page, valid product structured data can help search systems interpret product attributes. This finding may not apply to non-product pages.', 'If this is a product detail page, review whether accurate Product structured data is appropriate and reflects the visible product information.', 'Is this a product page, and are its key attributes machine-readable?', structuredEvidence.id));
+    const productPageDetected = /\/(products?|items?)\//i.test(new URL(target).pathname) || /add to cart|product details|\bsku\b|in stock/i.test(primary.title + ' ' + primary.bodyText);
+    if (productPageDetected && !primary.structuredData.join(' ').match(/"@type"\s*:\s*"Product"/i)) {
+      findings.push(makeFinding('Product structured data not detected', 'LOW', 'No JSON-LD Product type was detected by the current pattern check on a page classified as product-like.', 'For a product detail page, valid product structured data can help search systems interpret product attributes.', 'Review whether accurate Product structured data is appropriate and reflects the visible product information. Do not add values that are not verified.', 'Are the product attributes machine-readable and consistent with the visible offer?', structuredEvidence.id));
     }
     if (!primary.images.length) {
       findings.push(makeFinding('No visible images detected', 'LOW', 'No image elements were detected in the retrieved HTML.', 'For visually evaluated offers, missing imagery may leave buyers with less context. CSS backgrounds and lazy-loaded content may not be detected.', 'Confirm whether the offer needs product or contextual imagery. If so, provide relevant images and ensure the primary visual is visible.', 'What will I receive or experience?', imageEvidence.id));
@@ -285,6 +340,11 @@ export async function runAudit(auditId: string) {
       { question: 'How can a visitor contact the business?', observed: /contact us|customer support|support@|mailto:|whatsapp|call us|phone number/i.test(visibleText) || primary.links.some((link) => /contact|support|help/i.test(link.text)), evidenceIds: [textEvidence.id, linkEvidence.id] },
       { question: 'Is a clear commercial next action exposed?', observed: primary.buttons.some((button) => /add to cart|buy now|shop now|checkout|subscribe|start free|book now|request a quote|contact sales|place order|order now/i.test(button)) || primary.links.some((link) => /buy now|shop now|add to cart|book now|request a quote|contact sales/i.test(link.text)), evidenceIds: [domEvidence.id, linkEvidence.id] },
       { question: 'Are visible images available?', observed: primary.images.length > 0, evidenceIds: [imageEvidence.id] },
+      ...buildBuyerQuestionChecks({
+        url: target.toString(), title: primary.title, bodyText: primary.bodyText,
+        headings: primary.headings, buttons: primary.buttons, links: primary.links, forms: primary.forms,
+        textEvidenceId: textEvidence.id, domEvidenceId: domEvidence.id, linkEvidenceId: linkEvidence.id,
+      }),
     ];
 
     await db.buyerQuestionResult.createMany({
@@ -295,6 +355,38 @@ export async function runAudit(auditId: string) {
         evidenceIds: item.evidenceIds,
       })),
     });
+
+    // Phase 2: category-aware core revenue-leak checks. Findings only describe
+    // what this captured public page did or did not expose; they do not infer analytics.
+    findings.push(...buildCoreRevenueFindings({
+      url: target.toString(),
+      title: primary.title,
+      bodyText: primary.bodyText,
+      headings: primary.headings,
+      buttons: primary.buttons,
+      links: primary.links,
+      forms: primary.forms,
+      textEvidenceId: textEvidence.id,
+      domEvidenceId: domEvidence.id,
+      linkEvidenceId: linkEvidence.id,
+      metadataEvidenceId: metadataEvidence.id,
+      imageEvidenceId: imageEvidence.id,
+      metaDescription: primary.description,
+      viewportMeta: primary.viewport,
+      imageCount: primary.images.length,
+      imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length,
+      viewportEvidenceId: viewportEvidence?.id,
+      viewportSignals,
+    }));
+
+    // Phase 3: buyer decision sequence, trust reassurance and claim substantiation.
+    // Browser viewport claims are only emitted when measured viewport evidence exists.
+    findings.push(...buildBuyerDecisionFindings({
+      url: target.toString(), title: primary.title, bodyText: primary.bodyText,
+      headings: primary.headings, buttons: primary.buttons, links: primary.links, forms: primary.forms,
+      textEvidenceId: textEvidence.id, domEvidenceId: domEvidence.id, linkEvidenceId: linkEvidence.id,
+      viewportEvidenceId: viewportEvidence?.id, viewportSignals,
+    }));
 
     // Category-aware buyer-decision checks and conservative contradiction
     // hypotheses extend the deterministic audit without inventing analytics.

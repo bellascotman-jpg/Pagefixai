@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./product-upgrade.css";
+import "./impact-upgrade.css";
+import "./store-intelligence.css";
 
 const siteUrl = process.env.APP_URL || "https://pagefixai.vercel.app";
 

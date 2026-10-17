@@ -33,7 +33,21 @@ export async function processNextAuditJob(auditId?: string) {
     let aiWarning: string | null = null;
 
     try {
-      ai = await interpretAudit(job.auditId);
+      // AI enrichment is optional and must never keep a valid audit or recheck
+      // request open until the host's function deadline. The deterministic,
+      // evidence-backed report is already persisted at this point.
+      let aiTimeout: ReturnType<typeof setTimeout> | undefined;
+      try {
+        ai = await Promise.race([
+          interpretAudit(job.auditId),
+          new Promise<never>((_, reject) => {
+            aiTimeout = setTimeout(() => reject(new Error('AI_REASONING_TIMEOUT')), 5_000);
+            aiTimeout.unref?.();
+          }),
+        ]);
+      } finally {
+        if (aiTimeout) clearTimeout(aiTimeout);
+      }
       if (ai && typeof ai === 'object' && 'skipped' in ai && ai.skipped) {
         aiWarning = 'AI reasoning was skipped; evidence-based checks are available.';
       }

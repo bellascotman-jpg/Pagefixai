@@ -3,10 +3,20 @@ import { test, expect } from '@playwright/test';
 test('landing page presents the evidence-led product proposition', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('link', { name: /PageFix/ }).first()).toBeVisible();
-  await expect(page.getByRole('heading', { name: /find what’s blocking a clearer customer decision/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /find what’s holding your store back\. fix it\. verify it\./i })).toBeVisible();
   await expect(page.getByText(/No fabricated analytics, reviews, conversion lifts or customer behaviour/i)).toBeVisible();
   await expect(page.getByRole('link', { name: /privacy/i }).first()).toBeVisible();
   await expect(page.getByRole('link', { name: /security practices/i }).first()).toBeVisible();
+});
+
+test('landing page remains usable at mobile and desktop widths', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: /find what’s holding your store back/i })).toBeVisible();
+    const hasNoHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+    expect(hasNoHorizontalOverflow, `horizontal overflow at viewport width ${width}px`).toBe(true);
+  }
 });
 
 test('auth page renders signup form', async ({ page }) => {

@@ -72,9 +72,13 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     }
   }
 
-  // Return the status immediately, then trigger the queued worker after the
-  // response. The browser work must not hold the polling request open.
+  // Process queued audits from the polling request itself. This avoids relying on
+  // post-response callbacks being kept alive by every hosting/runtime configuration.
+  // The worker claims jobs atomically, so concurrent poll requests cannot double-run it.
   if (audit.status === 'QUEUED' && job?.status === 'QUEUED') {
+    // Never make the status/polling request wait for a complete crawl. Dispatch
+    // after responding; the worker's atomic claim safely arbitrates against the
+    // create route and concurrent polls.
     after(async () => {
       try {
         await processNextAuditJob(id);

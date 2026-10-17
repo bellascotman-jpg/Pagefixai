@@ -1,3 +1,6 @@
+@import "./journey-upgrade.css";
+@import "./specialized-features.css";
+@import "./sidebar-upgrade.css";
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root{--ink:#2a1018;--muted:#74656a;--teal:#6d142d;--teal-dark:#4b0d20;--mint:#f5e6eb;--line:#e7dce0;--paper:#fbf7f8;--white:#fff;--dark:#210b12;--dark-2:#38101e}

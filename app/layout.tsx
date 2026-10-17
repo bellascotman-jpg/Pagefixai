@@ -3,6 +3,7 @@ import "./globals.css";
 import "./product-upgrade.css";
 import "./impact-upgrade.css";
 import "./store-intelligence.css";
+import "./premium-refresh.css";
 
 const siteUrl = process.env.APP_URL || "https://pagefixai.vercel.app";
 

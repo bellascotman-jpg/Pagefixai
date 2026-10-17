@@ -60,6 +60,16 @@ const BILLING_SIGNAL = /price|pricing|billing|bill|renew|renewal|monthly|annual|
 const CANCELLATION_SIGNAL = /cancel|cancellation|end plan|end subscription|downgrade|refund|notice period|billing period|renewal date|delete account/i;
 const EMAIL_ACTION_SIGNAL = /click|start|continue|complete|finish|connect|import|invite|create|activate|verify|confirm|book|view|open|use|reply|sign in|log in|return to|try/i;
 
+function expectedActionObserved(expected: string, text: string): boolean {
+  const normalize = (value: string) => value.toLowerCase()
+    .replace(/[^a-z0-9\\s]/g, ' ')
+    .split(/\\s+/)
+    .filter(word => word && !['a', 'an', 'the', 'your', 'my', 'our', 'to', 'for', 'please'].includes(word));
+  const wanted = normalize(expected);
+  const available = new Set(normalize(text));
+  return wanted.length > 0 && wanted.every(word => available.has(word));
+}
+
 function finding(
   id: string,
   title: string,
@@ -100,7 +110,7 @@ export function analyzeRetentionJourney(input: RetentionInput): RetentionAnalysi
       continue;
     }
     const stepText = `${step.name} ${step.content}`;
-    if (step.expectedNextStep.trim() && !stepText.toLowerCase().includes(step.expectedNextStep.trim().toLowerCase())) {
+    if (step.expectedNextStep.trim() && !expectedActionObserved(step.expectedNextStep, stepText)) {
       findings.push(finding(
         `next-step-${step.id}`, `Expected next action was not observed in ${step.name}`, 'HIGH', 'Inferred Risk',
         `The expected action “${step.expectedNextStep.trim()}” was not found in the supplied text for this step. It may use different wording or appear in an unprovided interactive control.`,

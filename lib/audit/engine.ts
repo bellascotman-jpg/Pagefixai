@@ -184,9 +184,11 @@ export async function runAudit(auditId: string) {
 
     // Screenshots are supplemental evidence: a capture/storage failure must not fail an otherwise valid HTML audit.
     const viewportSignals: ViewportAuditSignals[] = [];
+    const screenshotEvidence: Array<{ viewport: 'desktop' | 'mobile'; storageKey: string }> = [];
     try {
       const captures = await captureAuditScreenshots(auditId, target.toString());
       viewportSignals.push(...captures.map((capture) => capture.signals));
+      screenshotEvidence.push(...captures.map((capture) => ({ viewport: capture.viewport, storageKey: capture.storageKey })));
       for (const capture of captures) {
         const screenshotUrl = '/api/audits/' + auditId + '/screenshots/' + capture.viewport;
         await db.screenshot.create({
@@ -225,6 +227,14 @@ export async function runAudit(auditId: string) {
           content: JSON.stringify(viewportSignals),
           confidence: 'HIGH' as const,
         }] : []),
+        ...screenshotEvidence.map((screenshot) => ({
+          auditId,
+          type: 'SCREENSHOT' as const,
+          source: 'browser.screenshot',
+          location: screenshot.viewport,
+          content: JSON.stringify({ viewport: screenshot.viewport, mimeType: 'image/png', scope: 'captured first viewport only' }),
+          confidence: 'HIGH' as const,
+        })),
       ],
     });
 

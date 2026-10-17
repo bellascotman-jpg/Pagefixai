@@ -157,7 +157,6 @@ model User {
   affiliateProfile    AffiliateProfile?
   referredBy          AffiliateReferral? @relation("ReferredUser")
   promiseClaims       PromiseClaim[]
-  retentionAnalyses   RetentionAnalysis[]
 }
 
 model Session {
@@ -755,20 +754,4 @@ model PromiseClaim {
   @@index([userId, createdAt])
   @@index([auditId])
   @@index([status])
-}
-
-
-model RetentionAnalysis {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  flowType  String
-  input     Json
-  findings  Json
-  metrics   Json?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, createdAt])
-  @@index([userId, flowType, createdAt])
 }

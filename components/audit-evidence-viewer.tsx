@@ -1,5 +1,3 @@
-import React from 'react';
-
 type Evidence = {
   type: string;
   source: string;
@@ -47,7 +45,7 @@ export default function AuditEvidenceViewer({ evidence, baseUrl }: { evidence: E
   const location = (evidence.location ?? '').toLowerCase();
 
   if ((source.includes('image_inventory') || location === 'images') && isImageInventory(parsed)) {
-    const images = (parsed.images ?? []).filter(image => typeof image.src === 'string' && image.src.trim()).slice(0, 24);
+    const images = (parsed.images ?? []).filter((image): image is CapturedImage => Boolean(image && typeof image === 'object' && typeof image.src === 'string' && image.src.trim())).slice(0, 24);
     return <div className="audit-evidence-viewer">
       <div className="audit-evidence-summary">
         <strong>{parsed.totalVisible ?? images.length} captured image element{(parsed.totalVisible ?? images.length) === 1 ? '' : 's'}</strong>

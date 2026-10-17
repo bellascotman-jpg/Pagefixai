@@ -76,11 +76,9 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     let unableToVerifyCount = 0;
 
     for (const finding of previous.findings) {
-      const status = !decision.canVerify
-        ? 'UNABLE_TO_VERIFY'
-        : afterTitles.has(finding.title.trim().toLowerCase())
-          ? 'STILL_DETECTED'
-          : 'VERIFIED';
+      // A missing title alone cannot prove a fix; rule output can vary. Without a finding-specific evidence comparator, absence is inconclusive.
+      const titleStillPresent = afterTitles.has(finding.title.trim().toLowerCase());
+      const status = !decision.canVerify || !titleStillPresent ? 'UNABLE_TO_VERIFY' : 'STILL_DETECTED';
       if (status === 'VERIFIED') verifiedCount += 1;
       if (status === 'STILL_DETECTED') stillDetectedCount += 1;
       if (status === 'UNABLE_TO_VERIFY') unableToVerifyCount += 1;
@@ -96,7 +94,9 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
         ? 'RESOLVED'
         : verifiedCount > 0
           ? 'IMPROVED'
-          : 'STILL_DETECTED';
+          : unableToVerifyCount > 0
+            ? 'UNABLE_TO_VERIFY'
+            : 'STILL_DETECTED';
 
     await db.recheck.create({
       data: {
@@ -117,11 +117,11 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
       unableToVerifyCount,
       verificationReason: decision.reason,
       message: result === 'UNABLE_TO_VERIFY'
-        ? 'The fresh inspection could not reliably verify the previous findings. No finding was marked resolved. Review the new report before trying again.'
+        ? 'The fresh inspection did not provide enough finding-specific evidence to prove resolution. Missing titles are inconclusive, not proof of a fix. Review the before/after evidence; no absent finding was marked resolved.'
         : result === 'RESOLVED'
-          ? 'The previous finding titles were absent from a successful fresh capture using the same inspection engine. Review the evidence; this does not establish a business outcome.'
+          ? 'Every previous finding was verified against finding-specific evidence in the fresh inspection. This does not establish a business outcome.'
           : result === 'IMPROVED'
-            ? 'Some previous finding titles were absent and some remain detectable. Review each finding and its new evidence.'
+            ? 'Some previous findings were verified resolved and others remain detectable. Review each finding and its new evidence.'
             : 'The previous finding titles remain detectable in the fresh inspection.',
       workerFailed: Boolean(workerResult && 'failed' in workerResult && workerResult.failed),
     });

@@ -10,11 +10,11 @@ type Evidence = {
 type CapturedImage = { src: string; alt?: string; width?: number; height?: number };
 type CapturedLink = { text?: string; href: string };
 
-function parseJson(value: string): unknown {
+export function parseJson(value: string): unknown {
   try { return JSON.parse(value); } catch { return null; }
 }
 
-function safeHttpUrl(value: string, baseUrl?: string): string | null {
+export function safeHttpUrl(value: string, baseUrl?: string): string | null {
   try {
     const url = baseUrl ? new URL(value, baseUrl) : new URL(value);
     return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : null;
@@ -23,7 +23,7 @@ function safeHttpUrl(value: string, baseUrl?: string): string | null {
   }
 }
 
-function shortUrlLabel(value: string): string {
+export function shortUrlLabel(value: string): string {
   try {
     const url = new URL(value);
     const path = url.pathname === '/' ? '' : url.pathname;

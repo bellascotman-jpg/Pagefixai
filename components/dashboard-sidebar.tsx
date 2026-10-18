@@ -11,7 +11,7 @@ const groups = [
     { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
     { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
   ]},
-  { label: 'COMMERCE INTELLIGENCE', items: [
+  { label: 'INTELLIGENCE', items: [
     { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
     { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
     { href: '/dashboard/intelligence/clarity-scorecard', label: 'Clarity scorecard', icon: '◉' },
@@ -33,7 +33,7 @@ const groups = [
     { href: '/dashboard/referrals', label: 'Referrals & earnings', icon: '↗' },
     { href: '/dashboard/affiliate', label: 'Affiliate program', icon: '◎' },
   ]},
-  { label: 'WORKSPACES', items: [
+  { label: 'TOOLS & DATA', items: [
     { href: '/dashboard/competitors', label: 'Competitors', icon: '⊙' },
     { href: '/dashboard/intelligence/workspaces', label: 'Seller & agency workspaces', icon: '▣' },
     { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
@@ -47,13 +47,16 @@ const groups = [
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'COMMERCE INTELLIGENCE': true });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'INTELLIGENCE': true, 'TOOLS & DATA': true, 'ACCOUNT': true });
 
   useEffect(() => {
     setOpen(false);
-    if (pathname.startsWith('/dashboard/intelligence')) {
-      setCollapsed(current => ({ ...current, 'COMMERCE INTELLIGENCE': false }));
-    }
+    setCollapsed(current => ({
+      ...current,
+      'INTELLIGENCE': pathname.startsWith('/dashboard/intelligence') ? false : current['INTELLIGENCE'],
+      'TOOLS & DATA': (pathname.startsWith('/dashboard/competitors') || pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations')) ? false : current['TOOLS & DATA'],
+      'ACCOUNT': pathname.startsWith('/dashboard/settings') ? false : current['ACCOUNT'],
+    }));
   }, [pathname]);
 
   useEffect(() => {

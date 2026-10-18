@@ -11,7 +11,7 @@ const groups = [
     { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
     { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
   ]},
-  { label: 'COMMERCE INTELLIGENCE', items: [
+  { label: 'INTELLIGENCE', items: [
     { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
     { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
     { href: '/dashboard/intelligence/clarity-scorecard', label: 'Clarity scorecard', icon: '◉' },
@@ -29,7 +29,11 @@ const groups = [
     { href: '/dashboard/intelligence/retention', label: 'Retention & onboarding', icon: '↻' },
     { href: '/dashboard/intelligence/verification', label: 'Verification history', icon: '✓' },
   ]},
-  { label: 'WORKSPACES', items: [
+  { label: 'GROWTH', items: [
+    { href: '/dashboard/referrals', label: 'Referrals & earnings', icon: '↗' },
+    { href: '/dashboard/affiliate', label: 'Affiliate program', icon: '◎' },
+  ]},
+  { label: 'TOOLS & DATA', items: [
     { href: '/dashboard/competitors', label: 'Competitors', icon: '⊙' },
     { href: '/dashboard/intelligence/workspaces', label: 'Seller & agency workspaces', icon: '▣' },
     { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
@@ -43,9 +47,16 @@ const groups = [
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'INTELLIGENCE': true, 'TOOLS & DATA': true, 'ACCOUNT': true });
 
   useEffect(() => {
     setOpen(false);
+    setCollapsed(current => ({
+      ...current,
+      'INTELLIGENCE': pathname.startsWith('/dashboard/intelligence') ? false : current['INTELLIGENCE'],
+      'TOOLS & DATA': (pathname.startsWith('/dashboard/competitors') || pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations')) ? false : current['TOOLS & DATA'],
+      'ACCOUNT': pathname.startsWith('/dashboard/settings') ? false : current['ACCOUNT'],
+    }));
   }, [pathname]);
 
   useEffect(() => {
@@ -71,20 +82,21 @@ export default function DashboardSidebar() {
     </div>
     <button type="button" aria-label="Close workspace navigation" className={`workspace-sidebar-backdrop ${open ? 'is-open' : ''}`} onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} />
     <aside id="workspace-sidebar" className={`app-sidebar ${open ? 'is-open' : ''}`}>
+      <Link href="/dashboard" className="sidebar-brand sidebar-desktop-brand">PageFix<span>AI</span></Link>
       <div className="sidebar-mobile-heading">
         <Link href="/dashboard" className="sidebar-brand" onClick={() => setOpen(false)}>PageFix<span>AI</span></Link>
         <button type="button" className="sidebar-close-button" aria-label="Close workspace menu" onClick={() => setOpen(false)}>×</button>
       </div>
-      {groups.map(group => <div key={group.label}>
-        <div className="sidebar-section-label">{group.label}</div>
-        <nav className="sidebar-nav" aria-label={group.label}>
+      {groups.map(group => <div key={group.label} className={`sidebar-group ${collapsed[group.label] ? 'is-collapsed' : ''}`}>
+        <button type="button" className="sidebar-section-toggle" aria-expanded={!collapsed[group.label]} onClick={() => setCollapsed(current => ({ ...current, [group.label]: !current[group.label] }))}><span className="sidebar-section-label">{group.label}</span><span className="sidebar-section-chevron" aria-hidden="true">{collapsed[group.label] ? '+' : '−'}</span></button>
+        {!collapsed[group.label] && <nav className="sidebar-nav" aria-label={group.label}>
           {group.items.map(item => {
             const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/');
             return <Link key={item.href} href={item.href} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`} aria-current={active ? 'page' : undefined} onClick={() => setOpen(false)}>
               <span className="sidebar-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span>
             </Link>;
           })}
-        </nav>
+        </nav>}
       </div>)}
       <div className="sidebar-bottom"><p>Evidence first. Honest limits. Fix what you can verify.</p><Link href="/security" onClick={() => setOpen(false)}>Security & privacy ↗</Link></div>
     </aside>

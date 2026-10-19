@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
 import { encryptCredentials } from '@/lib/store-integrations/crypto';
-import { normalizeShopDomain, verifyStoreCredentials, syncIntegration, type StoreCredentials } from '@/lib/store-integrations/providers';
+import { normalizeShopDomain, verifyStoreCredentials, registerStoreWebhooks, syncIntegration, type StoreCredentials } from '@/lib/store-integrations/providers';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 
 export const runtime = 'nodejs';
@@ -25,7 +25,7 @@ export async function GET() {
   const integrations = await db.storeIntegration.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, platform: true, shopDomain: true, status: true, scopes: true, lastSyncedAt: true, lastWebhookAt: true, lastError: true, createdAt: true, store: { select: { id: true, name: true, url: true } }, _count: { select: { products: true, syncRuns: true } } },
+    select: { id: true, platform: true, shopDomain: true, status: true, webhookStatus: true, webhookLastError: true, scopes: true, lastSyncedAt: true, lastWebhookAt: true, lastError: true, createdAt: true, store: { select: { id: true, name: true, url: true } }, _count: { select: { products: true, syncRuns: true } } },
   });
   return NextResponse.json({ integrations });
 }
@@ -73,8 +73,17 @@ export async function POST(request: Request) {
 
     const integration = await db.storeIntegration.findUnique({ where: { platform_shopDomain: { platform: input.platform, shopDomain: domain } }, select: { id: true } });
     if (!integration) return NextResponse.json({ error: 'INTEGRATION_SAVE_FAILED' }, { status: 500 });
+    let webhooks: { status: string; topics: string[] } | null = null;
+    let webhookWarning: string | null = null;
+    try {
+      webhooks = await registerStoreWebhooks(input.platform, domain, credentials);
+      await db.storeIntegration.update({ where: { id: integration.id }, data: { webhookStatus: 'REGISTERED', webhookLastError: null } });
+    } catch (error) {
+      webhookWarning = error instanceof Error ? error.message : 'WEBHOOK_REGISTRATION_FAILED';
+      await db.storeIntegration.update({ where: { id: integration.id }, data: { webhookStatus: 'FAILED', webhookLastError: webhookWarning } });
+    }
     const sync = await syncIntegration(integration.id, 'initial_connect');
-    return NextResponse.json({ ok: true, integrationId: integration.id, store: { name: storeInfo.name, domain, platform: input.platform, currency: storeInfo.currency }, sync }, { status: 201 });
+    return NextResponse.json({ ok: true, integrationId: integration.id, store: { name: storeInfo.name, domain, platform: input.platform, currency: storeInfo.currency }, webhooks, webhookWarning, sync }, { status: 201 });
   } catch (error) {
     const code = error instanceof Error ? error.message : 'STORE_CONNECT_FAILED';
     const safeMessages: Record<string, string> = {

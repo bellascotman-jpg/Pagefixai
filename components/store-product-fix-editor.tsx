@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 function plainText(html: string | null) {
-  return (html || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\s+/g, ' ').trim();
+  return (html || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
 }
 
 type Props = {
@@ -14,11 +14,12 @@ type Props = {
 
 export default function StoreProductFixEditor({ integrationId, product, onApplied }: Props) {
   const [title, setTitle] = useState(product.title);
-  const [description, setDescription] = useState((product.descriptionHtml || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim());
+  const [description, setDescription] = useState(plainText(product.descriptionHtml));
   const [saving, setSaving] = useState(false);
   const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+
   async function generateDraft() {
     setSuggesting(true); setError(''); setNotice('');
     try {
@@ -34,12 +35,14 @@ export default function StoreProductFixEditor({ integrationId, product, onApplie
   }
 
   async function apply() {
-    if (title.trim() === product.title && description.trim() === (product.descriptionHtml || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()) {
+    const titleChanged = title.trim() !== product.title;
+    const descriptionChanged = description.trim() !== plainText(product.descriptionHtml);
+    if (!titleChanged && !descriptionChanged) {
       setError('Make a title or description change first.');
       return;
     }
     if (!window.confirm('Apply this content update to the live store product? PageFix will save a before/after record.')) return;
-    setSaving(true); setError('');
+    setSaving(true); setError(''); setNotice('');
     try {
       const response = await fetch('/api/integrations/stores/' + integrationId + '/products/' + product.id + '/fix', {
         method: 'POST', headers: { 'content-type': 'application/json' },
@@ -51,6 +54,7 @@ export default function StoreProductFixEditor({ integrationId, product, onApplie
     } catch (e) { setError(e instanceof Error ? e.message : 'The store did not confirm the update.'); }
     finally { setSaving(false); }
   }
+
   return <div style={{border:'1px solid var(--line)',borderRadius:10,padding:13,display:'grid',gap:10}}>
     <strong>{product.title}</strong>
     <div className="muted" style={{fontSize:12}}>{[!product.descriptionHtml ? 'Missing description' : '',!product.imageUrl ? 'Missing image' : '',product.price == null ? 'Missing price' : '',product.inventoryQuantity != null && product.inventoryQuantity <= 0 ? 'Out of stock' : ''].filter(Boolean).join(' · ') || 'Review product content'}</div>

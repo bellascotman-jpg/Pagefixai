@@ -15,7 +15,8 @@ export async function POST(request: Request) {
   let domain: string;
   try { domain = normalizeShopDomain(source); } catch { return NextResponse.json({ error: 'INVALID_DOMAIN' }, { status: 400 }); }
   const integration = await db.storeIntegration.findUnique({ where: { platform_shopDomain: { platform: 'WOOCOMMERCE', shopDomain: domain } } });
-  if (!integration || integration.status === 'DISCONNECTED') return NextResponse.json({ error: 'UNKNOWN_STORE' }, { status: 404 });
+  if (!integration) return NextResponse.json({ error: 'UNKNOWN_STORE' }, { status: 404 });
+  if (integration.status === 'DISCONNECTED') return NextResponse.json({ ok: true, ignored: true });
   let credentials: StoreCredentials;
   try { credentials = decryptCredentials<StoreCredentials>(integration.encryptedCredentials); } catch { return NextResponse.json({ error: 'CREDENTIALS_UNAVAILABLE' }, { status: 503 }); }
   if (!verifyWebhookSignature(rawBody, request.headers.get('x-wc-webhook-signature'), credentials.webhookSecret)) return NextResponse.json({ error: 'INVALID_SIGNATURE' }, { status: 401 });

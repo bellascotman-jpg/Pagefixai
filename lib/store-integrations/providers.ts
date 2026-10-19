@@ -10,6 +10,7 @@ type ShopifyProductNode = {
   descriptionHtml: string | null; updatedAt: string | null; onlineStoreUrl: string | null; totalInventory: number | null;
   featuredImage: { url: string } | null; priceRangeV2: { minVariantPrice: { amount: string; currencyCode: string } } | null;
 };
+type ShopifyProductsPage = { products: { nodes: ShopifyProductNode[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } };
 type WooCommerceProduct = {
   id: number | string; name?: string | null; slug?: string | null; permalink?: string | null; status?: string | null;
   type?: string | null; price?: string | null; currency?: string | null; stock_quantity?: number | null;
@@ -71,7 +72,7 @@ export async function fetchCatalog(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: 
     const products: CatalogProduct[] = [];
     let cursor: string | null = null;
     for (let page = 0; page < 10; page++) {
-      const data = await shopifyGraphql<{ products: { nodes: ShopifyProductNode[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(
+      const data = await shopifyGraphql<ShopifyProductsPage>(
         domain, credentials.accessToken!,
         'query Products($after: String) { products(first: 100, after: $after) { nodes { id title handle status vendor productType descriptionHtml updatedAt onlineStoreUrl totalInventory featuredImage { url } priceRangeV2 { minVariantPrice { amount currencyCode } } } pageInfo { hasNextPage endCursor } } }',
         { after: cursor },

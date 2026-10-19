@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
+import { ensureFounderAccessForUser } from '@/lib/auth/founder-access';
 
 const COOKIE = 'pagefix_session';
 const SESSION_DAYS = 180;
@@ -33,6 +34,14 @@ export async function getCurrentUser() {
   if (session.expiresAt <= new Date()) {
     await db.session.delete({ where: { id: session.id } }).catch(() => undefined);
     return null;
+  }
+  if (session.user.email.toLowerCase() === (await import('@/lib/plans')).FOUNDER_EMAIL) {
+    try {
+      const founder = await ensureFounderAccessForUser(session.user.id);
+      if (founder) return founder;
+    } catch (error) {
+      console.error('founder_access_repair_error', error instanceof Error ? error.name : 'UnknownError');
+    }
   }
   return session.user;
 }

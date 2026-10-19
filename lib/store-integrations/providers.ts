@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { db } from '@/lib/db';
 import { decryptCredentials } from '@/lib/store-integrations/crypto';
+import { validateAuditUrl } from '@/lib/audit/ssrf';
 
 export type StoreCredentials = { accessToken?: string; consumerKey?: string; consumerSecret?: string; webhookSecret?: string };
 export type CatalogProduct = {
@@ -33,6 +34,7 @@ async function shopifyGraphql<T>(domain: string, token: string, query: string, v
 }
 
 export async function verifyStoreCredentials(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials) {
+  await validateAuditUrl(`https://${domain}`);
   if (platform === 'SHOPIFY') {
     if (!credentials.accessToken) throw new Error('SHOPIFY_ACCESS_TOKEN_REQUIRED');
     const data = await shopifyGraphql<{ shop: { name: string; myshopifyDomain: string; currencyCode: string } }>(domain, credentials.accessToken, 'query { shop { name myshopifyDomain currencyCode } }');
@@ -52,6 +54,7 @@ function asDate(value: unknown): Date | null {
 }
 
 export async function fetchCatalog(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials): Promise<CatalogProduct[]> {
+  await validateAuditUrl(`https://${domain}`);
   if (platform === 'SHOPIFY') {
     const products: CatalogProduct[] = [];
     let cursor: string | null = null;
@@ -146,6 +149,7 @@ export async function getIntegrationCredentials(integrationId: string) {
 }
 
 export async function registerStoreWebhooks(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials) {
+  await validateAuditUrl(`https://${domain}`);
   const appUrl = process.env.APP_URL?.replace(/\/$/, '');
   if (!appUrl || !appUrl.startsWith('https://')) throw new Error('APP_URL_HTTPS_REQUIRED');
   if (!credentials.webhookSecret) throw new Error('WEBHOOK_SECRET_REQUIRED');
@@ -195,6 +199,7 @@ export async function applyApprovedProductFix(input: {
   if (descriptionHtml !== undefined && descriptionHtml.length > 50000) throw new Error('PRODUCT_DESCRIPTION_TOO_LONG');
   if (title === undefined && descriptionHtml === undefined) throw new Error('NO_CHANGES_PROVIDED');
 
+  await validateAuditUrl(`https://${integration.shopDomain}`);
   const credentials = decryptCredentials<StoreCredentials>(integration.encryptedCredentials);
   const changes: Record<string, string> = {};
   if (title !== undefined && title !== product.title) changes.title = title;

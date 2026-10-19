@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   } catch {
     const duplicate = await db.webhookEvent.findUnique({ where: { provider_providerEventId: { provider: 'woocommerce', providerEventId } }, select: { processedAt: true } });
     if (duplicate?.processedAt) return NextResponse.json({ ok: true, duplicate: true });
-    if (duplicate) return NextResponse.json({ error: 'EVENT_ALREADY_RECEIVED' }, { status: 202 });
+    if (!duplicate) return NextResponse.json({ error: 'EVENT_PERSISTENCE_FAILED' }, { status: 503 });
   }
   try {
     const p = JSON.parse(rawBody) as Record<string, any>;

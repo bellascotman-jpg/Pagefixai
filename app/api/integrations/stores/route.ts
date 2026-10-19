@@ -52,6 +52,7 @@ export async function POST(request: Request) {
   let domain: string;
   try {
     domain = normalizeShopDomain(input.storeUrl);
+    if (input.platform === 'SHOPIFY' && !domain.endsWith('.myshopify.com')) throw new Error('SHOPIFY_MYSHOPIFY_DOMAIN_REQUIRED');
     await validateAuditUrl(`https://${domain}`);
   } catch {
     return NextResponse.json({ error: 'INVALID_STORE_URL', message: 'Enter a public HTTPS store domain that can be reached safely.' }, { status: 400 });
@@ -104,6 +105,7 @@ export async function POST(request: Request) {
       INTEGRATION_ENCRYPTION_NOT_CONFIGURED: 'Server-side credential encryption is not configured. Contact the administrator.',
       INVALID_STORE_URL: 'The store URL is invalid.',
       INVALID_STORE_DOMAIN: 'Use a public store domain, not a local address.',
+      SHOPIFY_MYSHOPIFY_DOMAIN_REQUIRED: 'For Shopify, enter the permanent store domain ending in .myshopify.com rather than the storefront custom domain.',
     };
     console.error('pagefix_store_connect_failed', { platform: input.platform, domain, code });
     return NextResponse.json({ error: code, message: safeMessages[code] || 'The store could not be verified or synced. Check API credentials, permissions and the store API, then retry.' }, { status: 422 });

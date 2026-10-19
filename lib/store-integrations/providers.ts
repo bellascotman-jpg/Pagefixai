@@ -1,0 +1,146 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { db } from '@/lib/db';
+import { decryptCredentials } from '@/lib/store-integrations/crypto';
+
+export type StoreCredentials = { accessToken?: string; consumerKey?: string; consumerSecret?: string; webhookSecret?: string };
+export type CatalogProduct = {
+  externalId: string; title: string; handle?: string | null; url?: string | null; status?: string | null;
+  vendor?: string | null; productType?: string | null; price?: string | null; currency?: string | null;
+  inventoryQuantity?: number | null; imageUrl?: string | null; descriptionHtml?: string | null;
+  externalUpdatedAt?: Date | null; rawData?: unknown;
+};
+
+export function normalizeShopDomain(input: string) {
+  let url: URL;
+  try { url = new URL(input.includes('://') ? input : 'https://' + input); } catch { throw new Error('INVALID_STORE_URL'); }
+  if (url.protocol !== 'https:' || url.username || url.password || url.port || url.search || url.hash) throw new Error('INVALID_STORE_URL');
+  const host = url.hostname.toLowerCase();
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || !host.includes('.')) throw new Error('INVALID_STORE_DOMAIN');
+  return host;
+}
+
+function shopifyApi(domain: string, token: string) {
+  return { endpoint: `https://${domain}/admin/api/2025-10/graphql.json`, headers: { 'content-type': 'application/json', 'x-shopify-access-token': token } };
+}
+
+async function shopifyGraphql<T>(domain: string, token: string, query: string, variables: Record<string, unknown> = {}): Promise<T> {
+  const api = shopifyApi(domain, token);
+  const response = await fetch(api.endpoint, { method: 'POST', headers: api.headers, body: JSON.stringify({ query, variables }), signal: AbortSignal.timeout(20000), cache: 'no-store' });
+  if (!response.ok) throw new Error(`SHOPIFY_API_HTTP_${response.status}`);
+  const body = await response.json() as { data?: T; errors?: { message?: string }[] };
+  if (!body.data || body.errors?.length) throw new Error('SHOPIFY_API_QUERY_FAILED');
+  return body.data;
+}
+
+export async function verifyStoreCredentials(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials) {
+  if (platform === 'SHOPIFY') {
+    if (!credentials.accessToken) throw new Error('SHOPIFY_ACCESS_TOKEN_REQUIRED');
+    const data = await shopifyGraphql<{ shop: { name: string; myshopifyDomain: string; currencyCode: string } }>(domain, credentials.accessToken, 'query { shop { name myshopifyDomain currencyCode } }');
+    return { name: data.shop.name || domain, currency: data.shop.currencyCode, domain: data.shop.myshopifyDomain || domain };
+  }
+  if (!credentials.consumerKey || !credentials.consumerSecret) throw new Error('WOOCOMMERCE_KEYS_REQUIRED');
+  const auth = Buffer.from(`${credentials.consumerKey}:${credentials.consumerSecret}`).toString('base64');
+  const response = await fetch(`https://${domain}/wp-json/wc/v3/system_status`, { headers: { authorization: `Basic ${auth}`, accept: 'application/json' }, signal: AbortSignal.timeout(20000), cache: 'no-store' });
+  if (!response.ok) throw new Error(`WOOCOMMERCE_API_HTTP_${response.status}`);
+  return { name: domain, currency: 'UNKNOWN', domain };
+}
+
+function asDate(value: unknown): Date | null {
+  if (typeof value !== 'string' || !value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export async function fetchCatalog(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials): Promise<CatalogProduct[]> {
+  if (platform === 'SHOPIFY') {
+    const products: CatalogProduct[] = [];
+    let cursor: string | null = null;
+    for (let page = 0; page < 10; page++) {
+      const data = await shopifyGraphql<{ products: { nodes: any[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(
+        domain, credentials.accessToken!,
+        'query Products($after: String) { products(first: 100, after: $after) { nodes { id title handle status vendor productType descriptionHtml updatedAt onlineStoreUrl totalInventory featuredImage { url } priceRangeV2 { minVariantPrice { amount currencyCode } } } pageInfo { hasNextPage endCursor } } }',
+        { after: cursor },
+      );
+      for (const p of data.products.nodes) products.push({
+        externalId: String(p.id), title: p.title, handle: p.handle, url: p.onlineStoreUrl || `https://${domain}/products/${p.handle}`,
+        status: p.status, vendor: p.vendor, productType: p.productType, price: p.priceRangeV2?.minVariantPrice?.amount ?? null,
+        currency: p.priceRangeV2?.minVariantPrice?.currencyCode ?? null, inventoryQuantity: Number.isFinite(p.totalInventory) ? p.totalInventory : null,
+        imageUrl: p.featuredImage?.url ?? null, descriptionHtml: p.descriptionHtml ?? null, externalUpdatedAt: asDate(p.updatedAt), rawData: p,
+      });
+      if (!data.products.pageInfo.hasNextPage || !data.products.pageInfo.endCursor) break;
+      cursor = data.products.pageInfo.endCursor;
+    }
+    return products;
+  }
+
+  const auth = Buffer.from(`${credentials.consumerKey}:${credentials.consumerSecret}`).toString('base64');
+  const products: CatalogProduct[] = [];
+  for (let page = 1; page <= 10; page++) {
+    const response = await fetch(`https://${domain}/wp-json/wc/v3/products?per_page=100&page=${page}`, { headers: { authorization: `Basic ${auth}`, accept: 'application/json' }, signal: AbortSignal.timeout(20000), cache: 'no-store' });
+    if (!response.ok) throw new Error(`WOOCOMMERCE_API_HTTP_${response.status}`);
+    const rows = await response.json() as any[];
+    for (const p of rows) products.push({
+      externalId: String(p.id), title: String(p.name ?? 'Untitled product'), handle: p.slug ?? null, url: p.permalink ?? null,
+      status: p.status ?? null, vendor: null, productType: p.type ?? null, price: p.price ? String(p.price) : null,
+      currency: typeof p.currency === 'string' ? p.currency : null, inventoryQuantity: Number.isFinite(p.stock_quantity) ? p.stock_quantity : null,
+      imageUrl: p.images?.[0]?.src ?? null, descriptionHtml: p.description ?? null, externalUpdatedAt: asDate(p.date_modified_gmt ?? p.date_modified), rawData: p,
+    });
+    if (rows.length < 100) break;
+  }
+  return products;
+}
+
+export async function syncIntegration(integrationId: string, trigger = 'manual') {
+  const integration = await db.storeIntegration.findUnique({ where: { id: integrationId } });
+  if (!integration || integration.status === 'DISCONNECTED') throw new Error('INTEGRATION_NOT_AVAILABLE');
+  const run = await db.storeSyncRun.create({ data: { integrationId, trigger, status: 'RUNNING' } });
+  try {
+    const credentials = decryptCredentials<StoreCredentials>(integration.encryptedCredentials);
+    const catalog = await fetchCatalog(integration.platform, integration.shopDomain, credentials);
+    let changed = 0;
+    for (const p of catalog) {
+      const before = await db.storeProduct.findUnique({ where: { integrationId_externalId: { integrationId, externalId: p.externalId } }, select: { title: true, status: true, price: true, inventoryQuantity: true, descriptionHtml: true } });
+      const after = {
+        title: p.title, handle: p.handle ?? null, url: p.url ?? null, status: p.status ?? null, vendor: p.vendor ?? null,
+        productType: p.productType ?? null, price: p.price && Number.isFinite(Number(p.price)) ? p.price : null,
+        currency: p.currency ?? null, inventoryQuantity: p.inventoryQuantity ?? null, imageUrl: p.imageUrl ?? null,
+        descriptionHtml: p.descriptionHtml ?? null, rawData: p.rawData as any, externalUpdatedAt: p.externalUpdatedAt, lastSeenAt: new Date(),
+      };
+      if (!before || before.title !== after.title || before.status !== after.status || String(before.price ?? '') !== String(after.price ?? '') || before.inventoryQuantity !== after.inventoryQuantity || before.descriptionHtml !== after.descriptionHtml) changed++;
+      await db.storeProduct.upsert({ where: { integrationId_externalId: { integrationId, externalId: p.externalId } }, create: { integrationId, externalId: p.externalId, ...after }, update: after });
+    }
+    await db.storeIntegration.update({ where: { id: integrationId }, data: { status: 'CONNECTED', lastSyncedAt: new Date(), lastError: null } });
+    await db.storeSyncRun.update({ where: { id: run.id }, data: { status: 'COMPLETED', productsSeen: catalog.length, productsChanged: changed, completedAt: new Date() } });
+    return { runId: run.id, productsSeen: catalog.length, productsChanged: changed };
+  } catch (error) {
+    const code = error instanceof Error ? error.message.slice(0, 120) : 'SYNC_FAILED';
+    await db.storeIntegration.update({ where: { id: integrationId }, data: { status: 'DEGRADED', lastError: code } }).catch(() => undefined);
+    await db.storeSyncRun.update({ where: { id: run.id }, data: { status: 'FAILED', errorCode: code, completedAt: new Date() } }).catch(() => undefined);
+    throw error;
+  }
+}
+
+export function verifyWebhookSignature(rawBody: string, signature: string | null, secret: string | undefined) {
+  if (!signature || !secret) return false;
+  const expected = createHmac('sha256', secret).update(rawBody).digest('base64');
+  const a = Buffer.from(expected); const b = Buffer.from(signature);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+export async function applyWebhookProduct(integrationId: string, product: CatalogProduct | null, externalId: string) {
+  const integration = await db.storeIntegration.findUnique({ where: { id: integrationId }, select: { id: true, status: true } });
+  if (!integration || integration.status === 'DISCONNECTED') return;
+  if (!product) {
+    await db.storeProduct.deleteMany({ where: { integrationId, externalId } });
+  } else {
+    const data = { title: product.title, handle: product.handle ?? null, url: product.url ?? null, status: product.status ?? null, vendor: product.vendor ?? null, productType: product.productType ?? null, price: product.price && Number.isFinite(Number(product.price)) ? product.price : null, currency: product.currency ?? null, inventoryQuantity: product.inventoryQuantity ?? null, imageUrl: product.imageUrl ?? null, descriptionHtml: product.descriptionHtml ?? null, rawData: product.rawData as any, externalUpdatedAt: product.externalUpdatedAt, lastSeenAt: new Date() };
+    await db.storeProduct.upsert({ where: { integrationId_externalId: { integrationId, externalId } }, create: { integrationId, externalId, ...data }, update: data });
+  }
+  await db.storeIntegration.update({ where: { id: integrationId }, data: { lastWebhookAt: new Date(), lastError: null } });
+}
+
+export async function getIntegrationCredentials(integrationId: string) {
+  const integration = await db.storeIntegration.findUnique({ where: { id: integrationId } });
+  if (!integration) return null;
+  return { integration, credentials: decryptCredentials<StoreCredentials>(integration.encryptedCredentials) };
+}

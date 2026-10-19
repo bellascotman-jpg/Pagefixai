@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import StoreProductFixEditor from '@/components/store-product-fix-editor';
 import { useCallback, useEffect, useState, type FormEvent, type CSSProperties } from 'react';
 
 type ProductAttention = { id: string; title: string; status: string | null; price: string | number | null; inventoryQuantity: number | null; imageUrl: string | null; descriptionHtml: string | null; url: string | null };

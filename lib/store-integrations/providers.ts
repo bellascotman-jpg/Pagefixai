@@ -181,3 +181,60 @@ export async function registerStoreWebhooks(platform: 'SHOPIFY' | 'WOOCOMMERCE',
   }
   return { status: 'REGISTERED', topics };
 }
+
+export async function applyApprovedProductFix(input: {
+  integrationId: string; localProductId: string; actorId: string; title?: string; descriptionHtml?: string;
+}) {
+  const integration = await db.storeIntegration.findUnique({ where: { id: input.integrationId } });
+  if (!integration || integration.status === 'DISCONNECTED') throw new Error('INTEGRATION_NOT_AVAILABLE');
+  const product = await db.storeProduct.findFirst({ where: { id: input.localProductId, integrationId: integration.id } });
+  if (!product) throw new Error('PRODUCT_NOT_FOUND');
+  const title = input.title?.trim();
+  const descriptionHtml = input.descriptionHtml;
+  if (title !== undefined && (!title || title.length > 255)) throw new Error('INVALID_PRODUCT_TITLE');
+  if (descriptionHtml !== undefined && descriptionHtml.length > 50000) throw new Error('PRODUCT_DESCRIPTION_TOO_LONG');
+  if (title === undefined && descriptionHtml === undefined) throw new Error('NO_CHANGES_PROVIDED');
+
+  const credentials = decryptCredentials<StoreCredentials>(integration.encryptedCredentials);
+  const changes: Record<string, string> = {};
+  if (title !== undefined && title !== product.title) changes.title = title;
+  if (descriptionHtml !== undefined && descriptionHtml !== (product.descriptionHtml ?? '')) changes.descriptionHtml = descriptionHtml;
+  if (Object.keys(changes).length === 0) throw new Error('NO_CHANGES_DETECTED');
+
+  if (integration.platform === 'SHOPIFY') {
+    const productInput: Record<string, string> = { id: product.externalId, ...changes };
+    const result = await shopifyGraphql<{ productUpdate: { product: { id: string } | null; userErrors: { message: string }[] } }>(
+      integration.shopDomain, credentials.accessToken!,
+      'mutation UpdateProduct($product: ProductUpdateInput!) { productUpdate(product: $product) { product { id } userErrors { message } } }',
+      { product: productInput },
+    );
+    if (result.productUpdate.userErrors.length || !result.productUpdate.product) throw new Error('SHOPIFY_PRODUCT_UPDATE_FAILED');
+  } else {
+    const auth = Buffer.from(`${credentials.consumerKey}:${credentials.consumerSecret}`).toString('base64');
+    const payload: Record<string, string> = {};
+    if (changes.title !== undefined) payload.name = changes.title;
+    if (changes.descriptionHtml !== undefined) payload.description = changes.descriptionHtml;
+    const response = await fetch(`https://${integration.shopDomain}/wp-json/wc/v3/products/${encodeURIComponent(product.externalId)}`, {
+      method: 'PUT', headers: { authorization: `Basic ${auth}`, 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(payload), signal: AbortSignal.timeout(20000), cache: 'no-store',
+    });
+    if (!response.ok) throw new Error(`WOOCOMMERCE_PRODUCT_UPDATE_HTTP_${response.status}`);
+  }
+
+  const after = {
+    title: changes.title ?? product.title,
+    descriptionHtml: changes.descriptionHtml ?? product.descriptionHtml,
+  };
+  await db.$transaction(async tx => {
+    await tx.storeProduct.update({ where: { id: product.id }, data: { title: after.title, descriptionHtml: after.descriptionHtml, lastSeenAt: new Date() } });
+    await tx.storeProductChangeLog.create({
+      data: {
+        integrationId: integration.id, externalId: product.externalId, actorId: input.actorId,
+        action: 'APPROVED_PRODUCT_CONTENT_UPDATE',
+        beforeJson: { title: product.title, descriptionHtml: product.descriptionHtml },
+        afterJson: after,
+      },
+    });
+  });
+  return { productId: product.id, externalId: product.externalId, before: { title: product.title, descriptionHtml: product.descriptionHtml }, after };
+}

@@ -2,12 +2,14 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { FOUNDER_EMAIL } from '@/lib/plans';
 
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('signup');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [founderSetupKey, setFounderSetupKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +25,7 @@ export default function AuthPage() {
       const response = await fetch(`/api/auth/${mode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mode === 'signup' ? { name, email, password } : { email, password }),
+        body: JSON.stringify(mode === 'signup' ? { name, email, password, ...(email.trim().toLowerCase() === FOUNDER_EMAIL ? { founderSetupKey } : {}) } : { email, password }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
@@ -57,6 +59,7 @@ export default function AuthPage() {
           {mode === 'signup' && <label>Name<input value={name} onChange={e => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="name" placeholder="Your name"/></label>}
           <label>Email address<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" maxLength={320} placeholder="you@company.com"/></label>
           <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}/></label>
+          {mode === 'signup' && email.trim().toLowerCase() === FOUNDER_EMAIL && <div className="founder-setup-field"><label>Founder setup key<input type="password" value={founderSetupKey} onChange={e => setFounderSetupKey(e.target.value)} required autoComplete="off" maxLength={256} placeholder="Enter your private setup key"/></label><p className="muted" style={{fontSize:12,marginTop:6}}>This private key protects founder access and is required only for the founder account's first setup.</p></div>}
           {error && <div className="error-box" role="alert"><strong>{mode === 'signup' ? 'Account creation failed' : 'Sign-in failed'}</strong><p style={{margin:'5px 0 0'}}>{error}</p></div>}
           <button className="primary-button auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'signup' ? 'Create account →' : 'Sign in →'}</button>
         </form>

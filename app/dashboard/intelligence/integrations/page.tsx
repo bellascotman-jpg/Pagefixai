@@ -140,7 +140,7 @@ export default function StoreIntegrationsPage() {
           <label style={fieldStyle}>PageFix project name<input required minLength={2} maxLength={100} value={projectName} onChange={e=>setProjectName(e.target.value)} style={inputStyle}/></label>
           {platform==='SHOPIFY' ? <>
             <label style={fieldStyle}>Shopify Admin API access token<input required type="password" autoComplete="new-password" value={accessToken} onChange={e=>setAccessToken(e.target.value)} placeholder="shpat_…" style={inputStyle}/></label>
-            <p className="muted" style={{fontSize:12,margin:0}}>Create a Shopify custom app with product read access and webhook write access. Product write access is not needed for catalogue monitoring. For webhook verification, use the app's client secret below.</p>
+            <p className="muted" style={{fontSize:12,margin:0}}>Create a Shopify custom app with product read access and webhook write access. Add write_products only if you want PageFix to apply approved title/description updates. For webhook verification, use the app's client secret below.</p>
           </> : <>
             <label style={fieldStyle}>WooCommerce consumer key<input required type="password" autoComplete="new-password" value={consumerKey} onChange={e=>setConsumerKey(e.target.value)} placeholder="ck_…" style={inputStyle}/></label>
             <label style={fieldStyle}>WooCommerce consumer secret<input required type="password" autoComplete="new-password" value={consumerSecret} onChange={e=>setConsumerSecret(e.target.value)} placeholder="cs_…" style={inputStyle}/></label>

@@ -1,9 +1,21 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { db } from '@/lib/db';
+import type { Prisma } from '@prisma/client';
 import { decryptCredentials } from '@/lib/store-integrations/crypto';
 import { validateAuditUrl } from '@/lib/audit/ssrf';
 
 export type StoreCredentials = { accessToken?: string; consumerKey?: string; consumerSecret?: string; webhookSecret?: string };
+type ShopifyProductNode = {
+  id: string; title: string; handle: string | null; status: string; vendor: string | null; productType: string | null;
+  descriptionHtml: string | null; updatedAt: string | null; onlineStoreUrl: string | null; totalInventory: number | null;
+  featuredImage: { url: string } | null; priceRangeV2: { minVariantPrice: { amount: string; currencyCode: string } } | null;
+};
+type WooCommerceProduct = {
+  id: number | string; name?: string | null; slug?: string | null; permalink?: string | null; status?: string | null;
+  type?: string | null; price?: string | null; currency?: string | null; stock_quantity?: number | null;
+  images?: { src?: string | null }[]; description?: string | null; date_modified_gmt?: string | null; date_modified?: string | null;
+};
+
 export type CatalogProduct = {
   externalId: string; title: string; handle?: string | null; url?: string | null; status?: string | null;
   vendor?: string | null; productType?: string | null; price?: string | null; currency?: string | null;
@@ -59,7 +71,7 @@ export async function fetchCatalog(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: 
     const products: CatalogProduct[] = [];
     let cursor: string | null = null;
     for (let page = 0; page < 10; page++) {
-      const data = await shopifyGraphql<{ products: { nodes: any[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(
+      const data = await shopifyGraphql<{ products: { nodes: ShopifyProductNode[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(
         domain, credentials.accessToken!,
         'query Products($after: String) { products(first: 100, after: $after) { nodes { id title handle status vendor productType descriptionHtml updatedAt onlineStoreUrl totalInventory featuredImage { url } priceRangeV2 { minVariantPrice { amount currencyCode } } } pageInfo { hasNextPage endCursor } } }',
         { after: cursor },
@@ -81,7 +93,7 @@ export async function fetchCatalog(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: 
   for (let page = 1; page <= 10; page++) {
     const response = await fetch(`https://${domain}/wp-json/wc/v3/products?per_page=100&page=${page}`, { headers: { authorization: `Basic ${auth}`, accept: 'application/json' }, signal: AbortSignal.timeout(20000), cache: 'no-store' });
     if (!response.ok) throw new Error(`WOOCOMMERCE_API_HTTP_${response.status}`);
-    const rows = await response.json() as any[];
+    const rows = await response.json() as WooCommerceProduct[];
     for (const p of rows) products.push({
       externalId: String(p.id), title: String(p.name ?? 'Untitled product'), handle: p.slug ?? null, url: p.permalink ?? null,
       status: p.status ?? null, vendor: null, productType: p.type ?? null, price: p.price ? String(p.price) : null,
@@ -107,7 +119,7 @@ export async function syncIntegration(integrationId: string, trigger = 'manual')
         title: p.title, handle: p.handle ?? null, url: p.url ?? null, status: p.status ?? null, vendor: p.vendor ?? null,
         productType: p.productType ?? null, price: p.price && Number.isFinite(Number(p.price)) ? p.price : null,
         currency: p.currency ?? null, inventoryQuantity: p.inventoryQuantity ?? null, imageUrl: p.imageUrl ?? null,
-        descriptionHtml: p.descriptionHtml ?? null, rawData: p.rawData as any, externalUpdatedAt: p.externalUpdatedAt, lastSeenAt: new Date(),
+        descriptionHtml: p.descriptionHtml ?? null, rawData: JSON.parse(JSON.stringify(p.rawData ?? {})) as Prisma.InputJsonValue, externalUpdatedAt: p.externalUpdatedAt, lastSeenAt: new Date(),
       };
       if (!before || before.title !== after.title || before.status !== after.status || String(before.price ?? '') !== String(after.price ?? '') || before.inventoryQuantity !== after.inventoryQuantity || before.descriptionHtml !== after.descriptionHtml) changed++;
       await db.storeProduct.upsert({ where: { integrationId_externalId: { integrationId, externalId: p.externalId } }, create: { integrationId, externalId: p.externalId, ...after }, update: after });
@@ -136,16 +148,10 @@ export async function applyWebhookProduct(integrationId: string, product: Catalo
   if (!product) {
     await db.storeProduct.deleteMany({ where: { integrationId, externalId } });
   } else {
-    const data = { title: product.title, handle: product.handle ?? null, url: product.url ?? null, status: product.status ?? null, vendor: product.vendor ?? null, productType: product.productType ?? null, price: product.price && Number.isFinite(Number(product.price)) ? product.price : null, currency: product.currency ?? null, inventoryQuantity: product.inventoryQuantity ?? null, imageUrl: product.imageUrl ?? null, descriptionHtml: product.descriptionHtml ?? null, rawData: product.rawData as any, externalUpdatedAt: product.externalUpdatedAt, lastSeenAt: new Date() };
+    const data = { title: product.title, handle: product.handle ?? null, url: product.url ?? null, status: product.status ?? null, vendor: product.vendor ?? null, productType: product.productType ?? null, price: product.price && Number.isFinite(Number(product.price)) ? product.price : null, currency: product.currency ?? null, inventoryQuantity: product.inventoryQuantity ?? null, imageUrl: product.imageUrl ?? null, descriptionHtml: product.descriptionHtml ?? null, rawData: JSON.parse(JSON.stringify(product.rawData ?? {})) as Prisma.InputJsonValue, externalUpdatedAt: product.externalUpdatedAt, lastSeenAt: new Date() };
     await db.storeProduct.upsert({ where: { integrationId_externalId: { integrationId, externalId } }, create: { integrationId, externalId, ...data }, update: data });
   }
   await db.storeIntegration.update({ where: { id: integrationId }, data: { lastWebhookAt: new Date(), lastError: null } });
-}
-
-export async function getIntegrationCredentials(integrationId: string) {
-  const integration = await db.storeIntegration.findUnique({ where: { id: integrationId } });
-  if (!integration) return null;
-  return { integration, credentials: decryptCredentials<StoreCredentials>(integration.encryptedCredentials) };
 }
 
 export async function registerStoreWebhooks(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials) {

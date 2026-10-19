@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { FOUNDER_EMAIL } from '@/lib/plans';
 import { useEffect, useMemo, useState } from 'react';
 
 type UserRow = {
@@ -82,7 +83,7 @@ export default function FounderUsersPage() {
         {loading ? <p className="muted" style={{padding:20}}>Loading account records…</p> : filtered.length === 0 ? <p className="muted" style={{padding:20}}>No matching accounts.</p> : <div style={{overflowX:'auto',marginTop:18}}>
           <table style={{width:'100%',borderCollapse:'collapse',minWidth:920,fontSize:13}}>
             <thead><tr style={{textAlign:'left',borderBottom:'1px solid var(--line)'}}>{['Account','Role','Plan / status','Audits','Payments','Joined','Access controls'].map(h=><th key={h} style={{padding:'12px 10px',color:'var(--muted)',fontSize:11,textTransform:'uppercase',letterSpacing:'.07em'}}>{h}</th>)}</tr></thead>
-            <tbody>{filtered.map(user=>{const sub=user.subscriptions[0];const isProtected=user.email.toLowerCase()==='wisdomfrankceo@gmail.com';return <tr key={user.id} style={{borderBottom:'1px solid var(--line)'}}>
+            <tbody>{filtered.map(user=>{const sub=user.subscriptions[0];const isProtected=user.email.toLowerCase()===FOUNDER_EMAIL;return <tr key={user.id} style={{borderBottom:'1px solid var(--line)'}}>
               <td style={{padding:'14px 10px'}}><strong>{user.name || 'Unnamed user'}</strong><div className="muted">{user.email}</div>{user.affiliateProfile && <div className="muted" style={{fontSize:11}}>Referral: {user.affiliateProfile.code} · {user.affiliateProfile.commissionRate}%</div>}</td>
               <td style={{padding:'14px 10px'}}><span className="badge">{user.role}</span></td>
               <td style={{padding:'14px 10px'}}><strong>{sub?.planId?.replaceAll('_',' ') || 'No plan'}</strong><div className="muted">{sub?.status || '—'}{sub?.expiresAt ? ' · expires '+new Date(sub.expiresAt).toLocaleDateString() : ''}</div></td>

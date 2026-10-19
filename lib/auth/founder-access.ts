@@ -10,7 +10,8 @@ import { FOUNDER_EMAIL } from '@/lib/plans';
 export async function ensureFounderAccessForUser(userId: string) {
   const current = await db.user.findUnique({ where: { id: userId } });
   if (!current || current.email.toLowerCase() !== FOUNDER_EMAIL) return current;
-  
+  if (current.role === 'FOUNDER') return current;
+
   await db.plan.upsert({
     where: { id: 'founding_lifetime' },
     create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },

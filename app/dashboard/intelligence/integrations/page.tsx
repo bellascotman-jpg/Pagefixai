@@ -83,6 +83,32 @@ export default function StoreIntegrationsPage() {
     finally { setBusyId(''); }
   }
 
+  function plainText(html: string | null) {
+    return (html || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
+  }
+
+  async function applyProductFix(integration: Integration, product: ProductAttention) {
+    const draft = drafts[product.id] || { title: product.title, descriptionHtml: plainText(product.descriptionHtml) };
+    if (draft.title.trim() === product.title && draft.descriptionHtml.trim() === plainText(product.descriptionHtml)) {
+      setError('Make a title or description change before applying a fix.');
+      return;
+    }
+    if (!window.confirm('Apply this title/description change to the LIVE product in ' + integration.shopDomain + '? The before/after values will be recorded.')) return;
+    setFixingProduct(product.id); setError(''); setNotice('');
+    try {
+      const response = await fetch('/api/integrations/stores/' + integration.id + '/products/' + product.id + '/fix', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ title: draft.title, descriptionHtml: draft.descriptionHtml }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || data.error || 'The live product update failed.');
+      setNotice('Product updated in the connected store. The before/after change was recorded.');
+      setDrafts(current => { const next = { ...current }; delete next[product.id]; return next; });
+      await load();
+    } catch (e) { setError(e instanceof Error ? e.message : 'The live product update failed.'); }
+    finally { setFixingProduct(''); }
+  }
+
   const fieldStyle: CSSProperties = { display: 'grid', gap: 7, fontSize: 13, fontWeight: 700 };
   const inputStyle: React.CSSProperties = { width: '100%', minHeight: 44, border: '1px solid var(--line)', borderRadius: 9, padding: '10px 12px', background: '#fff', color: 'var(--ink)' };
 

@@ -791,6 +791,7 @@ model StoreIntegration {
   store              Store                  @relation(fields: [storeId], references: [id], onDelete: Cascade)
   products           StoreProduct[]
   syncRuns            StoreSyncRun[]
+  changeLogs          StoreProductChangeLog[]
 
   @@unique([platform, shopDomain])
   @@index([userId, status])
@@ -837,4 +838,20 @@ model StoreSyncRun {
   integration     StoreIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
 
   @@index([integrationId, startedAt])
+}
+
+
+model StoreProductChangeLog {
+  id            String           @id @default(cuid())
+  integrationId String
+  externalId    String
+  actorId       String
+  action        String
+  beforeJson    Json
+  afterJson     Json
+  createdAt     DateTime         @default(now())
+  integration   StoreIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId, createdAt])
+  @@index([externalId, createdAt])
 }

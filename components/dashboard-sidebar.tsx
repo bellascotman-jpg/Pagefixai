@@ -11,30 +11,32 @@ const groups = [
     { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
     { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
   ]},
-  { label: 'INTELLIGENCE', items: [
+  { label: 'ANALYSIS', items: [
     { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
     { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
     { href: '/dashboard/intelligence/clarity-scorecard', label: 'Clarity scorecard', icon: '◉' },
     { href: '/dashboard/intelligence/return-risk', label: 'Pre-purchase & return risk', icon: '?' },
     { href: '/dashboard/intelligence/visual-inspection', label: 'Visual & mobile inspection', icon: '▧' },
     { href: '/dashboard/intelligence/seo-data', label: 'SEO & product data', icon: '⌕' },
-    { href: '/dashboard/intelligence/copy-fixes', label: 'Grounded copy fixes', icon: '✎' },
-    { href: '/dashboard/intelligence/claims', label: 'Claims & promises', icon: '⇄' },
     { href: '/dashboard/intelligence/store', label: 'Store intelligence', icon: '▦' },
+    { href: '/dashboard/competitors', label: 'Competitor comparison', icon: '⊙' },
+  ]},
+  { label: 'OPTIMIZATION', items: [
+    { href: '/dashboard/intelligence/copy-fixes', label: 'Grounded copy fixes', icon: '✎' },
     { href: '/dashboard/intelligence/impact', label: 'Impact analysis', icon: '↗' },
+    { href: '/dashboard/intelligence/claims', label: 'Claims & promises', icon: '⇄' },
     { href: '/dashboard/intelligence/promise-ledger', label: 'Promise Ledger', icon: '▤' },
-    { href: '/dashboard/intelligence/experiments', label: 'Experimentation', icon: '⌁' },
-    { href: '/dashboard/intelligence/governance', label: 'Evidence & governance', icon: '✓' },
     { href: '/dashboard/intelligence/journey', label: 'Journey & message match', icon: '⌁' },
     { href: '/dashboard/intelligence/retention', label: 'Retention & onboarding', icon: '↻' },
+    { href: '/dashboard/intelligence/experiments', label: 'Experimentation', icon: '⌁' },
     { href: '/dashboard/intelligence/verification', label: 'Verification history', icon: '✓' },
+    { href: '/dashboard/intelligence/governance', label: 'Evidence & governance', icon: '✓' },
   ]},
   { label: 'GROWTH', items: [
     { href: '/dashboard/referrals', label: 'Referrals & earnings', icon: '↗' },
     { href: '/dashboard/affiliate', label: 'Affiliate program', icon: '◎' },
   ]},
-  { label: 'TOOLS & DATA', items: [
-    { href: '/dashboard/competitors', label: 'Competitors', icon: '⊙' },
+  { label: 'WORKSPACES & DATA', items: [
     { href: '/dashboard/intelligence/workspaces', label: 'Seller & agency workspaces', icon: '▣' },
     { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
   ]},
@@ -47,17 +49,21 @@ const groups = [
 export default function DashboardSidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'INTELLIGENCE': true, 'TOOLS & DATA': true, 'ACCOUNT': true });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'ANALYSIS': true, 'OPTIMIZATION': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true });
+
+  const optimizationPaths = ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'];
+  const isOptimizationPath = optimizationPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
 
   useEffect(() => {
     setOpen(false);
     setCollapsed(current => ({
       ...current,
-      'INTELLIGENCE': pathname.startsWith('/dashboard/intelligence') ? false : current['INTELLIGENCE'],
-      'TOOLS & DATA': (pathname.startsWith('/dashboard/competitors') || pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations')) ? false : current['TOOLS & DATA'],
+      'ANALYSIS': (pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors')) && !isOptimizationPath ? false : current['ANALYSIS'],
+      'OPTIMIZATION': isOptimizationPath ? false : current['OPTIMIZATION'],
+      'WORKSPACES & DATA': pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['WORKSPACES & DATA'],
       'ACCOUNT': pathname.startsWith('/dashboard/settings') ? false : current['ACCOUNT'],
     }));
-  }, [pathname]);
+  }, [pathname, isOptimizationPath]);
 
   useEffect(() => {
     if (!open) return;

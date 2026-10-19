@@ -23,8 +23,8 @@ export async function ensureFounderAccessForUser(userId: string) {
 
   await db.plan.upsert({
     where: { id: 'founding_lifetime' },
-    create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },
-    update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },
+    create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 50, lifetime: true },
+    update: { name: 'Founder Lifetime', monthlyUnits: 50, lifetime: true },
   });
 
   const user = String(current.role) === 'FOUNDER'

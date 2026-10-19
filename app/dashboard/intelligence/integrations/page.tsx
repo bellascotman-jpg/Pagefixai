@@ -167,6 +167,11 @@ export default function StoreIntegrationsPage() {
               <div><div className="label">Out of stock</div><div className="stat">{item.monitoring.outOfStock}</div></div>
               <div><div className="label">Sync runs</div><div className="stat">{item._count.syncRuns}</div></div>
             </div>
+            {item.productsNeedingAttention.length > 0 && <section style={{marginTop:18,borderTop:'1px solid var(--line)',paddingTop:15}}>
+              <div className="label">PRODUCT QUALITY REVIEW · UP TO 20 PRODUCTS</div>
+              <p className="muted" style={{fontSize:12}}>Review product content before applying any live store changes. Approved changes are recorded with before/after values.</p>
+              <div style={{display:'grid',gap:12}}>{item.productsNeedingAttention.map(product => <StoreProductFixEditor key={product.id} integrationId={item.id} product={product} onApplied={() => { setNotice('Product updated and change history recorded.'); void load(); }} />)}</div>
+            </section>}
             <p className="muted" style={{fontSize:12,marginBottom:0}}>Last API sync: {item.lastSyncedAt?new Date(item.lastSyncedAt).toLocaleString():'Not synced'} · Last webhook: {item.lastWebhookAt?new Date(item.lastWebhookAt).toLocaleString():'None received yet'}</p>
             {item.lastError&&<p className="error-box" style={{marginTop:12,marginBottom:0}}>Last sync error: {item.lastError}</p>}
             {item.webhookLastError&&<p className="error-box" style={{marginTop:12,marginBottom:0}}>Webhook setup needs attention: {item.webhookLastError}</p>}

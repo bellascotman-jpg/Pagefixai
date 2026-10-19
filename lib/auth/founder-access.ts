@@ -24,9 +24,8 @@ export async function ensureFounderAccessForUser(userId: string) {
 
   const membership = await db.membership.findFirst({ where: { userId }, select: { id: true } });
   if (!membership) {
-    await db.membership.create({
-      data: { userId, role: 'OWNER', organization: { create: { name: 'PageFix Founder Workspace' } } },
-    });
+    const organization = await db.organization.create({ data: { name: 'PageFix Founder Workspace' } });
+    await db.membership.create({ data: { userId, organizationId: organization.id, role: 'OWNER' } });
   }
 
   const lifetime = await db.subscription.findFirst({ where: { userId, planId: 'founding_lifetime', status: 'LIFETIME' }, select: { id: true } });

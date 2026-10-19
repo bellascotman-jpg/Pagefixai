@@ -44,6 +44,7 @@ See .env.example. Optional AI, payment, email and screenshot-storage integration
 ## Main application areas
 
 - app/ — marketing site, authentication, pricing, dashboard and API routes
+- lib/store-integrations/ — encrypted Shopify/WooCommerce credentials, product sync, webhook registration and approved product updates
 - components/ — client-side audit and status components
 - lib/audit/ — URL validation and browser audit engine
 - lib/ai/ — schema-constrained evidence interpretation
@@ -52,6 +53,12 @@ See .env.example. Optional AI, payment, email and screenshot-storage integration
 - prisma/ — PostgreSQL domain schema
 - tests/ and e2e/ — automated checks
 - docs/ — architecture, security, provider and verification notes
+
+## Commerce store integrations
+
+Shopify Admin API and WooCommerce REST API connections are available from **Dashboard → Intelligence → Integrations**. Connect once to import a bounded product catalogue, receive product-change webhooks, run manual syncs, and use daily scheduled reconciliation. Product title/description changes can be applied to the live store only after explicit confirmation; each successful write records before/after content. Monitoring does not require analytics or ad-account access.
+
+See [docs/STORE-INTEGRATIONS.md](docs/STORE-INTEGRATIONS.md) for required store permissions, webhook setup, encryption and known limits. Shopify live product edits require the additional `write_products` scope; catalogue monitoring itself only needs read access plus webhook permissions. Never claim a live store is connected until its API credentials and webhook delivery have been verified against that store.
 
 ## Billing
 

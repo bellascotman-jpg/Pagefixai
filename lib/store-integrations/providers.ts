@@ -212,6 +212,7 @@ export async function applyApprovedProductFix(input: {
   if (descriptionHtml !== undefined && descriptionHtml !== (product.descriptionHtml ?? '')) changes.descriptionHtml = descriptionHtml;
   if (Object.keys(changes).length === 0) throw new Error('NO_CHANGES_DETECTED');
 
+  let remoteApplied = false;
   if (integration.platform === 'SHOPIFY') {
     const productInput: Record<string, string> = { id: product.externalId, ...changes };
     const result = await shopifyGraphql<{ productUpdate: { product: { id: string } | null; userErrors: { message: string }[] } }>(
@@ -220,6 +221,7 @@ export async function applyApprovedProductFix(input: {
       { product: productInput },
     );
     if (result.productUpdate.userErrors.length || !result.productUpdate.product) throw new Error('SHOPIFY_PRODUCT_UPDATE_FAILED');
+    remoteApplied = true;
   } else {
     const auth = Buffer.from(`${credentials.consumerKey}:${credentials.consumerSecret}`).toString('base64');
     const payload: Record<string, string> = {};
@@ -230,13 +232,15 @@ export async function applyApprovedProductFix(input: {
       body: JSON.stringify(payload), signal: AbortSignal.timeout(20000), cache: 'no-store',
     });
     if (!response.ok) throw new Error(`WOOCOMMERCE_PRODUCT_UPDATE_HTTP_${response.status}`);
+    remoteApplied = true;
   }
 
   const after = {
     title: changes.title ?? product.title,
     descriptionHtml: changes.descriptionHtml ?? product.descriptionHtml,
   };
-  await db.$transaction(async tx => {
+  try {
+    await db.$transaction(async tx => {
     await tx.storeProduct.update({ where: { id: product.id }, data: { title: after.title, descriptionHtml: after.descriptionHtml, lastSeenAt: new Date() } });
     await tx.storeProductChangeLog.create({
       data: {
@@ -246,6 +250,10 @@ export async function applyApprovedProductFix(input: {
         afterJson: after,
       },
     });
-  });
+    });
+  } catch {
+    if (remoteApplied) throw new Error('STORE_UPDATED_AUDIT_LOG_FAILED');
+    throw new Error('PRODUCT_FIX_FAILED');
+  }
   return { productId: product.id, externalId: product.externalId, before: { title: product.title, descriptionHtml: product.descriptionHtml }, after };
 }

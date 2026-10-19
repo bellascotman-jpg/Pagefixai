@@ -18,9 +18,7 @@ export async function ensureFounderAccessForUser(userId: string) {
     update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },
   });
 
-  const user = current.role === 'FOUNDER'
-    ? current
-    : await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() } });
+  const user = await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() } });
 
   const membership = await db.membership.findFirst({ where: { userId }, select: { id: true } });
   if (!membership) {

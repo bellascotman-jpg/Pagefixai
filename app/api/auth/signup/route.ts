@@ -48,12 +48,18 @@ export async function POST(request: Request) {
     }
     const existing = await db.user.findUnique({ where: { email }, select: { id: true, role: true } });
     if (existing) {
-      if (!isFounder || existing.role === 'FOUNDER') {
+      if (!isFounder) {
         return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
       }
+      const bootstrapUsed = await db.adminEvent.findFirst({
+        where: { actorId: existing.id, action: 'FOUNDER_BOOTSTRAP_COMPLETED' },
+        select: { id: true },
+      });
+      if (bootstrapUsed) {
+        return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'Founder access has already been set up. Sign in with your founder password.' }, { status: 409 });
+      }
 
-      // A valid private setup key may promote a pre-existing founder-email account
-      // that was created before founder provisioning was available.
+      // The private setup key can initialize or recover the founder account once.
       const upgraded = await db.user.update({
         where: { id: existing.id },
         data: { name, passwordHash: await hashPassword(password), role: 'FOUNDER' },
@@ -78,6 +84,15 @@ export async function POST(request: Request) {
         update: { status: 'APPROVED', commissionRate: 25 },
       }).catch((error) => {
         console.error('founder_referral_profile_error', { name: error instanceof Error ? error.name : 'UnknownError' });
+      });
+      await db.adminEvent.create({
+        data: {
+          actorId: upgraded.id,
+          action: 'FOUNDER_BOOTSTRAP_COMPLETED',
+          targetType: 'User',
+          targetId: upgraded.id,
+          metadata: { method: 'private-founder-setup' },
+        },
       });
       await createSession(upgraded.id);
       return NextResponse.json({ user: { id: upgraded.id, email: upgraded.email, name: upgraded.name, role: upgraded.role }, founderAccess: true, upgradedExistingAccount: true }, { status: 200 });
@@ -125,6 +140,17 @@ export async function POST(request: Request) {
       });
     }
 
+    if (isFounder) {
+      await db.adminEvent.create({
+        data: {
+          actorId: user.id,
+          action: 'FOUNDER_BOOTSTRAP_COMPLETED',
+          targetType: 'User',
+          targetId: user.id,
+          metadata: { method: 'private-founder-setup' },
+        },
+      });
+    }
     await createSession(user.id);
     return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, ...(isFounder ? { founderAccess: true } : {}) }, { status: 201 });
   } catch (error) {

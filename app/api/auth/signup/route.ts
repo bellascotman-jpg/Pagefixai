@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/security/password';
@@ -10,6 +10,7 @@ const schema = z.object({
   name: z.string().trim().min(2).max(80),
   email: z.string().trim().toLowerCase().email().max(320),
   password: z.string().min(8).max(128),
+  founderSetupKey: z.string().max(256).optional(),
 });
 
 export async function POST(request: Request) {
@@ -25,20 +26,61 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'VALIDATION_ERROR', message: 'Enter your name, a valid email and a password with at least 8 characters.' }, { status: 400 });
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, founderSetupKey } = parsed.data;
+  const isFounder = email === FOUNDER_EMAIL;
+  if (isFounder) {
+    const expectedKey = process.env.FOUNDER_SETUP_SECRET || '';
+    const supplied = Buffer.from(founderSetupKey || '', 'utf8');
+    const expected = Buffer.from(expectedKey, 'utf8');
+    const validKey = expected.length > 0 && supplied.length === expected.length && timingSafeEqual(supplied, expected);
+    if (!validKey) {
+      return NextResponse.json({ error: 'FOUNDER_SETUP_REQUIRED', message: 'Founder account setup requires the private founder setup key. Enter the setup key provided to the founder.' }, { status: 403 });
+    }
+  }
   const cookieHeader = request.headers.get('cookie') || '';
   const referralCode = cookieHeader.match(/(?:^|;\s*)pagefix_ref=([A-Z0-9]+)/)?.[1]?.toUpperCase() || null;
   const referralCandidate = referralCode ? await db.affiliateProfile.findFirst({ where: { code: referralCode, status: 'APPROVED' }, select: { id: true, user: { select: { email: true } } } }).catch(() => null) : null;
   const referringAffiliate = referralCandidate && referralCandidate.user.email.toLowerCase() !== email.toLowerCase() ? referralCandidate : null;
-  if (email === FOUNDER_EMAIL) {
-    return NextResponse.json({ error: 'EMAIL_RESERVED', message: 'This founder account is provisioned separately and cannot be created through public signup.' }, { status: 403 });
-  }
-
   try {
     await db.plan.upsert({ where: { id: 'starter_monthly' }, create: { id: 'starter_monthly', name: 'Starter', monthlyUnits: 50, lifetime: false }, update: { name: 'Starter', monthlyUnits: 50, lifetime: false } });
-    const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
+    if (isFounder) {
+      await db.plan.upsert({ where: { id: 'founding_lifetime' }, create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true }, update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true } });
+    }
+    const existing = await db.user.findUnique({ where: { email }, select: { id: true, role: true } });
     if (existing) {
-      return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
+      if (!isFounder || existing.role === 'FOUNDER') {
+        return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
+      }
+
+      // A valid private setup key may promote a pre-existing founder-email account
+      // that was created before founder provisioning was available.
+      const upgraded = await db.user.update({
+        where: { id: existing.id },
+        data: { name, passwordHash: await hashPassword(password), role: 'FOUNDER' },
+      });
+      const lifetimeSubscription = await db.subscription.findFirst({
+        where: { userId: upgraded.id, planId: 'founding_lifetime', status: 'LIFETIME' },
+        select: { id: true },
+      });
+      if (!lifetimeSubscription) {
+        await db.subscription.create({
+          data: {
+            userId: upgraded.id,
+            planId: 'founding_lifetime',
+            status: 'LIFETIME',
+            provider: 'founder-bootstrap',
+          },
+        });
+      }
+      await db.affiliateProfile.upsert({
+        where: { userId: upgraded.id },
+        create: { userId: upgraded.id, code: randomBytes(5).toString('hex').toUpperCase(), commissionRate: 25, status: 'APPROVED' },
+        update: { status: 'APPROVED', commissionRate: 25 },
+      }).catch((error) => {
+        console.error('founder_referral_profile_error', { name: error instanceof Error ? error.name : 'UnknownError' });
+      });
+      await createSession(upgraded.id);
+      return NextResponse.json({ user: { id: upgraded.id, email: upgraded.email, name: upgraded.name, role: upgraded.role }, founderAccess: true, upgradedExistingAccount: true }, { status: 200 });
     }
 
     const user = await db.user.create({
@@ -46,7 +88,7 @@ export async function POST(request: Request) {
         name,
         email,
         passwordHash: await hashPassword(password),
-        role: 'USER',
+        role: isFounder ? 'FOUNDER' : 'USER',
         memberships: {
           create: {
             role: 'OWNER',
@@ -55,10 +97,10 @@ export async function POST(request: Request) {
         },
         subscriptions: {
           create: {
-            plan: { connect: { id: 'starter_monthly' } },
-            status: 'ACTIVE',
-            provider: 'pagefix-trial',
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            plan: { connect: { id: isFounder ? 'founding_lifetime' : 'starter_monthly' } },
+            status: isFounder ? 'LIFETIME' : 'ACTIVE',
+            provider: isFounder ? 'founder-bootstrap' : 'pagefix-trial',
+            ...(isFounder ? {} : { expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }),
           },
         },
       },
@@ -84,7 +126,7 @@ export async function POST(request: Request) {
     }
 
     await createSession(user.id);
-    return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role } }, { status: 201 });
+    return NextResponse.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, ...(isFounder ? { founderAccess: true } : {}) }, { status: 201 });
   } catch (error) {
     const code = typeof error === 'object' && error !== null && 'code' in error ? String(error.code) : 'UNKNOWN';
     console.error('signup_error', { code, name: error instanceof Error ? error.name : 'UnknownError' });

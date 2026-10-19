@@ -144,3 +144,40 @@ export async function getIntegrationCredentials(integrationId: string) {
   if (!integration) return null;
   return { integration, credentials: decryptCredentials<StoreCredentials>(integration.encryptedCredentials) };
 }
+
+export async function registerStoreWebhooks(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: string, credentials: StoreCredentials) {
+  const appUrl = process.env.APP_URL?.replace(/\/$/, '');
+  if (!appUrl || !appUrl.startsWith('https://')) throw new Error('APP_URL_HTTPS_REQUIRED');
+  if (!credentials.webhookSecret) throw new Error('WEBHOOK_SECRET_REQUIRED');
+  const topics = platform === 'SHOPIFY'
+    ? ['PRODUCTS_CREATE', 'PRODUCTS_UPDATE', 'PRODUCTS_DELETE']
+    : ['product.created', 'product.updated', 'product.deleted'];
+
+  if (platform === 'SHOPIFY') {
+    const query = 'query { webhookSubscriptions(first: 100) { nodes { topic endpoint { ... on WebhookHttpEndpoint { callbackUrl } } } } }';
+    const existing = await shopifyGraphql<{ webhookSubscriptions: { nodes: { topic: string; endpoint: { callbackUrl?: string } }[] } }>(domain, credentials.accessToken!, query);
+    const callbackUrl = appUrl + '/api/webhooks/shopify';
+    const have = new Set(existing.webhookSubscriptions.nodes.filter(n => n.endpoint?.callbackUrl === callbackUrl).map(n => n.topic));
+    for (const topic of topics) {
+      if (have.has(topic)) continue;
+      const mutation = 'mutation CreateWebhook($topic: WebhookSubscriptionTopic!, $callbackUrl: URL!) { webhookSubscriptionCreate(topic: $topic, webhookSubscription: { callbackUrl: $callbackUrl, format: JSON }) { webhookSubscription { id } userErrors { message } } }';
+      const result = await shopifyGraphql<{ webhookSubscriptionCreate: { webhookSubscription: { id: string } | null; userErrors: { message: string }[] } }>(domain, credentials.accessToken!, mutation, { topic, callbackUrl });
+      if (result.webhookSubscriptionCreate.userErrors.length || !result.webhookSubscriptionCreate.webhookSubscription) throw new Error('SHOPIFY_WEBHOOK_REGISTRATION_FAILED');
+    }
+    return { status: 'REGISTERED', topics };
+  }
+
+  const auth = Buffer.from(`${credentials.consumerKey}:${credentials.consumerSecret}`).toString('base64');
+  const base = `https://${domain}/wp-json/wc/v3/webhooks`;
+  const headers = { authorization: `Basic ${auth}`, 'content-type': 'application/json', accept: 'application/json' };
+  const listResponse = await fetch(`${base}?per_page=100`, { headers, signal: AbortSignal.timeout(20000), cache: 'no-store' });
+  if (!listResponse.ok) throw new Error(`WOOCOMMERCE_WEBHOOK_LIST_HTTP_${listResponse.status}`);
+  const existing = await listResponse.json() as { topic?: string; delivery_url?: string; status?: string }[];
+  const callbackUrl = appUrl + '/api/webhooks/woocommerce';
+  for (const topic of topics) {
+    if (existing.some(item => item.topic === topic && item.delivery_url === callbackUrl && item.status === 'active')) continue;
+    const response = await fetch(base, { method: 'POST', headers, body: JSON.stringify({ name: `PageFix ${topic}`, topic, delivery_url: callbackUrl, secret: credentials.webhookSecret, status: 'active' }), signal: AbortSignal.timeout(20000), cache: 'no-store' });
+    if (!response.ok) throw new Error(`WOOCOMMERCE_WEBHOOK_CREATE_HTTP_${response.status}`);
+  }
+  return { status: 'REGISTERED', topics };
+}

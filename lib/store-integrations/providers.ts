@@ -194,7 +194,7 @@ export async function applyApprovedProductFix(input: {
   const product = await db.storeProduct.findFirst({ where: { id: input.localProductId, integrationId: integration.id } });
   if (!product) throw new Error('PRODUCT_NOT_FOUND');
   const title = input.title?.trim();
-  const descriptionHtml = input.descriptionHtml;
+  const descriptionHtml = input.descriptionHtml === undefined ? undefined : input.descriptionHtml.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   if (title !== undefined && (!title || title.length > 255)) throw new Error('INVALID_PRODUCT_TITLE');
   if (descriptionHtml !== undefined && descriptionHtml.length > 50000) throw new Error('PRODUCT_DESCRIPTION_TOO_LONG');
   if (title === undefined && descriptionHtml === undefined) throw new Error('NO_CHANGES_PROVIDED');

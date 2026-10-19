@@ -25,7 +25,7 @@ export async function POST(request: Request, context: { params: Promise<{ integr
     return NextResponse.json({ ok: true, result });
   } catch (error) {
     const code = error instanceof Error ? error.message : 'PRODUCT_FIX_FAILED';
-    const status = code === 'PRODUCT_NOT_FOUND' ? 404 : code === 'INVALID_PRODUCT_TITLE' || code === 'PRODUCT_DESCRIPTION_TOO_LONG' || code === 'NO_CHANGES_PROVIDED' || code === 'NO_CHANGES_DETECTED' ? 400 : 502;
-    return NextResponse.json({ error: code, message: status === 502 ? 'The store did not confirm the product update. Check write permissions and store API health; PageFix has not reported the change as applied.' : code }, { status });
+    const status = code === 'PRODUCT_NOT_FOUND' ? 404 : code === 'INVALID_PRODUCT_TITLE' || code === 'PRODUCT_DESCRIPTION_TOO_LONG' || code === 'NO_CHANGES_PROVIDED' || code === 'NO_CHANGES_DETECTED' ? 400 : code === 'STORE_UPDATED_AUDIT_LOG_FAILED' ? 500 : 502;
+    return NextResponse.json({ error: code, message: code === 'STORE_UPDATED_AUDIT_LOG_FAILED' ? 'The store confirmed the update, but PageFix could not save the before/after record. Re-sync the product before retrying.' : status === 502 ? 'The store did not confirm the product update. Check write permissions and store API health; PageFix has not reported the change as applied.' : code }, { status });
   }
 }

@@ -61,6 +61,13 @@ export async function PATCH(request: Request) {
         await tx.subscription.create({
           data: { userId: target.id, planId, status: planId === 'founding_lifetime' ? 'LIFETIME' : 'ACTIVE', provider: 'founder-admin-grant' },
         });
+        const now = new Date();
+        const periodStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+        const periodEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+        await tx.usageBalance.updateMany({
+          where: { userId: target.id, periodStart },
+          data: { includedUnits: plan.units, periodEnd },
+        });
         await tx.adminEvent.create({
           data: { actorId: actor.id, action: 'USER_PLAN_GRANTED', targetType: 'User', targetId: target.id, metadata: { planId } },
         });

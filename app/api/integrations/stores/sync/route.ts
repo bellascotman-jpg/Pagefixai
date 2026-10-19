@@ -14,7 +14,7 @@ function authorized(request: Request) {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function POST(request: Request) {
+async function runScheduledSync(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: 'UNAUTHORIZED' }, { status: 401 });
   const integrations = await db.storeIntegration.findMany({ where: { status: { in: ['CONNECTED', 'DEGRADED'] } }, select: { id: true }, take: 20, orderBy: { lastSyncedAt: 'asc' } });
   const results = [];
@@ -24,3 +24,6 @@ export async function POST(request: Request) {
   }
   return NextResponse.json({ processed: results.length, results });
 }
+
+export async function GET(request: Request) { return runScheduledSync(request); }
+export async function POST(request: Request) { return runScheduledSync(request); }

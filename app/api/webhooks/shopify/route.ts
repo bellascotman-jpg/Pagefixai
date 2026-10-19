@@ -5,6 +5,12 @@ import { applyWebhookProduct, normalizeShopDomain, verifyWebhookSignature, type 
 
 export const runtime = 'nodejs';
 
+type ShopifyWebhookProduct = {
+  admin_graphql_api_id?: string; id?: number | string; title?: string; handle?: string; status?: string;
+  vendor?: string; product_type?: string; variants?: { price?: string }[]; total_inventory?: number;
+  image?: { src?: string }; body_html?: string; updated_at?: string;
+};
+
 export async function POST(request: Request) {
   const rawBody = await request.text();
   const domainHeader = request.headers.get('x-shopify-shop-domain');
@@ -29,7 +35,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const p = JSON.parse(rawBody) as Record<string, any>;
+    const p = JSON.parse(rawBody) as ShopifyWebhookProduct;
     const externalId = String(p.admin_graphql_api_id || (p.id != null ? `gid://shopify/Product/${p.id}` : ''));
     if (!externalId) return NextResponse.json({ error: 'PRODUCT_ID_MISSING' }, { status: 400 });
     if (topic.endsWith('/products/delete')) await applyWebhookProduct(integration.id, null, externalId);

@@ -4,6 +4,7 @@ import { decryptCredentials } from '@/lib/store-integrations/crypto';
 import { applyWebhookProduct, normalizeShopDomain, verifyWebhookSignature, type StoreCredentials, type CatalogProduct } from '@/lib/store-integrations/providers';
 
 export const runtime = 'nodejs';
+type WooCommerceWebhookProduct = { id?: number | string; name?: string; slug?: string; permalink?: string; status?: string; type?: string; price?: string; currency?: string; stock_quantity?: number | null; images?: { src?: string }[]; description?: string; date_modified_gmt?: string; date_modified?: string };
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -27,7 +28,7 @@ export async function POST(request: Request) {
     if (!duplicate) return NextResponse.json({ error: 'EVENT_PERSISTENCE_FAILED' }, { status: 503 });
   }
   try {
-    const p = JSON.parse(rawBody) as Record<string, any>;
+    const p = JSON.parse(rawBody) as WooCommerceWebhookProduct;
     if (p.id == null) return NextResponse.json({ error: 'PRODUCT_ID_MISSING' }, { status: 400 });
     const externalId = String(p.id);
     if (topic.endsWith('.deleted')) await applyWebhookProduct(integration.id, null, externalId);

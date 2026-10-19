@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 
+function plainText(html: string | null) {
+  return (html || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\s+/g, ' ').trim();
+}
+
 type Props = {
   integrationId: string;
   product: { id: string; title: string; descriptionHtml: string | null; url: string | null; imageUrl: string | null; price: string | number | null; inventoryQuantity: number | null };
@@ -39,7 +43,7 @@ export default function StoreProductFixEditor({ integrationId, product, onApplie
     try {
       const response = await fetch('/api/integrations/stores/' + integrationId + '/products/' + product.id + '/fix', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ title, descriptionHtml: description }),
+        body: JSON.stringify({ ...(titleChanged ? { title } : {}), ...(descriptionChanged ? { descriptionHtml: description } : {}) }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || data.error || 'The store did not confirm the update.');

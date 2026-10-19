@@ -51,16 +51,21 @@ export default function DashboardSidebar() {
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'ANALYSIS': true, 'OPTIMIZATION': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true });
 
+  const optimizationPaths = ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'];
+  const isOptimizationPath = optimizationPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+
   useEffect(() => {
     setOpen(false);
     setCollapsed(current => ({
       ...current,
-      'ANALYSIS': pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors') ? false : current['ANALYSIS'],
-      'OPTIMIZATION': ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'].some(path => pathname === path || pathname.startsWith(path + '/')) ? false : current['OPTIMIZATION'],
+      'ANALYSIS': (pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors')) && !isOptimizationPath ? false : current['ANALYSIS'],
+      'OPTIMIZATION': isOptimizationPath ? false : current['OPTIMIZATION'],
       'WORKSPACES & DATA': pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['WORKSPACES & DATA'],
       'ACCOUNT': pathname.startsWith('/dashboard/settings') ? false : current['ACCOUNT'],
     }));
-  }, [pathname]);  useEffect(() => {
+  }, [pathname, isOptimizationPath]);
+
+  useEffect(() => {
     if (!open) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);

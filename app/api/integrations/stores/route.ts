@@ -25,7 +25,7 @@ export async function GET() {
   const integrations = await db.storeIntegration.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
-    select: { id: true, platform: true, shopDomain: true, status: true, webhookStatus: true, webhookLastError: true, scopes: true, lastSyncedAt: true, lastWebhookAt: true, lastError: true, createdAt: true, store: { select: { id: true, name: true, url: true } }, _count: { select: { products: true, syncRuns: true } }, products: { take: 500, select: { status: true, price: true, inventoryQuantity: true, imageUrl: true, descriptionHtml: true, url: true } } },
+    select: { id: true, platform: true, shopDomain: true, status: true, webhookStatus: true, webhookLastError: true, scopes: true, lastSyncedAt: true, lastWebhookAt: true, lastError: true, createdAt: true, store: { select: { id: true, name: true, url: true } }, _count: { select: { products: true, syncRuns: true } }, products: { take: 500, select: { id: true, title: true, status: true, price: true, inventoryQuantity: true, imageUrl: true, descriptionHtml: true, url: true } } },
   });
   const enriched = integrations.map(({ products, ...integration }) => ({
     ...integration,
@@ -37,6 +37,7 @@ export async function GET() {
       outOfStock: products.filter(p => p.inventoryQuantity !== null && p.inventoryQuantity <= 0).length,
       missingProductUrl: products.filter(p => !p.url).length,
     },
+    productsNeedingAttention: products.filter(p => !p.descriptionHtml || !p.descriptionHtml.replace(/<[^>]*>/g, ' ').trim() || !p.imageUrl || p.price === null || (p.inventoryQuantity !== null && p.inventoryQuantity <= 0)).slice(0, 20).map(p => ({ id: p.id, title: p.title, status: p.status, price: p.price, inventoryQuantity: p.inventoryQuantity, imageUrl: p.imageUrl, descriptionHtml: p.descriptionHtml, url: p.url })),
   }));
   return NextResponse.json({ integrations: enriched });
 }

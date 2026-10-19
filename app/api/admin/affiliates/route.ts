@@ -2,10 +2,11 @@ import { randomBytes } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
+import { FOUNDER_EMAIL } from '@/lib/plans';
 
 async function requireAdmin() {
   const user = await getCurrentUser();
-  return user && (user.role === 'ADMIN' || user.role === 'FOUNDER') ? user : null;
+  return user && (user.role === 'ADMIN' || (user.role === 'FOUNDER' && user.email.toLowerCase() === FOUNDER_EMAIL)) ? user : null;
 }
 
 export async function GET() {

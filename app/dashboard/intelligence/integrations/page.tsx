@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type FormEvent, type CSSProperties } from 'react';
 
 type Integration = {
   id: string; platform: 'SHOPIFY' | 'WOOCOMMERCE'; shopDomain: string; status: string;
@@ -39,7 +39,7 @@ export default function StoreIntegrationsPage() {
 
   useEffect(() => { void load(); }, [load]);
 
-  async function connect(event: React.FormEvent<HTMLFormElement>) {
+  async function connect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSubmitting(true); setError(''); setNotice('');
     try {
       const payload = { platform, storeUrl, projectName, webhookSecret, ...(platform === 'SHOPIFY' ? { accessToken } : { consumerKey, consumerSecret }) };
@@ -79,7 +79,7 @@ export default function StoreIntegrationsPage() {
     finally { setBusyId(''); }
   }
 
-  const fieldStyle: React.CSSProperties = { display: 'grid', gap: 7, fontSize: 13, fontWeight: 700 };
+  const fieldStyle: CSSProperties = { display: 'grid', gap: 7, fontSize: 13, fontWeight: 700 };
   const inputStyle: React.CSSProperties = { width: '100%', minHeight: 44, border: '1px solid var(--line)', borderRadius: 9, padding: '10px 12px', background: '#fff', color: 'var(--ink)' };
 
   return <main className="dashboard">
@@ -105,7 +105,6 @@ export default function StoreIntegrationsPage() {
         <form onSubmit={connect} style={{display:'grid',gap:15,maxWidth:760}}>
           <label style={fieldStyle}>Store URL<input required type="url" value={storeUrl} onChange={e=>setStoreUrl(e.target.value)} placeholder={platform==='SHOPIFY'?'https://your-store.myshopify.com':'https://yourstore.com'} style={inputStyle}/></label>
           <label style={fieldStyle}>PageFix project name<input required minLength={2} maxLength={100} value={projectName} onChange={e=>setProjectName(e.target.value)} style={inputStyle}/></label>
-          {#if false}{/if}
           {platform==='SHOPIFY' ? <>
             <label style={fieldStyle}>Shopify Admin API access token<input required type="password" autoComplete="new-password" value={accessToken} onChange={e=>setAccessToken(e.target.value)} placeholder="shpat_…" style={inputStyle}/></label>
             <p className="muted" style={{fontSize:12,margin:0}}>Create a Shopify custom app with product read access and webhook write access. Product write access is not needed for catalogue monitoring. For webhook verification, use the app's client secret below.</p>

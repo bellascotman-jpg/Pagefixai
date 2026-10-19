@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { FOUNDER_EMAIL } from '@/lib/plans';
+import type { Prisma } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,9 +12,9 @@ export default async function FounderPage() {
   if (!user || (user.role !== 'ADMIN' && !(user.role === 'FOUNDER' && user.email.toLowerCase() === FOUNDER_EMAIL))) redirect('/dashboard');
 
   const now = new Date();
-  const customerScope = { role: { notIn: ['FOUNDER', 'ADMIN'] as const } };
-  const activeSubscription = {
-    status: { in: ['ACTIVE', 'LIFETIME'] as const },
+  const customerScope: Prisma.UserWhereInput = { role: { notIn: ['FOUNDER', 'ADMIN'] } };
+  const activeSubscription: Prisma.SubscriptionWhereInput = {
+    status: { in: ['ACTIVE', 'LIFETIME'] },
     OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
   };
   const [

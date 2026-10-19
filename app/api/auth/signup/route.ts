@@ -96,7 +96,7 @@ export async function POST(request: Request) {
   }
 
   const cookieHeader = request.headers.get('cookie') || '';
-  const referralCode = cookieHeader.match(/(?:^|;\\s*)pagefix_ref=([A-Z0-9]+)/)?.[1]?.toUpperCase() || null;
+  const referralCode = cookieHeader.match(/(?:^|;\s*)pagefix_ref=([A-Z0-9]+)/)?.[1]?.toUpperCase() || null;
   const referralCandidate = referralCode ? await db.affiliateProfile.findFirst({
     where: { code: referralCode, status: 'APPROVED' },
     select: { id: true, user: { select: { email: true } } },

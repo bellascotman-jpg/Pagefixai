@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState, type FormEvent, type CSSProperties } from 'react';
 
+type ProductAttention = { id: string; title: string; status: string | null; price: string | number | null; inventoryQuantity: number | null; imageUrl: string | null; descriptionHtml: string | null; url: string | null };
 type Integration = {
   id: string; platform: 'SHOPIFY' | 'WOOCOMMERCE'; shopDomain: string; status: string;
   webhookStatus: string; webhookLastError: string | null; lastSyncedAt: string | null; lastWebhookAt: string | null;
   lastError: string | null; store: { id: string; name: string; url: string };
   _count: { products: number; syncRuns: number };
   monitoring: { sampledProducts: number; missingDescription: number; missingImage: number; missingPrice: number; outOfStock: number; missingProductUrl: number };
+  productsNeedingAttention: ProductAttention[];
 };
 
 export default function StoreIntegrationsPage() {
@@ -23,6 +25,8 @@ export default function StoreIntegrationsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [busyId, setBusyId] = useState('');
+  const [fixingProduct, setFixingProduct] = useState('');
+  const [drafts, setDrafts] = useState<Record<string, { title: string; descriptionHtml: string }>>({});
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
 

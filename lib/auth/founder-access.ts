@@ -8,7 +8,7 @@ import { FOUNDER_EMAIL } from '@/lib/plans';
  * does not grant founder access to any other email address.
  */
 export async function ensureFounderAccessForUser(userId: string) {
-  const current = await db.user.findUnique({ where: { id: userId }, select: { id: true, email: true, name: true, role: true, createdAt: true } });
+  const current = await db.user.findUnique({ where: { id: userId } });
   if (!current || current.email.toLowerCase() !== FOUNDER_EMAIL) return current;
   
   await db.plan.upsert({
@@ -19,7 +19,7 @@ export async function ensureFounderAccessForUser(userId: string) {
 
   const user = current.role === 'FOUNDER'
     ? current
-    : await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() }, select: { id: true, email: true, name: true, role: true, createdAt: true } });
+    : await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() } });
 
   const membership = await db.membership.findFirst({ where: { userId }, select: { id: true } });
   if (!membership) {

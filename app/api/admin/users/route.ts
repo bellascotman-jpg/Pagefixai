@@ -13,17 +13,38 @@ export async function GET() {
   const actor = await authorizedAdmin();
   if (!actor) return NextResponse.json({ error: 'FORBIDDEN' }, { status: 403 });
   try {
+    const now = new Date();
     const users = await db.user.findMany({
       orderBy: { createdAt: 'desc' },
       take: 200,
       select: {
         id: true, name: true, email: true, role: true, createdAt: true,
-        subscriptions: { orderBy: { startedAt: 'desc' }, take: 1, select: { id: true, planId: true, status: true, expiresAt: true, startedAt: true } },
+        subscriptions: {
+          where: { status: { in: ['ACTIVE', 'LIFETIME'] }, OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
+          orderBy: { startedAt: 'desc' }, take: 1,
+          select: { id: true, planId: true, status: true, expiresAt: true, startedAt: true },
+        },
+        payments: { where: { status: 'successful' }, select: { id: true }, take: 1 },
+        sessions: { where: { expiresAt: { gt: now } }, orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true, expiresAt: true } },
         affiliateProfile: { select: { code: true, status: true, commissionRate: true } },
         _count: { select: { audits: true, payments: true } },
       },
     });
-    return NextResponse.json({ users, limit: 200 });
+    const enriched = users.map((user) => {
+      const hasActivePlan = user.subscriptions.length > 0;
+      const hasSuccessfulPayment = user.payments.length > 0;
+      const isFounder = user.role === 'FOUNDER' && user.email.toLowerCase() === FOUNDER_EMAIL;
+      const accountType = isFounder ? 'FOUNDER' : hasActivePlan && hasSuccessfulPayment ? 'PAID' : hasActivePlan ? 'COMPLIMENTARY' : 'FREE';
+      const { payments, sessions, ...publicUser } = user;
+      return {
+        ...publicUser,
+        accountType,
+        hasActiveSession: sessions.length > 0,
+        lastSessionAt: sessions[0]?.createdAt ?? null,
+        successfulPayment: hasSuccessfulPayment,
+      };
+    });
+    return NextResponse.json({ users: enriched, limit: 200, generatedAt: now.toISOString() });
   } catch (error) {
     console.error('founder_users_list_error', error instanceof Error ? error.name : 'UnknownError');
     return NextResponse.json({ error: 'USER_LIST_UNAVAILABLE' }, { status: 503 });

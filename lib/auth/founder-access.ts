@@ -10,7 +10,16 @@ import { FOUNDER_EMAIL } from '@/lib/plans';
 export async function ensureFounderAccessForUser(userId: string) {
   const current = await db.user.findUnique({ where: { id: userId } });
   if (!current || current.email.toLowerCase() !== FOUNDER_EMAIL) return current;
-  if (String(current.role) === 'FOUNDER') return current;
+
+  if (String(current.role) === 'FOUNDER') {
+    const [membership, lifetime, entitlement, affiliate] = await Promise.all([
+      db.membership.findFirst({ where: { userId }, select: { id: true } }),
+      db.subscription.findFirst({ where: { userId, planId: 'founding_lifetime', status: 'LIFETIME' }, select: { id: true } }),
+      db.entitlement.findUnique({ where: { userId_feature: { userId, feature: 'FOUNDING_LIFETIME' } }, select: { id: true, active: true, expiresAt: true } }),
+      db.affiliateProfile.findUnique({ where: { userId }, select: { id: true, status: true, commissionRate: true } }),
+    ]);
+    if (membership && lifetime && entitlement?.active && !entitlement.expiresAt && affiliate?.status === 'APPROVED' && affiliate.commissionRate === 25) return current;
+  }
 
   await db.plan.upsert({
     where: { id: 'founding_lifetime' },
@@ -18,7 +27,9 @@ export async function ensureFounderAccessForUser(userId: string) {
     update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },
   });
 
-  const user = await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() } });
+  const user = String(current.role) === 'FOUNDER'
+    ? current
+    : await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() } });
 
   const membership = await db.membership.findFirst({ where: { userId }, select: { id: true } });
   if (!membership) {

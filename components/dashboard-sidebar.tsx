@@ -49,7 +49,7 @@ const groups = [
 export default function DashboardSidebar({ isFounder = false }: { isFounder?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'ANALYSIS': true, 'OPTIMIZATION': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'ANALYSIS': true, 'OPTIMIZATION': true, 'GROWTH': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
 
   const optimizationPaths = ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'];
   const isOptimizationPath = optimizationPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
@@ -62,6 +62,8 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
       'OPTIMIZATION': isOptimizationPath ? false : current['OPTIMIZATION'],
       'WORKSPACES & DATA': pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['WORKSPACES & DATA'],
       'ACCOUNT': pathname.startsWith('/dashboard/settings') ? false : current['ACCOUNT'],
+      'GROWTH': (pathname.startsWith('/dashboard/referrals') || pathname.startsWith('/dashboard/affiliate')) ? false : current['GROWTH'],
+      'ADMINISTRATION': pathname.startsWith('/founder') ? false : current['ADMINISTRATION'],
     }));
   }, [pathname, isOptimizationPath]);
 

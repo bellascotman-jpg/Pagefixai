@@ -3,41 +3,42 @@ import { db } from '@/lib/db';
 import { FOUNDER_EMAIL } from '@/lib/plans';
 
 /**
- * Provision the one explicitly configured founder account after it has
- * authenticated with its existing password/session. This is idempotent and
- * does not grant founder access to any other email address.
+ * Repair the single configured founder account after successful authentication.
+ * The exact email check is the security boundary; no public signup can assign
+ * founder privileges to another address.
  */
 export async function ensureFounderAccessForUser(userId: string) {
   const current = await db.user.findUnique({ where: { id: userId } });
   if (!current || current.email.toLowerCase() !== FOUNDER_EMAIL) return current;
 
-  if (String(current.role) === 'FOUNDER') {
-    const [membership, lifetime, entitlement, affiliate] = await Promise.all([
-      db.membership.findFirst({ where: { userId }, select: { id: true } }),
-      db.subscription.findFirst({ where: { userId, planId: 'founding_lifetime', status: 'LIFETIME' }, select: { id: true } }),
-      db.entitlement.findUnique({ where: { userId_feature: { userId, feature: 'FOUNDING_LIFETIME' } }, select: { id: true, active: true, expiresAt: true } }),
-      db.affiliateProfile.findUnique({ where: { userId }, select: { id: true, status: true, commissionRate: true } }),
-    ]);
-    if (membership && lifetime && entitlement?.active && !entitlement.expiresAt && affiliate?.status === 'APPROVED' && affiliate.commissionRate === 25) return current;
-  }
-
-  await db.plan.upsert({
-    where: { id: 'founding_lifetime' },
-    create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 50, lifetime: true },
-    update: { name: 'Founder Lifetime', monthlyUnits: 50, lifetime: true },
-  });
-
-  const user = String(current.role) === 'FOUNDER'
+  // Persist the founder role first. If an ancillary provisioning step fails,
+  // the session resolver can still read the upgraded role and expose the
+  // founder console and unlimited founder entitlement without stale USER data.
+  const user = current.role === 'FOUNDER'
     ? current
-    : await db.user.update({ where: { id: userId }, data: { role: 'FOUNDER', emailVerifiedAt: new Date() } });
+    : await db.user.update({
+        where: { id: userId },
+        data: { role: 'FOUNDER', emailVerifiedAt: current.emailVerifiedAt ?? new Date() },
+      });
 
+  // Establish the workspace before plan metadata so audit creation has an owner
+  // membership even if a non-essential provisioning step needs later repair.
   const membership = await db.membership.findFirst({ where: { userId }, select: { id: true } });
   if (!membership) {
     const organization = await db.organization.create({ data: { name: 'PageFix Founder Workspace' } });
     await db.membership.create({ data: { userId, organizationId: organization.id, role: 'OWNER' } });
   }
 
-  const lifetime = await db.subscription.findFirst({ where: { userId, planId: 'founding_lifetime', status: 'LIFETIME' }, select: { id: true } });
+  await db.plan.upsert({
+    where: { id: 'founding_lifetime' },
+    create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },
+    update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true },
+  });
+
+  const lifetime = await db.subscription.findFirst({
+    where: { userId, planId: 'founding_lifetime', status: 'LIFETIME' },
+    select: { id: true },
+  });
   if (!lifetime) {
     await db.subscription.create({
       data: { userId, planId: 'founding_lifetime', status: 'LIFETIME', provider: 'founder-bootstrap' },
@@ -56,10 +57,19 @@ export async function ensureFounderAccessForUser(userId: string) {
     update: { status: 'APPROVED', commissionRate: 25 },
   });
 
-  const bootstrapEvent = await db.adminEvent.findFirst({ where: { actorId: userId, action: 'FOUNDER_BOOTSTRAP_COMPLETED' }, select: { id: true } });
+  const bootstrapEvent = await db.adminEvent.findFirst({
+    where: { actorId: userId, action: 'FOUNDER_BOOTSTRAP_COMPLETED' },
+    select: { id: true },
+  });
   if (!bootstrapEvent) {
     await db.adminEvent.create({
-      data: { actorId: userId, action: 'FOUNDER_BOOTSTRAP_COMPLETED', targetType: 'User', targetId: userId, metadata: { method: 'authenticated-founder-account-repair' } },
+      data: {
+        actorId: userId,
+        action: 'FOUNDER_BOOTSTRAP_COMPLETED',
+        targetType: 'User',
+        targetId: userId,
+        metadata: { method: 'authenticated-founder-account-repair' },
+      },
     });
   }
 

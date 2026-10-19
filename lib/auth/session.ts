@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { ensureFounderAccessForUser } from '@/lib/auth/founder-access';
+import { FOUNDER_EMAIL } from '@/lib/plans';
 
 const COOKIE = 'pagefix_session';
 const SESSION_DAYS = 180;
@@ -35,7 +36,7 @@ export async function getCurrentUser() {
     await db.session.delete({ where: { id: session.id } }).catch(() => undefined);
     return null;
   }
-  if (session.user.email.toLowerCase() === (await import('@/lib/plans')).FOUNDER_EMAIL) {
+  if (session.user.email.toLowerCase() === FOUNDER_EMAIL) {
     try {
       const founder = await ensureFounderAccessForUser(session.user.id);
       if (founder) return founder;

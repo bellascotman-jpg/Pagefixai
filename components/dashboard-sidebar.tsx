@@ -46,7 +46,7 @@ const groups = [
   ]},
 ];
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ isFounder = false }: { isFounder?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'ANALYSIS': true, 'OPTIMIZATION': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true });
@@ -78,6 +78,13 @@ export default function DashboardSidebar() {
     };
   }, [open]);
 
+  const visibleGroups = isFounder ? [...groups, { label: 'ADMINISTRATION', items: [
+    { href: '/founder', label: 'Founder console', icon: '▣' },
+    { href: '/founder/affiliates', label: 'Affiliate operations', icon: '◎' },
+    { href: '/founder/users', label: 'User management', icon: '♙' },
+    { href: '/founder/audits', label: 'All audits', icon: '⌕' },
+  ] }] : groups;
+
   return <>
     <div className="mobile-workspace-bar">
       <button className="workspace-menu-button" type="button" aria-label={open ? 'Close workspace menu' : 'Open workspace menu'} aria-expanded={open} aria-controls="workspace-sidebar" onClick={() => setOpen(value => !value)}>
@@ -93,7 +100,7 @@ export default function DashboardSidebar() {
         <Link href="/dashboard" className="sidebar-brand" onClick={() => setOpen(false)}>PageFix<span>AI</span></Link>
         <button type="button" className="sidebar-close-button" aria-label="Close workspace menu" onClick={() => setOpen(false)}>×</button>
       </div>
-      {groups.map(group => <div key={group.label} className={`sidebar-group ${collapsed[group.label] ? 'is-collapsed' : ''}`}>
+      {visibleGroups.map(group => <div key={group.label} className={`sidebar-group ${collapsed[group.label] ? 'is-collapsed' : ''}`}>
         <button type="button" className="sidebar-section-toggle" aria-expanded={!collapsed[group.label]} onClick={() => setCollapsed(current => ({ ...current, [group.label]: !current[group.label] }))}><span className="sidebar-section-label">{group.label}</span><span className="sidebar-section-chevron" aria-hidden="true">{collapsed[group.label] ? '+' : '−'}</span></button>
         {!collapsed[group.label] && <nav className="sidebar-nav" aria-label={group.label}>
           {group.items.map(item => {

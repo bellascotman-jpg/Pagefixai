@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   try {
     await db.plan.upsert({ where: { id: 'starter_monthly' }, create: { id: 'starter_monthly', name: 'Starter', monthlyUnits: 50, lifetime: false }, update: { name: 'Starter', monthlyUnits: 50, lifetime: false } });
     if (isFounder) {
-      await db.plan.upsert({ where: { id: 'founding_lifetime' }, create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true }, update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true } });
+      await db.plan.upsert({ where: { id: 'founding_lifetime' }, create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 50, lifetime: true }, update: { name: 'Founder Lifetime', monthlyUnits: 50, lifetime: true } });
     }
     const existing = await db.user.findUnique({ where: { email }, select: { id: true, role: true } });
     if (existing) {

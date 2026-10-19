@@ -12,7 +12,23 @@ export default function StoreProductFixEditor({ integrationId, product, onApplie
   const [title, setTitle] = useState(product.title);
   const [description, setDescription] = useState((product.descriptionHtml || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim());
   const [saving, setSaving] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  async function generateDraft() {
+    setSuggesting(true); setError(''); setNotice('');
+    try {
+      const response = await fetch('/api/integrations/stores/' + integrationId + '/products/' + product.id + '/suggest-fix', { method: 'POST' });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || data.error || 'Could not generate a draft.');
+      if (!data.suggestion?.canDraft) throw new Error(data.suggestion?.reason || 'There is not enough factual product information to draft a safe description.');
+      setTitle(data.suggestion.title || product.title);
+      setDescription(data.suggestion.description || '');
+      setNotice('AI draft ready. Review every claim before applying it to your live store.');
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not generate a draft.'); }
+    finally { setSuggesting(false); }
+  }
+
   async function apply() {
     if (title.trim() === product.title && description.trim() === (product.descriptionHtml || '').replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim()) {
       setError('Make a title or description change first.');
@@ -37,7 +53,8 @@ export default function StoreProductFixEditor({ integrationId, product, onApplie
     {product.url && <a href={product.url} target="_blank" rel="noreferrer" className="muted" style={{fontSize:11}}>Open product ↗</a>}
     <label style={{display:'grid',gap:6,fontSize:13,fontWeight:700}}>Product title<input value={title} onChange={e=>setTitle(e.target.value)} maxLength={255} style={{width:'100%',padding:10,border:'1px solid var(--line)',borderRadius:8}}/></label>
     <label style={{display:'grid',gap:6,fontSize:13,fontWeight:700}}>Product description<textarea value={description} onChange={e=>setDescription(e.target.value)} maxLength={50000} rows={3} placeholder="Use accurate product details only." style={{width:'100%',padding:10,border:'1px solid var(--line)',borderRadius:8,resize:'vertical'}}/></label>
+    {notice && <p className="muted" role="status">{notice}</p>}
     {error && <p className="error-box" role="alert">{error}</p>}
-    <button className="button button-primary" type="button" disabled={saving} onClick={()=>void apply()}>{saving?'Applying…':'Review & apply content fix'}</button>
+    <div style={{display:'flex',gap:8,flexWrap:'wrap'}}><button className="button button-secondary" type="button" disabled={suggesting||saving} onClick={()=>void generateDraft()}>{suggesting?'Drafting…':'Generate AI draft'}</button><button className="button button-primary" type="button" disabled={saving||suggesting} onClick={()=>void apply()}>{saving?'Applying…':'Review & apply content fix'}</button></div>
   </div>;
 }

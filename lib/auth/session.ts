@@ -42,6 +42,11 @@ export async function getCurrentUser() {
       if (founder) return founder;
     } catch (error) {
       console.error('founder_access_repair_error', error instanceof Error ? error.name : 'UnknownError');
+      // Do not return the stale pre-repair USER object. The founder role is
+      // persisted before ancillary setup, so read it back for correct UI and
+      // unlimited founder entitlements even if a secondary record needs repair.
+      const refreshedUser = await db.user.findUnique({ where: { id: session.user.id } }).catch(() => null);
+      if (refreshedUser) return refreshedUser;
     }
   }
   return session.user;

@@ -20,7 +20,7 @@ export function normalizeShopDomain(input: string) {
 }
 
 function shopifyApi(domain: string, token: string) {
-  return { endpoint: `https://${domain}/admin/api/2025-10/graphql.json`, headers: { 'content-type': 'application/json', 'x-shopify-access-token': token } };
+  return { endpoint: `https://${domain}/admin/api/2026-10/graphql.json`, headers: { 'content-type': 'application/json', 'x-shopify-access-token': token } };
 }
 
 async function shopifyGraphql<T>(domain: string, token: string, query: string, variables: Record<string, unknown> = {}): Promise<T> {

@@ -46,9 +46,41 @@ export async function POST(request: Request) {
     if (isFounder) {
       await db.plan.upsert({ where: { id: 'founding_lifetime' }, create: { id: 'founding_lifetime', name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true }, update: { name: 'Founder Lifetime', monthlyUnits: 1000000, lifetime: true } });
     }
-    const existing = await db.user.findUnique({ where: { email }, select: { id: true } });
+    const existing = await db.user.findUnique({ where: { email }, select: { id: true, role: true } });
     if (existing) {
-      return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
+      if (!isFounder || existing.role === 'FOUNDER') {
+        return NextResponse.json({ error: 'EMAIL_EXISTS', message: 'An account already exists for this email. Sign in or reset your password.' }, { status: 409 });
+      }
+
+      // A valid private setup key may promote a pre-existing founder-email account
+      // that was created before founder provisioning was available.
+      const upgraded = await db.user.update({
+        where: { id: existing.id },
+        data: { name, passwordHash: await hashPassword(password), role: 'FOUNDER' },
+      });
+      const lifetimeSubscription = await db.subscription.findFirst({
+        where: { userId: upgraded.id, planId: 'founding_lifetime', status: 'LIFETIME' },
+        select: { id: true },
+      });
+      if (!lifetimeSubscription) {
+        await db.subscription.create({
+          data: {
+            userId: upgraded.id,
+            planId: 'founding_lifetime',
+            status: 'LIFETIME',
+            provider: 'founder-bootstrap',
+          },
+        });
+      }
+      await db.affiliateProfile.upsert({
+        where: { userId: upgraded.id },
+        create: { userId: upgraded.id, code: randomBytes(5).toString('hex').toUpperCase(), commissionRate: 25, status: 'APPROVED' },
+        update: { status: 'APPROVED', commissionRate: 25 },
+      }).catch((error) => {
+        console.error('founder_referral_profile_error', { name: error instanceof Error ? error.name : 'UnknownError' });
+      });
+      await createSession(upgraded.id);
+      return NextResponse.json({ user: { id: upgraded.id, email: upgraded.email, name: upgraded.name, role: upgraded.role }, founderAccess: true, upgradedExistingAccount: true }, { status: 200 });
     }
 
     const user = await db.user.create({

@@ -9,7 +9,6 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [founderSetupKey, setFounderSetupKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,12 +19,17 @@ export default function AuthPage() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setError('');
+    if (mode === 'signup' && email.trim().toLowerCase() === FOUNDER_EMAIL) {
+      setMode('login');
+      setError('This is the existing founder account. Sign in with your current password; founder access will be repaired automatically after authentication.');
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(`/api/auth/${mode}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mode === 'signup' ? { name, email, password, ...(email.trim().toLowerCase() === FOUNDER_EMAIL ? { founderSetupKey } : {}) } : { email, password }),
+        body: JSON.stringify(mode === 'signup' ? { name, email, password } : { email, password }),
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {

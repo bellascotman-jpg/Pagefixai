@@ -72,7 +72,7 @@ export async function fetchCatalog(platform: 'SHOPIFY' | 'WOOCOMMERCE', domain: 
     const products: CatalogProduct[] = [];
     let cursor: string | null = null;
     for (let page = 0; page < 10; page++) {
-      const data = await shopifyGraphql<ShopifyProductsPage>(
+      const data: ShopifyProductsPage = await shopifyGraphql<ShopifyProductsPage>(
         domain, credentials.accessToken!,
         'query Products($after: String) { products(first: 100, after: $after) { nodes { id title handle status vendor productType descriptionHtml updatedAt onlineStoreUrl totalInventory featuredImage { url } priceRangeV2 { minVariantPrice { amount currencyCode } } } pageInfo { hasNextPage endCursor } } }',
         { after: cursor },

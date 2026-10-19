@@ -22,7 +22,7 @@ describe('store integration credential encryption', () => {
     process.env.AUTH_SECRET = 'test-secret-with-at-least-32-characters';
     const encrypted = encryptCredentials({ consumerSecret: 'top-secret' });
     const [iv, tag, ciphertext] = encrypted.split('.');
-    const changed = ciphertext.slice(0, -1) + (ciphertext.endsWith('A') ? 'B' : 'A');
+    const changed = (ciphertext.startsWith('A') ? 'B' : 'A') + ciphertext.slice(1);
     expect(() => decryptCredentials(`${iv}.${tag}.${changed}`)).toThrow();
   });
 

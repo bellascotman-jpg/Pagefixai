@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import Brand from '@/components/brand';
 
 const plans = [
   {
@@ -59,7 +60,7 @@ export default function PricingPage() {
 
   return <main className="pricing-page">
     <header className="site-nav">
-      <Link href="/" className="brand">PageFix<span>AI</span></Link>
+      <Brand />
       <nav className="nav-links" aria-label="Pricing navigation"><Link href="/#capabilities">Capabilities</Link><Link href="/#how-it-works">How it works</Link><Link href="/security">Security</Link></nav>
       <div className="nav-actions"><Link className="nav-signin" href="/auth?mode=login">Sign in</Link><Link href="/auth" className="button button-primary button-small">Create account ↗</Link></div>
     </header>
@@ -102,6 +103,6 @@ export default function PricingPage() {
       <details><summary>Can I request a custom plan?</summary><p>Yes. Contact the team to discuss scope, data access, security requirements and the integrations you need. Custom functionality is subject to feasibility and agreement.</p></details>
       <details><summary>Is checkout available now?</summary><p>Checkout requires the payment provider&apos;s production credentials and successful server-side transaction verification. If checkout is unavailable, no payment should be assumed to have succeeded.</p></details>
     </section>
-    <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Pricing is in USD. Business outcomes are not guaranteed.</small></footer>
+    <footer className="site-footer"><Brand className="brand-footer" /><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Pricing is in USD. Business outcomes are not guaranteed.</small></footer>
   </main>;
 }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import Brand from '@/components/brand';
 
 const capabilities = [
   { number: '01', title: 'Product Page Intelligence', body: 'Review visible product information, pricing clarity, primary actions, shipping and returns language, trust cues and unanswered buyer questions.' },
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return <main className="marketing">
     <header className="site-nav">
-      <Link href="/" className="brand" aria-label="PageFix AI home">PageFix<span>AI</span></Link>
+      <Brand />
       <nav className="nav-links" aria-label="Main navigation"><a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a><Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link></nav>
       <div className="nav-actions"><Link href="/auth?mode=login" className="nav-signin">Sign in</Link><Link href="/auth" className="button button-primary button-small">Start an audit ↗</Link></div>
     </header>
@@ -186,6 +187,6 @@ export default function HomePage() {
 
     <section className="final-cta"><div className="eyebrow eyebrow-light">START WITH THE PAGE, NOT A GUESS</div><h2>Know what deserves attention<br/>before you ship another change.</h2><p>Create a workspace, inspect a public page and review the evidence behind the recommendations.</p><div className="final-cta-actions"><Link href="/auth" className="button button-light">Create your workspace →</Link><Link href="/pricing" className="button button-ghost-light">Compare plans</Link></div></section>
 
-    <footer className="site-footer"><Link href="/" className="brand brand-footer">PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>
+    <footer className="site-footer"><Brand className="brand-footer" /><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p><div><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></div><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>
   </main>;
 }

@@ -14,6 +14,8 @@ type PaddleData = {
   custom_data?: Record<string, unknown> | null;
   items?: Array<{ price_id?: string }>;
   currency_code?: string;
+  billing_period?: { starts_at?: string | null; ends_at?: string | null } | null;
+  current_billing_period?: { starts_at?: string | null; ends_at?: string | null } | null;
   details?: { totals?: { total?: string | number; grand_total?: string | number } };
 };
 
@@ -31,7 +33,7 @@ function verifySignature(rawBody: string, header: string | null, secret: string)
   }));
   const timestamp = parts.ts;
   const signature = parts.h1;
-  if (!timestamp || !signature || !/^\d+$/.test(timestamp)) return false;
+  if (!timestamp || !signature || !/^\\d+$/.test(timestamp)) return false;
   if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 5 * 60) return false;
   const expected = createHmac('sha256', secret).update(`${timestamp}:${rawBody}`).digest('hex');
   const left = Buffer.from(expected, 'hex');
@@ -47,6 +49,27 @@ function markPlanFeatures(planId: PublicPlanId) {
     ...(planId === 'growth_monthly' || planId === 'agency_monthly' ? ['COMPETITOR', 'MESSAGE_MATCH', 'COPY_STUDIO'] : []),
     ...(planId === 'agency_monthly' ? ['AGENCY_WORKSPACE'] : []),
   ];
+}
+
+function validDate(value: string | null | undefined) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function amountFromTransaction(data: PaddleData, currency: string) {
+  const raw = data.details?.totals?.total ?? data.details?.totals?.grand_total;
+  if (raw === undefined || raw === null || !/^[A-Z]{3}$/.test(currency)) {
+    throw new Error('PADDLE_TRANSACTION_TOTAL_MISSING');
+  }
+  const minorUnits = Number(raw);
+  if (!Number.isFinite(minorUnits) || minorUnits <= 0) {
+    throw new Error('PADDLE_TRANSACTION_TOTAL_INVALID');
+  }
+  const fractionDigits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits;
+  const amount = minorUnits / (10 ** fractionDigits);
+  if (!Number.isFinite(amount) || amount <= 0) throw new Error('PADDLE_TRANSACTION_TOTAL_INVALID');
+  return amount;
 }
 
 async function fulfillCompletedTransaction(data: PaddleData, payload: PaddleEvent) {
@@ -79,11 +102,13 @@ async function fulfillCompletedTransaction(data: PaddleData, payload: PaddleEven
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('PADDLE_USER_NOT_FOUND');
 
-  const total = Number(data.details?.totals?.total ?? data.details?.totals?.grand_total ?? 0);
   const currency = String(data.currency_code || 'USD');
-  const minorUnitDigits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2;
-  const amount = Number.isFinite(total) && total > 0 ? total / (10 ** minorUnitDigits) : plan.amount;
-  const expiresAt = new Date(Date.now() + 30 * 86400000);
+  const amount = amountFromTransaction(data, currency);
+  // Paddle sends the authoritative billing period on transaction/subscription
+  // events. Keep the existing period on renewals if this event omits it.
+  const expiresAt = validDate(data.billing_period?.ends_at)
+    ?? existingSubscription?.expiresAt
+    ?? new Date(Date.now() + 30 * 86400000);
 
   await db.$transaction(async (tx) => {
     const payment = await tx.payment.upsert({
@@ -150,6 +175,58 @@ async function fulfillCompletedTransaction(data: PaddleData, payload: PaddleEven
   });
 }
 
+async function syncSubscriptionEvent(data: PaddleData, eventType: string) {
+  const paddleSubscriptionId = String(data.id || '');
+  if (!paddleSubscriptionId) return;
+
+  const subscription = await db.subscription.findFirst({
+    where: { provider: 'paddle', providerReference: paddleSubscriptionId },
+  });
+  // Webhook delivery order is not guaranteed. If the subscription event arrives
+  // before transaction.completed, that transaction will create the local record.
+  if (!subscription) return;
+
+  const remoteStatus = String(data.status || '');
+  const status = eventType === 'subscription.canceled' || remoteStatus === 'canceled'
+    ? 'CANCELLED'
+    : remoteStatus === 'past_due'
+      ? 'PAST_DUE'
+      : remoteStatus === 'paused'
+        ? 'SUSPENDED'
+        : remoteStatus === 'active'
+          ? 'ACTIVE'
+          : subscription.status;
+  const expiresAt = validDate(data.current_billing_period?.ends_at) ?? subscription.expiresAt;
+
+  await db.$transaction(async (tx) => {
+    await tx.subscription.update({
+      where: { id: subscription.id },
+      data: {
+        status,
+        expiresAt,
+        ...(status === 'CANCELLED' ? { cancelledAt: new Date() } : status === 'ACTIVE' ? { cancelledAt: null } : {}),
+      },
+    });
+
+    if (status === 'CANCELLED') {
+      await tx.entitlement.updateMany({
+        where: { userId: subscription.userId, source: subscription.id },
+        data: { active: false },
+      });
+    } else if (status === 'ACTIVE') {
+      await tx.entitlement.updateMany({
+        where: { userId: subscription.userId, source: subscription.id },
+        data: { active: true, expiresAt },
+      });
+    } else if (status === 'PAST_DUE' || status === 'SUSPENDED') {
+      await tx.entitlement.updateMany({
+        where: { userId: subscription.userId, source: subscription.id },
+        data: { expiresAt },
+      });
+    }
+  });
+}
+
 export async function POST(request: Request) {
   const secret = process.env.PADDLE_WEBHOOK_SECRET;
   if (!secret) return NextResponse.json({ error: 'WEBHOOK_NOT_CONFIGURED' }, { status: 503 });
@@ -185,30 +262,8 @@ export async function POST(request: Request) {
   try {
     if (eventType === 'transaction.completed') {
       await fulfillCompletedTransaction(data, payload);
-    } else if (eventType === 'subscription.canceled' || eventType === 'subscription.updated') {
-      const subscriptionId = String(data.id || '');
-      if (subscriptionId) {
-        const subscription = await db.subscription.findFirst({
-          where: { provider: 'paddle', providerReference: subscriptionId },
-        });
-        if (subscription) {
-          const remoteStatus = String(data.status || '');
-          const status = eventType === 'subscription.canceled' || remoteStatus === 'canceled'
-            ? 'CANCELLED'
-            : remoteStatus === 'past_due' || remoteStatus === 'paused'
-              ? 'PAST_DUE'
-              : remoteStatus === 'active'
-                ? 'ACTIVE'
-                : subscription.status;
-          await db.subscription.update({
-            where: { id: subscription.id },
-            data: {
-              status,
-              ...(status === 'CANCELLED' ? { cancelledAt: new Date() } : {}),
-            },
-          });
-        }
-      }
+    } else if (eventType === 'subscription.created' || eventType === 'subscription.updated' || eventType === 'subscription.canceled') {
+      await syncSubscriptionEvent(data, eventType);
     }
 
     await db.webhookEvent.update({
@@ -217,7 +272,7 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error('paddle_webhook_error', error);
+    console.error('paddle_webhook_error', error instanceof Error ? error.message : 'UnknownError');
     return NextResponse.json({ error: 'PAYMENT_PROCESSING_FAILED' }, { status: 400 });
   }
 }

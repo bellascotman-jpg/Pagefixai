@@ -6,10 +6,21 @@ import { getPaddlePriceId } from '@/lib/billing/paddle';
 
 export const runtime = 'nodejs';
 
+type PaddleData = {
+  [key: string]: unknown;
+  id?: string;
+  status?: string;
+  subscription_id?: string | null;
+  custom_data?: Record<string, unknown> | null;
+  items?: Array<{ price_id?: string }>;
+  currency_code?: string;
+  details?: { totals?: { total?: string | number; grand_total?: string | number } };
+};
+
 type PaddleEvent = {
   event_id?: string;
   event_type?: string;
-  data?: Record<string, any>;
+  data?: PaddleData;
 };
 
 function verifySignature(rawBody: string, header: string | null, secret: string) {
@@ -38,7 +49,7 @@ function markPlanFeatures(planId: PublicPlanId) {
   ];
 }
 
-async function fulfillCompletedTransaction(data: Record<string, any>, payload: PaddleEvent) {
+async function fulfillCompletedTransaction(data: PaddleData, payload: PaddleEvent) {
   if (data.status !== 'completed') throw new Error('PADDLE_TRANSACTION_NOT_COMPLETED');
 
   const transactionId = String(data.id || '');
@@ -48,10 +59,10 @@ async function fulfillCompletedTransaction(data: Record<string, any>, payload: P
   const existingPayment = await db.payment.findUnique({ where: { providerReference: transactionId } });
   if (existingPayment?.status === 'successful') return;
 
-  const customData = data.custom_data && typeof data.custom_data === 'object' ? data.custom_data : {};
+  const customData: Record<string, unknown> = data.custom_data && typeof data.custom_data === 'object' ? data.custom_data : {};
   let userId = typeof customData.userId === 'string' ? customData.userId : '';
   let planId = typeof customData.planId === 'string' ? customData.planId as PublicPlanId : undefined;
-  let existingSubscription = await db.subscription.findFirst({ where: { provider: 'paddle', providerReference: subscriptionId } });
+  const existingSubscription = await db.subscription.findFirst({ where: { provider: 'paddle', providerReference: subscriptionId } });
 
   if (!userId && existingSubscription) userId = existingSubscription.userId;
   if (!planId && existingSubscription) planId = existingSubscription.planId as PublicPlanId;
@@ -62,7 +73,7 @@ async function fulfillCompletedTransaction(data: Record<string, any>, payload: P
 
   const expectedPriceId = getPaddlePriceId(planId);
   const items = Array.isArray(data.items) ? data.items : [];
-  if (!expectedPriceId || !items.some((item: Record<string, any>) => item.price_id === expectedPriceId)) {
+  if (!expectedPriceId || !items.some((item) => item.price_id === expectedPriceId)) {
     throw new Error('PADDLE_PRICE_MISMATCH');
   }
   const user = await db.user.findUnique({ where: { id: userId } });

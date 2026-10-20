@@ -4,11 +4,37 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FOUNDER_EMAIL } from '@/lib/plans';
 
+function PasswordVisibilityButton({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={visible ? 'Hide password' : 'Show password'}
+      aria-pressed={visible}
+      title={visible ? 'Hide password' : 'Show password'}
+      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 36, height: 36, border: 0, borderRadius: 8, background: 'transparent', color: 'var(--muted, #74656a)', cursor: 'pointer' }}
+    >
+      {visible ? (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M9.9 5.2A10.8 10.8 0 0112 5c5 0 8.5 4.2 9.5 7-.4 1.1-1.3 2.5-2.7 3.8M6.2 6.2C3.9 7.6 2.8 9.7 2.5 12c1 2.8 4.5 7 9.5 7 1.3 0 2.5-.3 3.5-.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      )}
+    </button>
+  );
+}
+
 export default function AuthPage() {
   const [mode, setMode] = useState<'login' | 'signup'>('signup');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -62,7 +88,12 @@ export default function AuthPage() {
         <form onSubmit={submit}>
           {mode === 'signup' && <label>Name<input value={name} onChange={e => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="name" placeholder="Your name"/></label>}
           <label>Email address<input type="email" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" maxLength={320} placeholder="you@company.com"/></label>
-          <label>Password<input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'}/></label>
+          <label>Password
+            <span style={{ position: 'relative', display: 'block' }}>
+              <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required minLength={8} maxLength={128} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} placeholder={mode === 'signup' ? 'At least 8 characters' : 'Your password'} style={{ paddingRight: 52, width: '100%' }}/>
+              <PasswordVisibilityButton visible={showPassword} onToggle={() => setShowPassword(value => !value)} />
+            </span>
+          </label>
           {error && <div className="error-box" role="alert"><strong>{mode === 'signup' ? 'Account creation failed' : 'Sign-in failed'}</strong><p style={{margin:'5px 0 0'}}>{error}</p></div>}
           <button className="primary-button auth-submit" disabled={loading}>{loading ? 'Please wait…' : mode === 'signup' ? 'Create account →' : 'Sign in →'}</button>
         </form>

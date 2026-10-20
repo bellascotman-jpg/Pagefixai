@@ -12,11 +12,31 @@ export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED', message: 'Sign in before checkout.' }, { status: 401 });
 
-  const parsed = schema.safeParse(await request.json());
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'VALIDATION_ERROR', message: 'Invalid checkout request.' }, { status: 400 });
+  }
+  const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: 'VALIDATION_ERROR', message: 'Invalid plan.' }, { status: 400 });
 
   const plan = getCheckoutPlan(parsed.data.planId);
   if (!plan) return NextResponse.json({ error: 'PLAN_UNAVAILABLE', message: 'This plan is not available for new purchases.' }, { status: 410 });
+
+  // Paddle is the default provider. Flutterwave remains available only when
+  // explicitly selected, preventing an unconfigured Paddle checkout from
+  // silently sending customers to a different processor.
+  const provider = (process.env.BILLING_PROVIDER || 'paddle').toLowerCase();
+  if (provider === 'paddle' && !isPaddleConfigured()) {
+    return NextResponse.json({
+      error: 'PADDLE_NOT_CONFIGURED',
+      message: 'Paddle checkout is being configured. No payment has been taken. Please try again shortly.',
+    }, { status: 503 });
+  }
+  if (provider !== 'paddle' && provider !== 'flutterwave') {
+    return NextResponse.json({ error: 'BILLING_PROVIDER_INVALID', message: 'Checkout is temporarily unavailable.' }, { status: 503 });
+  }
 
   try {
     await db.plan.upsert({
@@ -25,15 +45,13 @@ export async function POST(request: Request) {
       update: { name: plan.name, monthlyUnits: plan.units, lifetime: false },
     });
 
-    // Prefer Paddle when its full configuration is present. Keep the existing
-    // checkout operational during setup rather than silently breaking purchases.
-    const checkout = isPaddleConfigured()
+    const checkout = provider === 'paddle'
       ? await createPaddleCheckout({ userId: user.id, email: user.email, name: user.name, planId: plan.id as PublicPlanId })
       : await createFlutterwaveCheckout({ userId: user.id, email: user.email, name: user.name, planId: plan.id as PublicPlanId });
 
     return NextResponse.json(checkout);
   } catch (error) {
-    console.error('checkout_error', error);
-    return NextResponse.json({ error: 'PAYMENT_PROVIDER_ERROR', message: 'We could not start checkout. Please try again.' }, { status: 502 });
+    console.error('checkout_error', error instanceof Error ? error.message : 'UnknownError');
+    return NextResponse.json({ error: 'PAYMENT_PROVIDER_ERROR', message: 'We could not start secure checkout. Please try again.' }, { status: 502 });
   }
 }

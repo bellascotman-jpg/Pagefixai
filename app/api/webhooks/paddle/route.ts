@@ -67,7 +67,7 @@ function amountFromTransaction(data: PaddleData, currency: string) {
     throw new Error('PADDLE_TRANSACTION_TOTAL_INVALID');
   }
   const fractionDigits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits;
-  const amount = minorUnits / (10 ** fractionDigits);
+  const amount = minorUnits / (10 ** (fractionDigits ?? 2));
   if (!Number.isFinite(amount) || amount <= 0) throw new Error('PADDLE_TRANSACTION_TOTAL_INVALID');
   return amount;
 }

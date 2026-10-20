@@ -75,7 +75,7 @@ function htmlText(value: string): string {
 }
 
 function attr(tag: string, name: string): string {
-  const match = tag.match(new RegExp('\\b' + name + '\\s*=\\s*(?:"([^"]*)"|\\x27([^\\x27]*)\\x27|([^\\s>]+))', 'i'));
+  const match = tag.match(new RegExp('\b' + name + '\\s*=\\s*(?:"([^"]*)"|\\x27([^\\x27]*)\\x27|([^\\s>]+))', 'i'));
   return decodeHtml(match ? (match[1] ?? match[2] ?? match[3] ?? '') : '');
 }
 
@@ -87,7 +87,7 @@ function extractHtml(html: string, statusCode: number | null): ExtractedPage {
     return tag ? attr(tag, 'content') : '';
   };
   const metaProperty = (property: string) => {
-    const tags = html.match(/<meta\\b[^>]*>/gi) ?? [];
+    const tags = html.match(/<meta\b[^>]*>/gi) ?? [];
     const tag = tags.find((item) => attr(item, 'property').toLowerCase() === property.toLowerCase());
     return tag ? attr(tag, 'content') : '';
   };
@@ -124,7 +124,7 @@ function extractHtml(html: string, statusCode: number | null): ExtractedPage {
     robots: meta('robots') || meta('googlebot'),
     ogTitle: metaProperty('og:title'),
     ogDescription: metaProperty('og:description'),
-    language: attr(html.match(/<html\\b[^>]*>/i)?.[0] ?? '', 'lang'),
+    language: attr(html.match(/<html\b[^>]*>/i)?.[0] ?? '', 'lang'),
     bodyText: htmlText(body).slice(0, 50000),
     buttons,
     links,
@@ -323,7 +323,7 @@ export async function runAudit(auditId: string) {
     if (!primary.viewport.trim()) {
       findings.push(makeFinding('Mobile viewport metadata not detected', 'MEDIUM', 'No meta name="viewport" tag was observed in the retrieved HTML.', 'Without a suitable viewport declaration, mobile browsers may render the page at a desktop-style layout width. This is a mobile usability signal, not a ranking guarantee.', 'Add and test a responsive viewport declaration such as width=device-width, initial-scale=1. Confirm that the page layout works at mobile widths.', 'Does the page render at the device width on a phone?', metadataEvidence.id));
     }
-    if (/\\bnoindex\\b/i.test(primary.robots)) {
+    if (/\bnoindex\b/i.test(primary.robots)) {
       findings.push(makeFinding('Robots metadata includes noindex', 'MEDIUM', `The captured robots directive is "${primary.robots}".`, 'If this directive is unintended, search engines may be instructed not to index this page. Some pages are intentionally excluded, so confirm the publishing intent before changing it.', 'Verify whether this page should appear in search results. If it should, remove the unintended noindex directive and review any HTTP X-Robots-Tag header separately.', 'Is this page intended to be discoverable in search?', metadataEvidence.id));
     }
     if (!primary.ogTitle.trim() || !primary.ogDescription.trim()) {

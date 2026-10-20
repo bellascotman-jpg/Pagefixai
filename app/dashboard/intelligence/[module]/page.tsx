@@ -58,6 +58,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
       <div><div className="label">COMMERCE INTELLIGENCE / {capability.group.toUpperCase()}</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>{capability.title}</h1></div>
       <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
         <Link className="button button-secondary" href="/dashboard/intelligence">All capabilities</Link>
+        <Link className="button button-secondary" href={`/dashboard/ai-help?topic=${module}`}>Ask PageFix AI →</Link>
         <Link className="primary-button" href="/dashboard">Run an inspection →</Link>
       </div>
     </header>

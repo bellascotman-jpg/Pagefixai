@@ -1,9 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type AuditOption = { id: string; url: string; completedAt: string | null };
 type ChatMessage = { role: 'user' | 'assistant'; content: string; sourceUrl?: string };
+
+const topicPrompts: Record<string, string> = {
+  'seo-data': 'Review the selected audit SEO evidence. Prioritize the technical SEO issues and draft an accurate title tag and meta description from captured page content.',
+  'ai-search-readiness': 'Explain the captured AI search readiness signals, what is missing, and which checks still need a crawler or search-console verification.',
+  'buyer-decisions': 'Review the selected audit and identify the most important unanswered buyer questions, citing the recorded evidence.',
+  'return-risk': 'Review the selected audit for pre-purchase clarity and return-risk signals. Separate observed evidence from inferred risks.',
+  'visual-inspection': 'Explain the recorded visual and mobile findings and give me a practical verification checklist.',
+  'copy-fixes': 'Use the selected audit evidence to draft clearer page copy without adding unsupported product claims.',
+  'claims': 'Review the selected audit for claim consistency risks and explain what source evidence would be needed to verify each concern.',
+  'impact': 'Explain the plausible business relevance of the selected audit findings. Do not estimate revenue or conversion impact without actual inputs.',
+  'journey': 'Help me review ad-to-page message match. Explain which source content and journey evidence I need to provide.',
+  'retention': 'Help me review onboarding and retention using the actual content or aggregate metrics I provide. Do not invent churn causes.',
+  'experiments': 'Turn the selected audit findings into a measurable experiment plan with a hypothesis, primary metric, guardrails, and verification steps. Do not invent a baseline.',
+  'verification': 'Help me create a recheck plan for the selected audit. Explain which captured signals should change to verify a fix.',
+  'governance': 'Review the selected audit evidence and explain provenance, uncertainty, and what should be verified before implementation.',
+  'store': 'Summarize recurring issues visible in the selected audit only and explain what additional pages are needed for store-wide conclusions.',
+  'integrations': 'Help me choose a safe read-only commerce or analytics integration for my use case and list the data permissions I should verify.',
+  'workspaces': 'Help me plan a seller or agency workflow with clear client separation and least-privilege access.',
+  'clarity-scorecard': 'Review the selected audit for clarity issues and prioritize improvements based on observed evidence.',
+  'competitors': 'Help me plan an evidence-based public-page comparison. Explain what can and cannot be concluded from public competitor pages.',
+  'promise-ledger': 'Help me structure source-linked claims in the Promise Ledger and distinguish observed text from unverified claims.',
+};
 
 const quickPrompts = [
   'Review the latest audit and give me the three highest-priority fixes.',
@@ -21,6 +43,12 @@ export default function AiHelpWorkspace({ audits }: { audits: AuditOption[] }) {
     role: 'assistant',
     content: 'I’m PageFix AI. Ask me to explain a finding, prioritize fixes, review captured SEO signals, draft more precise page copy, or build a practical verification checklist. When you select a saved audit, I’ll use its recorded evidence—not invented analytics.',
   }]);
+
+  useEffect(() => {
+    const topic = new URLSearchParams(window.location.search).get('topic');
+    const prompt = topic ? topicPrompts[topic] : undefined;
+    if (prompt) setQuestion(prompt);
+  }, []);
 
   async function ask(value?: string) {
     const prompt = (value ?? question).trim();

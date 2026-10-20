@@ -65,13 +65,13 @@ async function fulfillCompletedTransaction(data: Record<string, any>, payload: P
   if (!expectedPriceId || !items.some((item: Record<string, any>) => item.price_id === expectedPriceId)) {
     throw new Error('PADDLE_PRICE_MISMATCH');
   }
-  if (data.currency_code && data.currency_code !== 'USD') throw new Error('PADDLE_CURRENCY_MISMATCH');
-
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('PADDLE_USER_NOT_FOUND');
 
   const total = Number(data.details?.totals?.total ?? data.details?.totals?.grand_total ?? 0);
-  const amount = Number.isFinite(total) && total > 0 ? total / 100 : plan.amount;
+  const currency = String(data.currency_code || 'USD');
+  const minorUnitDigits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits;
+  const amount = Number.isFinite(total) && total > 0 ? total / (10 ** minorUnitDigits) : plan.amount;
   const expiresAt = new Date(Date.now() + 30 * 86400000);
 
   await db.$transaction(async (tx) => {
@@ -82,12 +82,12 @@ async function fulfillCompletedTransaction(data: Record<string, any>, payload: P
         provider: 'paddle',
         providerReference: transactionId,
         amount,
-        currency: data.currency_code || 'USD',
+        currency,
         status: 'successful',
         planId,
         metadata: payload as object,
       },
-      update: { status: 'successful', amount, currency: data.currency_code || 'USD', metadata: payload as object },
+      update: { status: 'successful', amount, currency, metadata: payload as object },
     });
 
     const subscription = await tx.subscription.upsert({
@@ -117,7 +117,7 @@ async function fulfillCompletedTransaction(data: Record<string, any>, payload: P
             referralId: referral.id,
             paymentId: payment.id,
             amount: Math.round(amount * referral.affiliate.commissionRate) / 100,
-            currency: data.currency_code || 'USD',
+            currency,
             commissionRate: referral.affiliate.commissionRate,
             status: 'PENDING',
           },

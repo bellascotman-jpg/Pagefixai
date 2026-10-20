@@ -13,6 +13,10 @@ type ExtractedPage = {
   canonical: string;
   description: string;
   viewport: string;
+  robots: string;
+  ogTitle: string;
+  ogDescription: string;
+  language: string;
   bodyText: string;
   buttons: string[];
   links: Array<{ text: string; href: string }>;
@@ -82,6 +86,11 @@ function extractHtml(html: string, statusCode: number | null): ExtractedPage {
     const tag = tags.find((item) => attr(item, 'name').toLowerCase() === name.toLowerCase());
     return tag ? attr(tag, 'content') : '';
   };
+  const metaProperty = (property: string) => {
+    const tags = html.match(/<meta\\b[^>]*>/gi) ?? [];
+    const tag = tags.find((item) => attr(item, 'property').toLowerCase() === property.toLowerCase());
+    return tag ? attr(tag, 'content') : '';
+  };
   const canonicalTag = (html.match(/<link\b[^>]*>/gi) ?? [])
     .find((tag) => attr(tag, 'rel').toLowerCase().split(/\s+/).includes('canonical'));
   const buttons = [
@@ -112,6 +121,10 @@ function extractHtml(html: string, statusCode: number | null): ExtractedPage {
     canonical: canonicalTag ? attr(canonicalTag, 'href') : '',
     description: meta('description'),
     viewport: meta('viewport'),
+    robots: meta('robots') || meta('googlebot'),
+    ogTitle: metaProperty('og:title'),
+    ogDescription: metaProperty('og:description'),
+    language: attr(html.match(/<html\\b[^>]*>/i)?.[0] ?? '', 'lang'),
     bodyText: htmlText(body).slice(0, 50000),
     buttons,
     links,
@@ -214,7 +227,7 @@ export async function runAudit(auditId: string) {
     const evidence = await db.evidence.createManyAndReturn({
       data: [
         { auditId, type: 'TEXT', source: 'http.html_text', location: 'retrieved_html_body', content: primary.bodyText.slice(0, 20000), confidence: 'HIGH' },
-        { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical, viewport: primary.viewport }), confidence: 'HIGH' },
+        { auditId, type: 'METADATA', source: 'document.metadata', location: 'head', content: JSON.stringify({ statusCode: primary.statusCode, title: primary.title, titleLength: primary.title.length, description: primary.description, descriptionLength: primary.description.length, canonical: primary.canonical, viewport: primary.viewport, robots: primary.robots, ogTitle: primary.ogTitle, ogDescription: primary.ogDescription, language: primary.language, h1Count: primary.headings.filter((heading) => heading.tag === 'H1').length, h2Count: primary.headings.filter((heading) => heading.tag === 'H2').length, h3Count: primary.headings.filter((heading) => heading.tag === 'H3').length, imageCount: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, internalLinks: primary.links.filter((link) => { try { return new URL(link.href, target).hostname.toLowerCase() === target.hostname.toLowerCase(); } catch { return false; } }).length, externalLinks: primary.links.filter((link) => { try { return new URL(link.href, target).hostname.toLowerCase() !== target.hostname.toLowerCase(); } catch { return false; } }).length, structuredDataCount: primary.structuredData.length, structuredDataInvalidCount: primary.structuredData.filter((item) => { try { JSON.parse(item); return false; } catch { return Boolean(item.trim()); } }).length }), confidence: 'HIGH' },
         { auditId, type: 'DOM', source: 'http.html_elements', location: 'buttons_forms_and_headings', content: JSON.stringify({ buttons: primary.buttons, forms: primary.forms, headings: primary.headings, unlabeledLinks: primary.links.filter((link) => !link.text).length }), confidence: 'HIGH' },
         { auditId, type: 'STRUCTURED_DATA', source: 'jsonld', location: 'script[type="application/ld+json"]', content: JSON.stringify(primary.structuredData), confidence: primary.structuredData.length ? 'HIGH' : 'LOW' },
         { auditId, type: 'SYSTEM_DETECTED', source: 'http.image_inventory', location: 'images', content: JSON.stringify({ totalVisible: primary.images.length, imagesWithoutAlt: primary.images.filter((image) => !image.alt.trim()).length, images: primary.images }), confidence: 'HIGH' },
@@ -306,6 +319,15 @@ export async function runAudit(auditId: string) {
     }
     if (!primary.canonical.trim()) {
       findings.push(makeFinding('Canonical link not detected', 'LOW', 'No link rel="canonical" was observed in the document head.', 'On pages with duplicate or variant URLs, canonical handling may need review. The absence alone does not prove duplicate indexing.', 'Confirm whether the page needs a canonical URL. If it does, add an absolute canonical that points to the preferred version.', 'Which URL should search systems treat as the preferred version?', metadataEvidence.id));
+    }
+    if (!primary.viewport.trim()) {
+      findings.push(makeFinding('Mobile viewport metadata not detected', 'MEDIUM', 'No meta name="viewport" tag was observed in the retrieved HTML.', 'Without a suitable viewport declaration, mobile browsers may render the page at a desktop-style layout width. This is a mobile usability signal, not a ranking guarantee.', 'Add and test a responsive viewport declaration such as width=device-width, initial-scale=1. Confirm that the page layout works at mobile widths.', 'Does the page render at the device width on a phone?', metadataEvidence.id));
+    }
+    if (/\\bnoindex\\b/i.test(primary.robots)) {
+      findings.push(makeFinding('Robots metadata includes noindex', 'MEDIUM', `The captured robots directive is "${primary.robots}".`, 'If this directive is unintended, search engines may be instructed not to index this page. Some pages are intentionally excluded, so confirm the publishing intent before changing it.', 'Verify whether this page should appear in search results. If it should, remove the unintended noindex directive and review any HTTP X-Robots-Tag header separately.', 'Is this page intended to be discoverable in search?', metadataEvidence.id));
+    }
+    if (!primary.ogTitle.trim() || !primary.ogDescription.trim()) {
+      findings.push(makeFinding('Social sharing metadata is incomplete', 'LOW', `Open Graph title ${primary.ogTitle.trim() ? 'was observed' : 'was not observed'}; Open Graph description ${primary.ogDescription.trim() ? 'was observed' : 'was not observed'} in the retrieved HTML.`, 'Social platforms may choose their own preview text when Open Graph fields are absent. This is a sharing-preview improvement, not a search-ranking claim.', 'Where social sharing matters, add an accurate og:title and og:description consistent with the visible page. Do not promise unverified product benefits.', 'Will a shared link present the right page and offer?', metadataEvidence.id));
     }
     const h1s = primary.headings.filter((heading) => heading.tag === 'H1');
     if (h1s.length === 0) {

@@ -11,6 +11,9 @@ const groups = [
     { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
     { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
   ]},
+  { label: 'AI WORKBENCH', items: [
+    { href: '/dashboard/ai-help', label: 'PageFix AI assistant', icon: '✦' },
+  ]},
   { label: 'ANALYSIS', items: [
     { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
     { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
@@ -18,6 +21,7 @@ const groups = [
     { href: '/dashboard/intelligence/return-risk', label: 'Pre-purchase & return risk', icon: '?' },
     { href: '/dashboard/intelligence/visual-inspection', label: 'Visual & mobile inspection', icon: '▧' },
     { href: '/dashboard/intelligence/seo-data', label: 'SEO & product data', icon: '⌕' },
+    { href: '/dashboard/intelligence/ai-search-readiness', label: 'AI search readiness', icon: '✧' },
     { href: '/dashboard/intelligence/store', label: 'Store intelligence', icon: '▦' },
     { href: '/dashboard/competitors', label: 'Competitor comparison', icon: '⊙' },
   ]},
@@ -49,7 +53,7 @@ const groups = [
 export default function DashboardSidebar({ isFounder = false }: { isFounder?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'ANALYSIS': true, 'OPTIMIZATION': true, 'GROWTH': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'AI WORKBENCH': false, 'ANALYSIS': true, 'OPTIMIZATION': true, 'GROWTH': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
 
   const optimizationPaths = ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'];
   const isOptimizationPath = optimizationPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
@@ -58,6 +62,7 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
     setOpen(false);
     setCollapsed(current => ({
       ...current,
+      'AI WORKBENCH': pathname.startsWith('/dashboard/ai-help') ? false : current['AI WORKBENCH'],
       'ANALYSIS': (pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors')) && !isOptimizationPath ? false : current['ANALYSIS'],
       'OPTIMIZATION': isOptimizationPath ? false : current['OPTIMIZATION'],
       'WORKSPACES & DATA': pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['WORKSPACES & DATA'],

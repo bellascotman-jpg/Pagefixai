@@ -21,6 +21,12 @@ function safeJson(value: string | null | undefined): unknown {
   try { return JSON.parse(value ?? 'null'); } catch { return null; }
 }
 
+function snapshotValue(snapshot: unknown, key: string): string | number | null {
+  if (!snapshot || typeof snapshot !== 'object') return null;
+  const value = (snapshot as Record<string, unknown>)[key];
+  return typeof value === 'string' || typeof value === 'number' ? value : null;
+}
+
 export default async function IntelligenceModulePage({ params }: { params: Promise<{ module: string }> }) {
   const user = await getCurrentUser();
   if (!user) redirect('/auth?mode=login');
@@ -41,6 +47,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
     },
   });
   const latest = audits[0];
+  const seoSnapshot = latest ? safeJson(latest.evidence.find(item => item.type === 'METADATA')?.content) : null;
   const pattern = findingFilters[module] ?? /./;
   const relevantFindings = latest?.findings.filter(item => pattern.test(item.title + ' ' + item.observation + ' ' + item.recommendation)) ?? [];
   const statusClass = capability.status === 'Available in current workflow' ? 'status-available' : capability.status === 'Foundation / needs validation' ? 'status-foundation' : 'status-planned';
@@ -98,7 +105,19 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
               <div className="card"><div className="label">Needs JSON review</div><div className="stat">{entries.length-valid}</div></div>
             </div>;
           })()}
-          <p className="muted">This checks captured metadata and JSON parsing only. It does not predict rankings or replace a full structured-data validator.</p>
+          <div className="grid grid-3" style={{marginTop:12}}>
+            <div className="card"><div className="label">Robots directive</div><p>{snapshotValue(seoSnapshot, 'robots') ?? 'Not captured in this audit'}</p><p className="muted">An observed noindex directive needs intent review.</p></div>
+            <div className="card"><div className="label">Mobile viewport</div><p>{snapshotValue(seoSnapshot, 'viewport') ?? 'Not captured in this audit'}</p><p className="muted">Review the responsive layout on real mobile widths.</p></div>
+            <div className="card"><div className="label">HTML language</div><p>{snapshotValue(seoSnapshot, 'language') ?? 'Not captured in this audit'}</p><p className="muted">A useful accessibility and language signal; not a ranking score.</p></div>
+            <div className="card"><div className="label">Open Graph title</div><p>{snapshotValue(seoSnapshot, 'ogTitle') ?? 'Not captured in this audit'}</p></div>
+            <div className="card"><div className="label">Open Graph description</div><p>{snapshotValue(seoSnapshot, 'ogDescription') ?? 'Not captured in this audit'}</p></div>
+            <div className="card"><div className="label">Heading outline</div><p>H1: {snapshotValue(seoSnapshot, 'h1Count') ?? '—'} · H2: {snapshotValue(seoSnapshot, 'h2Count') ?? '—'} · H3: {snapshotValue(seoSnapshot, 'h3Count') ?? '—'}</p></div>
+            <div className="card"><div className="label">Image accessibility</div><p>{snapshotValue(seoSnapshot, 'imagesWithoutAlt') ?? '—'} of {snapshotValue(seoSnapshot, 'imageCount') ?? '—'} captured images missing alt text</p></div>
+            <div className="card"><div className="label">Link inventory</div><p>{snapshotValue(seoSnapshot, 'internalLinks') ?? '—'} internal · {snapshotValue(seoSnapshot, 'externalLinks') ?? '—'} external</p></div>
+            <div className="card"><div className="label">Structured data</div><p>{snapshotValue(seoSnapshot, 'structuredDataCount') ?? '—'} JSON-LD scripts · {snapshotValue(seoSnapshot, 'structuredDataInvalidCount') ?? '—'} invalid JSON</p></div>
+          </div>
+          <p className="muted" style={{marginTop:12}}>All values are from the captured HTML. “Not captured” means the audit did not store that field at the time; it is not evidence that the live page currently lacks it. This is not a ranking score, and PageFix does not claim to verify indexing, traffic or AI citations.</p>
+          <div style={{marginTop:12}}><Link className="primary-button" href="/dashboard/ai-help">Ask PageFix AI to explain these SEO signals →</Link></div>
         </section>}
 
         {(module === 'buyer-decisions' || module === 'return-risk') && <section id="buyer-decision-intelligence" className="card" style={{marginTop:18}}>

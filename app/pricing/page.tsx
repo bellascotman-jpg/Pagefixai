@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import SessionKeepAlive from '@/components/session-keepalive';
 import Brand from '@/components/brand';
 
 const plans = [
@@ -37,6 +38,15 @@ const matrix = [
 export default function PricingPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState('');
+  const [authState, setAuthState] = useState<'checking' | 'signed-in' | 'signed-out'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/me', { cache: 'no-store', credentials: 'same-origin' })
+      .then(response => { if (!cancelled) setAuthState(response.ok ? 'signed-in' : 'signed-out'); })
+      .catch(() => { if (!cancelled) setAuthState('signed-out'); });
+    return () => { cancelled = true; };
+  }, []);
 
   async function checkout(planId: string) {
     setError('');
@@ -48,7 +58,12 @@ export default function PricingPage() {
         body: JSON.stringify({ planId }),
       });
       const data = await response.json();
-      if (response.status === 401) { window.location.href = '/auth?mode=signup&next=/pricing'; return; }
+      if (response.status === 401) {
+        setAuthState('signed-out');
+        setError('Your session could not be verified for checkout. This page has not logged you out. Sign in again, then return to pricing to continue.');
+        setLoading('');
+        return;
+      }
       if (!response.ok) throw new Error(data.message || data.error || 'Checkout is not available right now.');
       if (!data.url) throw new Error('The payment provider did not return a checkout URL.');
       window.location.href = data.url;
@@ -59,10 +74,11 @@ export default function PricingPage() {
   }
 
   return <main className="pricing-page">
+    <SessionKeepAlive />
     <header className="site-nav">
       <Brand />
       <nav className="nav-links" aria-label="Pricing navigation"><Link href="/#capabilities">Capabilities</Link><Link href="/#how-it-works">How it works</Link><Link href="/security">Security</Link></nav>
-      <div className="nav-actions"><Link className="nav-signin" href="/auth?mode=login">Sign in</Link><Link href="/auth" className="button button-primary button-small">Create account ↗</Link></div>
+      <div className="nav-actions">{authState === 'signed-in' ? <Link className="nav-signin" href="/dashboard">Workspace</Link> : <Link className="nav-signin" href="/auth?mode=login&next=/pricing">Sign in</Link>}{authState === 'signed-in' ? <Link href="/dashboard" className="button button-primary button-small">Open dashboard ↗</Link> : <Link href="/auth?next=/pricing" className="button button-primary button-small">Create account ↗</Link>}</div>
     </header>
     <section className="pricing-hero">
       <div className="eyebrow">CLEAR PLANS · NO PUBLIC LIFETIME DEAL</div>
@@ -70,7 +86,7 @@ export default function PricingPage() {
       <p>Start with evidence-backed audits. Scale into repeatable optimization workflows as your team, store portfolio and audit volume grow. Prices are shown in USD per month.</p>
       <div className="pricing-promise"><span>✓</span> No invented analytics. No guaranteed conversion lifts. No hidden claims about private data.</div><p className="pricing-trial-note">Start with a 7-day trial. No card is requested when you create an account.</p>
     </section>
-    {error && <div className="error-box pricing-error" role="alert">{error}</div>}
+    {error && <div className="error-box pricing-error" role="alert">{error} {authState === 'signed-out' && <Link href="/auth?mode=login&next=/pricing" style={{textDecoration:'underline',fontWeight:700}}>Sign in to continue</Link>}</div>}
     <section className="pricing-cards" aria-label="Subscription plans">
       {plans.map(plan => <article className={`pricing-card ${plan.popular ? 'pricing-card-featured' : ''}`} key={plan.id}>
         {plan.popular && <div className="pricing-ribbon">BEST FIT FOR GROWING TEAMS</div>}

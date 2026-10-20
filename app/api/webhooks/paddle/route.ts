@@ -33,7 +33,7 @@ function verifySignature(rawBody: string, header: string | null, secret: string)
   }));
   const timestamp = parts.ts;
   const signature = parts.h1;
-  if (!timestamp || !signature || !/^\\d+$/.test(timestamp)) return false;
+  if (!timestamp || !signature || !/^\d+$/.test(timestamp)) return false;
   if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 5 * 60) return false;
   const expected = createHmac('sha256', secret).update(`${timestamp}:${rawBody}`).digest('hex');
   const left = Buffer.from(expected, 'hex');

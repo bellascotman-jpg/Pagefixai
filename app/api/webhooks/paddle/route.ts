@@ -81,7 +81,7 @@ async function fulfillCompletedTransaction(data: PaddleData, payload: PaddleEven
 
   const total = Number(data.details?.totals?.total ?? data.details?.totals?.grand_total ?? 0);
   const currency = String(data.currency_code || 'USD');
-  const minorUnitDigits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits;
+  const minorUnitDigits = new Intl.NumberFormat('en', { style: 'currency', currency }).resolvedOptions().maximumFractionDigits ?? 2;
   const amount = Number.isFinite(total) && total > 0 ? total / (10 ** minorUnitDigits) : plan.amount;
   const expiresAt = new Date(Date.now() + 30 * 86400000);
 

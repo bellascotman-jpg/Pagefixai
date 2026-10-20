@@ -72,4 +72,4 @@ Use the same environment consistently: sandbox API key + sandbox token + sandbox
 
 ## Important
 
-Checkout is deliberately configured to default to Paddle. If Paddle credentials or price IDs are missing, the API returns a setup message instead of silently routing customers to a different payment provider. Do not switch to live mode until the sandbox acceptance checklist passes.
+Until all Paddle credentials and price IDs are present, PageFix preserves the existing checkout provider. Once Paddle is fully configured it is selected automatically. If you explicitly set `BILLING_PROVIDER=paddle` before configuration is complete, the API returns a setup message rather than silently routing customers to another provider. Do not switch to live mode until the sandbox acceptance checklist passes.

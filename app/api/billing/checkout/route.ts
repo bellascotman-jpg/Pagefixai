@@ -24,14 +24,14 @@ export async function POST(request: Request) {
   const plan = getCheckoutPlan(parsed.data.planId);
   if (!plan) return NextResponse.json({ error: 'PLAN_UNAVAILABLE', message: 'This plan is not available for new purchases.' }, { status: 410 });
 
-  // Paddle is the default provider. Flutterwave remains available only when
-  // explicitly selected, preventing an unconfigured Paddle checkout from
-  // silently sending customers to a different processor.
-  const provider = (process.env.BILLING_PROVIDER || 'paddle').toLowerCase();
+  // Preserve the current payment path until Paddle is fully configured. As
+  // soon as all Paddle credentials and catalog price IDs exist, Paddle becomes
+  // the automatic choice. An explicit BILLING_PROVIDER=paddle never falls back.
+  const provider = (process.env.BILLING_PROVIDER || (isPaddleConfigured() ? 'paddle' : 'flutterwave')).toLowerCase();
   if (provider === 'paddle' && !isPaddleConfigured()) {
     return NextResponse.json({
       error: 'PADDLE_NOT_CONFIGURED',
-      message: 'Paddle checkout is being configured. No payment has been taken. Please try again shortly.',
+      message: 'Paddle is selected but its credentials or plan price IDs are incomplete. No payment has been taken.',
     }, { status: 503 });
   }
   if (provider !== 'paddle' && provider !== 'flutterwave') {

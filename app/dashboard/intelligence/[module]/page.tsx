@@ -42,7 +42,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
     include: {
       findings: { include: { evidence: { include: { evidence: true } }, fix: true }, orderBy: [{ priority: 'asc' }, { severity: 'asc' }] },
       buyerQuestions: { orderBy: { createdAt: 'asc' } },
-      pages: { select: { statusCode: true, title: true, canonical: true, metaDescription: true }, orderBy: { createdAt: 'desc' }, take: 1 },
+      pages: { select: { statusCode: true, title: true, canonical: true, metaDescription: true, visibleText: true }, orderBy: { createdAt: 'desc' }, take: 1 },
       screenshots: { select: { viewport: true, storageUrl: true }, orderBy: { createdAt: 'desc' } },
       evidence: { select: { id: true, type: true, source: true, location: true, content: true } },
     },

@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { capabilities } from '@/lib/product/capabilities';
+import IntelligenceActionPanel from '@/components/intelligence-action-panel';
 
 const findingFilters: Record<string, RegExp> = {
   'buyer-decisions': /buyer|value proposition|proof|trust|claim|promise|purchase action|commercial action|shipping|return|refund|benefit|decision/i,
@@ -135,6 +136,63 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
           <p className="muted">Screenshots are only shown when the inspection actually stored them.</p>
           <div className="grid grid-2">{latest.screenshots.filter(item=>item.storageUrl).map(item=><article className="finding" key={item.viewport}><h3>{item.viewport} view</h3><Link href={`/dashboard/audits/${latest.id}`}>Open stored screenshot and report →</Link></article>)}</div>
           {!latest.screenshots.some(item=>item.storageUrl) && <p className="muted">No screenshot is stored for this inspection. Open the report to request an available desktop/mobile capture.</p>}
+        </section>}
+
+        {['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection'].includes(module) && <IntelligenceActionPanel module={module} auditId={latest.id} auditUrl={latest.url} />}
+
+        {module === 'store' && <section className="card" style={{marginTop:18}}>
+          <div className="label">STORE-LEVEL AUDIT HISTORY</div><h2>Inspected pages and repeated signals</h2>
+          <p className="muted">This view covers only the latest ten completed audits in this account; it is not a complete store catalogue unless those pages have all been inspected.</p>
+          <div className="history-list">{audits.map(audit => {
+            const repeated = audit.findings.reduce((acc, finding) => { const key = finding.title.trim().toLowerCase(); acc.set(key, (acc.get(key) || 0) + 1); return acc; }, new Map<string, number>());
+            return <article className="history-row" key={audit.id}><div className="history-symbol">▦</div><div className="history-detail"><strong>{audit.url}</strong><span>{audit.completedAt?.toLocaleString() ?? 'Completion date unavailable'} · {audit.findings.length} findings</span></div><div className="history-metrics"><span>{[...repeated.values()].filter(count => count > 1).length} repeated titles in this audit</span><Link href={`/dashboard/audits/${audit.id}`}>Open evidence →</Link></div></article>;
+          })}</div>
+        </section>}
+
+        {module === 'clarity-scorecard' && <section className="card" style={{marginTop:18}}>
+          <div className="label">EXPLAINABLE SIGNAL SUMMARY</div><h2>Seven clarity dimensions</h2>
+          <p className="muted">The cards below show evidence-linked signal counts from this audit, not a conversion score or a prediction of buyer behaviour.</p>
+          <div className="grid grid-3">{[
+            ['Product information', /product|specification|dimension|size|compatibility|detail/i],
+            ['Objection coverage', /buyer|question|objection|answer|shipping|return|refund/i],
+            ['Offer clarity', /offer|price|discount|subscription|commercial action|cta/i],
+            ['Trust and proof', /trust|proof|review|warranty|guarantee|claim/i],
+            ['Usability', /viewport|mobile|navigation|image|alt text|accessibility/i],
+            ['Consistency', /claim|contradiction|promise|mismatch|inconsistent/i],
+            ['Post-purchase expectations', /delivery|shipping|return|refund|exchange|warranty/i],
+          ].map(([label, regex]) => { const count = latest.findings.filter(finding => (regex as RegExp).test(finding.title + ' ' + finding.observation + ' ' + finding.recommendation)).length; return <div className="card" key={label as string}><div className="label">{label as string}</div><div className="stat">{count}</div><p className="muted">{count ? 'Related finding(s) captured' : 'No matching finding captured; this is not proof of completeness.'}</p></div>; })}</div>
+        </section>}
+
+        {module === 'ai-search-readiness' && <section className="card" style={{marginTop:18}}>
+          <div className="label">ANSWER-ENGINE INTERPRETABILITY</div><h2>Captured signals</h2>
+          <div className="grid grid-3">
+            <div className="card"><div className="label">HTTP response</div><div className="stat">{latest.pages[0]?.statusCode ?? 'Unknown'}</div></div>
+            <div className="card"><div className="label">Visible text captured</div><div className="stat">{latest.pages[0]?.visibleText?.length ?? 'Unknown'}</div><p className="muted">Character count, not a content-quality score.</p></div>
+            <div className="card"><div className="label">Canonical signal</div><p style={{overflowWrap:'anywhere'}}>{latest.pages[0]?.canonical || 'Not captured'}</p></div>
+            <div className="card"><div className="label">Page title</div><p>{latest.pages[0]?.title || 'Not captured'}</p></div>
+            <div className="card"><div className="label">Meta description</div><p>{latest.pages[0]?.metaDescription || 'Not captured'}</p></div>
+            <div className="card"><div className="label">Structured-data scripts</div><div className="stat">{snapshotValue(seoSnapshot, 'structuredDataCount') ?? 'Not captured'}</div></div>
+          </div>
+          <p className="muted">These are page-interpretability signals only. PageFix has not verified search indexing, crawler access, AI citations, rankings or traffic from this capture.</p>
+        </section>}
+
+        {module === 'verification' && <section className="card" style={{marginTop:18}}>
+          <div className="label">RECHECK WORKFLOW</div><h2>Recheck status in the current inspection</h2>
+          <div className="grid grid-3">
+            {(['OPEN','IN_PROGRESS','COMPLETED','VERIFIED','STILL_DETECTED','UNABLE_TO_VERIFY'] as const).map(status => <div className="card" key={status}><div className="label">{status.replaceAll('_',' ')}</div><div className="stat">{latest.findings.filter(finding=>finding.status===status).length}</div></div>)}
+          </div>
+          <p className="muted">These are saved statuses, not proof that a new recheck ran. To verify a fix, run a fresh inspection after the change and compare the evidence.</p>
+          <Link className="primary-button" href={`/dashboard/audits/${latest.id}`}>Open inspection and recheck options →</Link>
+        </section>}
+
+        {module === 'governance' && <section className="card" style={{marginTop:18}}>
+          <div className="label">EVIDENCE GOVERNANCE</div><h2>Provenance and quality coverage</h2>
+          <div className="grid grid-3">
+            <div className="card"><div className="label">Evidence records</div><div className="stat">{latest.evidence.length}</div></div>
+            <div className="card"><div className="label">Findings with linked evidence</div><div className="stat">{latest.findings.filter(finding=>finding.evidence.length>0).length} / {latest.findings.length}</div></div>
+            <div className="card"><div className="label">Unknown / uncaptured signals</div><div className="stat">{latest.evidence.filter(item=>/not captured|unknown|unable to verify/i.test(item.content)).length}</div></div>
+          </div>
+          <p className="muted">Counts are derived from saved records. They do not certify the correctness of a finding; reviewers should open the source excerpt and confirm it supports the recommendation.</p>
         </section>}
 
         <section id="prioritized-findings" className="card" style={{marginTop:18}}>

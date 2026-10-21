@@ -138,7 +138,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
           {!latest.screenshots.some(item=>item.storageUrl) && <p className="muted">No screenshot is stored for this inspection. Open the report to request an available desktop/mobile capture.</p>}
         </section>}
 
-        {['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection'].includes(module) && <IntelligenceActionPanel module={module} auditId={latest.id} auditUrl={latest.url} />}
+        {['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection','competitors'].includes(module) && <IntelligenceActionPanel module={module} auditId={latest.id} auditUrl={latest.url} />}
 
         {module === 'store' && <section className="card" style={{marginTop:18}}>
           <div className="label">STORE-LEVEL AUDIT HISTORY</div><h2>Inspected pages and repeated signals</h2>

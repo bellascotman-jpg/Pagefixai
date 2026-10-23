@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
+import { getEffectivePlan } from '@/lib/billing/entitlements';
 import { extractResponsesOutputText } from '@/lib/ai/validation';
 import { creativeOutputSchema } from '@/lib/creative-studio/schema';
 
@@ -62,6 +63,10 @@ const responseFormat = {
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED', message: 'Sign in to use Creative Studio.' }, { status: 401 });
+
+  if (!(await getEffectivePlan(user.id))) return NextResponse.json({ error: 'PLAN_REQUIRED', message: 'Activate a PageFix plan before generating commercial creative.' }, { status: 402 });
+  const recentGenerations = await db.usageEvent.count({ where: { userId: user.id, operation: 'creative_studio_generation', createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } } });
+  if (recentGenerations >= 20) return NextResponse.json({ error: 'RATE_LIMITED', message: 'The workspace limit is 20 copy-generation requests per hour. Try again later.' }, { status: 429 });
 
   const key = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_KEY;
   if (!key) return NextResponse.json({ error: 'AI_PROVIDER_NOT_CONFIGURED', message: 'Creative Studio requires a configured server-side AI provider. No draft was generated.' }, { status: 503 });

@@ -29,6 +29,8 @@ export default function StoreIntegrationsPage() {
   const [webhookSecret, setWebhookSecret] = useState('');
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [marketingConnections, setMarketingConnections] = useState<MarketingConnection[]>([]);
+  const [marketingSchemaReady, setMarketingSchemaReady] = useState(true);
+  const [marketingSchemaMessage, setMarketingSchemaMessage] = useState('');
   const [marketingData, setMarketingData] = useState<MarketingData | null>(null);
   const [syncingMarketing, setSyncingMarketing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -48,6 +50,8 @@ export default function StoreIntegrationsPage() {
       const marketingData = await marketingResponse.json();
       if (!marketingResponse.ok) throw new Error(marketingData.message || 'Could not load marketing connections.');
       setMarketingConnections(marketingData.connections || []);
+      setMarketingSchemaReady(marketingData.schemaReady !== false);
+      setMarketingSchemaMessage(marketingData.message || '');
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not load connected stores.'); }
     finally { setLoading(false); }
   }, []);

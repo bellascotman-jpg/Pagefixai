@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { isPngBuffer } from '@/lib/audit/png';
+import { hasPngSignature } from '@/lib/audit/png';
 
-describe('isPngBuffer', () => {
+describe('hasPngSignature', () => {
   it('accepts the PNG signature', () => {
     expect(isPngBuffer(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0]))).toBe(true);
   });

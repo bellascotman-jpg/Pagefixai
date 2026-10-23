@@ -43,7 +43,7 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     if (!item.storageUrl || !['desktop', 'mobile'].includes(item.viewport)) continue;
     try {
       const bytes = await readAuditScreenshot(item.storageUrl);
-      if (bytes && isPngBuffer(bytes)) validStoredViewports.add(item.viewport);
+      if (bytes && hasPngSignature(bytes)) validStoredViewports.add(item.viewport);
     } catch (error) {
       console.warn('pagefix_existing_screenshot_unreadable', {
         auditId: id,

@@ -13,7 +13,11 @@ const groups = [
   ]},
   { label: 'AI WORKBENCH', items: [
     { href: '/dashboard/ai-help', label: 'PageFix AI assistant', icon: '✦' },
-    { href: '/dashboard/creative-studio', label: 'Creative Studio', icon: '✎' },
+  ]},
+  { label: 'GROWTH OPERATIONS', items: [
+    { href: '/dashboard/creative-studio', label: 'Ads & Creative Studio', icon: '✎' },
+    { href: '/dashboard/experiments', label: 'A/B testing', icon: '⌁' },
+    { href: '/dashboard/intelligence/integrations', label: 'Connect integrations', icon: '⤴' },
   ]},
   { label: 'ANALYSIS', items: [
     { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
@@ -54,7 +58,7 @@ const groups = [
 export default function DashboardSidebar({ isFounder = false }: { isFounder?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'AI WORKBENCH': false, 'ANALYSIS': true, 'OPTIMIZATION': true, 'GROWTH': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'AI WORKBENCH': true, 'GROWTH OPERATIONS': false, 'ANALYSIS': true, 'OPTIMIZATION': true, 'GROWTH': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
 
   const optimizationPaths = ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'];
   const isOptimizationPath = optimizationPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
@@ -64,6 +68,7 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
     setCollapsed(current => ({
       ...current,
       'AI WORKBENCH': pathname.startsWith('/dashboard/ai-help') ? false : current['AI WORKBENCH'],
+      'GROWTH OPERATIONS': (pathname.startsWith('/dashboard/creative-studio') || pathname.startsWith('/dashboard/experiments') || pathname.startsWith('/dashboard/intelligence/integrations')) ? false : current['GROWTH OPERATIONS'],
       'ANALYSIS': (pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors')) && !isOptimizationPath ? false : current['ANALYSIS'],
       'OPTIMIZATION': isOptimizationPath ? false : current['OPTIMIZATION'],
       'WORKSPACES & DATA': pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['WORKSPACES & DATA'],

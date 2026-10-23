@@ -25,6 +25,12 @@ export default function CreativeStudio({ audits }: { audits: AuditOption[] }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
+  const [visualChannel, setVisualChannel] = useState('paid_ad');
+  const [productFacts, setProductFacts] = useState('');
+  const [visualDirection, setVisualDirection] = useState('Premium, realistic product photography, high contrast, editorial art direction, no text in the image');
+  const [visualUrl, setVisualUrl] = useState('');
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageError, setImageError] = useState('');
 
   async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,6 +49,30 @@ export default function CreativeStudio({ audits }: { audits: AuditOption[] }) {
     } finally {
       setBusy(false);
     }
+  }
+
+
+  async function generateImage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setImageBusy(true); setImageError(''); setVisualUrl('');
+    try {
+      const response = await fetch('/api/creative-studio/image', {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ channel: visualChannel, productFacts, visualDirection }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Could not generate a visual concept.');
+      setVisualUrl(data.imageDataUrl);
+    } catch (cause) { setImageError(cause instanceof Error ? cause.message : 'Could not generate a visual concept.'); }
+    finally { setImageBusy(false); }
+  }
+
+  function downloadImage() {
+    if (!visualUrl) return;
+    const anchor = document.createElement('a');
+    anchor.href = visualUrl;
+    anchor.download = 'pagefix-ai-creative-concept.png';
+    anchor.click();
   }
 
   async function copyText(value: string, label: string) {
@@ -72,6 +102,25 @@ export default function CreativeStudio({ audits }: { audits: AuditOption[] }) {
   }
 
   return <div className="container dashboard-main">
+    <section className="card" style={{marginBottom:20,background:'linear-gradient(135deg,#fff 0%,#fbecf0 100%)'}}>
+      <div className="label">AD CREATIVE / VISUAL CONCEPTS</div>
+      <h2>Generate an actual creative visual</h2>
+      <p className="muted">Create a downloadable image concept for paid ads, social posts or landing pages. This generates an asset—not an ad campaign—and it is never published automatically.</p>
+      <form onSubmit={generateImage} style={{display:'grid',gap:14,marginTop:16}}>
+        <div className="grid grid-2">
+          <label>Creative format<select value={visualChannel} onChange={e=>setVisualChannel(e.target.value)}><option value="paid_ad">Paid social ad · square</option><option value="social">Organic social · square</option><option value="landing_page">Landing page hero · wide</option><option value="product_page">Product page · square</option></select></label>
+          <label>Visual direction<input value={visualDirection} onChange={e=>setVisualDirection(e.target.value)} minLength={3} maxLength={500} required placeholder="Premium, minimal, bold product photography"/></label>
+        </div>
+        <label>Verified product facts<textarea value={productFacts} onChange={e=>setProductFacts(e.target.value)} minLength={20} maxLength={3000} required rows={3} placeholder="Describe the real product and what should appear visually. Do not include unsupported claims."/></label>
+        {imageError && <div className="error-box" role="alert">{imageError}</div>}
+        <div><button className="button button-primary" disabled={imageBusy}>{imageBusy?'Generating image…':'Generate visual concept'}</button></div>
+      </form>
+      {visualUrl && <div style={{marginTop:18}}>
+        <img src={visualUrl} alt="AI-generated PageFix marketing creative concept" style={{display:'block',width:'100%',maxWidth:720,height:'auto',borderRadius:12,border:'1px solid var(--line)'}}/>
+        <p className="muted" style={{fontSize:12}}>Review the image for product accuracy and advertising-policy compliance. AI images may contain inaccuracies and are not proof of product features.</p>
+        <button className="button button-secondary" type="button" onClick={downloadImage}>Download PNG</button>
+      </div>}
+    </section>
     <section className="card" style={{ marginBottom: 20 }}>
       <div className="label">AI WORKBENCH / CREATIVE STRATEGY</div>
       <h2>Create variants worth testing—not just more copy</h2>

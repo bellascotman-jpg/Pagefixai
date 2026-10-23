@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 
 type AuditOption = { id: string; url: string; completedAt: string | null };
 type Variant = { angle: string; headline: string; primaryText: string; callToAction: string; rationale: string; hypothesis: string; claimsToVerify: string[] };
@@ -26,7 +26,7 @@ export default function CreativeStudio({ audits }: { audits: AuditOption[] }) {
   const [error, setError] = useState('');
   const [copied, setCopied] = useState('');
 
-  async function generate(event: React.FormEvent<HTMLFormElement>) {
+  async function generate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true); setError(''); setOutput(null); setCopied('');
     try {

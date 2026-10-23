@@ -144,7 +144,7 @@ export default function StoreIntegrationsPage() {
 
       <section className="card" style={{marginBottom:22}}>
         <div className="label">ADVERTISING & ANALYTICS CONNECTIONS</div><h2 style={{marginTop:5}}>Connect marketing accounts</h2>
-        <p className="muted" style={{maxWidth:850}}>Authorize through the provider's official OAuth flow. Access tokens are encrypted server-side. These connections retrieve provider data; they do not automatically create or publish campaigns.</p>
+        <p className="muted" style={{maxWidth:850}}>Authorize through the provider&apos;s official OAuth flow. Access tokens are encrypted server-side. These connections retrieve provider data; they do not automatically create or publish campaigns.</p>
         {!marketingSchemaReady && <div className="error-box" role="status" style={{marginTop:14}}><strong>Preview database not provisioned</strong><p style={{marginBottom:0}}>{marketingSchemaMessage} OAuth connections are disabled in this preview to protect production data.</p></div>}
         <div className="grid grid-2" style={{marginTop:18}}>
           {([

@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { captureAuditScreenshots } from '@/lib/audit/screenshots';
 import { isScreenshotStorageConfigured, readAuditScreenshot } from '@/lib/storage/object-store';
-import { isPngBuffer } from '@/lib/audit/png';
+import { hasPngSignature } from '@/lib/audit/png';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;

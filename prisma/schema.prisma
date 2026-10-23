@@ -158,6 +158,7 @@ model User {
   referredBy          AffiliateReferral? @relation("ReferredUser")
   promiseClaims       PromiseClaim[]
   storeIntegrations   StoreIntegration[]
+  experiments          Experiment[]
 }
 
 model Session {
@@ -854,4 +855,38 @@ model StoreProductChangeLog {
 
   @@index([integrationId, createdAt])
   @@index([externalId, createdAt])
+}
+
+
+model Experiment {
+  id                String   @id @default(cuid())
+  userId            String
+  name              String
+  publicKey          String   @unique @default(cuid())
+  targetUrlPattern   String
+  selector           String
+  controlText        String
+  variantText        String
+  status             String   @default("DRAFT")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events             ExperimentEvent[]
+
+  @@index([userId, status, createdAt])
+}
+
+model ExperimentEvent {
+  id           String     @id @default(cuid())
+  experimentId String
+  visitorId    String
+  variantKey   String
+  eventType    String
+  metadata     Json?
+  createdAt    DateTime   @default(now())
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId, eventType, variantKey])
+  @@index([experimentId, visitorId])
+  @@index([createdAt])
 }

@@ -32,8 +32,9 @@ export function verifyOAuthState(value: string): OAuthState | null {
 }
 
 export function appBaseUrl(requestUrl: string) {
+  const requestOrigin = new URL(requestUrl).origin;
   const configured = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL;
-  const base = configured || new URL(requestUrl).origin;
+  const base = process.env.VERCEL_ENV === 'preview' ? requestOrigin : configured || requestOrigin;
   const url = new URL(base);
   if (process.env.NODE_ENV === 'production' && url.protocol !== 'https:') throw new Error('APP_URL must use HTTPS in production.');
   return url.origin;

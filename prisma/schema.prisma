@@ -159,6 +159,7 @@ model User {
   promiseClaims       PromiseClaim[]
   storeIntegrations   StoreIntegration[]
   experiments          Experiment[]
+  marketingConnections MarketingConnection[]
 }
 
 model Session {
@@ -889,4 +890,25 @@ model ExperimentEvent {
   @@index([experimentId, eventType, variantKey])
   @@index([experimentId, visitorId])
   @@index([createdAt])
+}
+
+
+model MarketingConnection {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String
+  externalAccountId String?
+  accountName       String?
+  encryptedTokens   String
+  scopes            Json?
+  status            String   @default("CONNECTED")
+  expiresAt          DateTime?
+  lastSyncedAt       DateTime?
+  lastError          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([provider, status])
 }

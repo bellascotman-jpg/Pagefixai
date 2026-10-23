@@ -9,12 +9,16 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
-  const connections = await db.marketingConnection.findMany({
+  let connections;
+  try { connections = await db.marketingConnection.findMany({
     where: { userId: user.id },
     select: { id: true, provider: true, externalAccountId: true, accountName: true, scopes: true, status: true, expiresAt: true, lastSyncedAt: true, lastError: true, createdAt: true },
     orderBy: { createdAt: 'desc' },
-  });
-  return NextResponse.json({ connections });
+  }); } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') return NextResponse.json({ connections: [], schemaReady: false, message: 'Marketing connection storage is not provisioned in this preview database. OAuth connections are disabled until the schema is applied.' });
+    return NextResponse.json({ error: 'MARKETING_CONNECTIONS_UNAVAILABLE', message: 'Could not load marketing connections.' }, { status: 503 });
+  }
+  return NextResponse.json({ connections, schemaReady: true });
 }
 
 export async function DELETE(request: Request) {

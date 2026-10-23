@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
 import { extractResponsesOutputText } from '@/lib/ai/validation';
+import { creativeOutputSchema } from '@/lib/creative-studio/schema';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -17,24 +18,7 @@ const requestSchema = z.object({
   auditId: z.string().trim().min(1).max(100).optional().nullable(),
 });
 
-const outputSchema = z.object({
-  variants: z.array(z.object({
-    angle: z.string().min(2).max(80),
-    headline: z.string().min(2).max(180),
-    primaryText: z.string().min(2).max(1200),
-    callToAction: z.string().min(2).max(100),
-    rationale: z.string().min(10).max(500),
-    hypothesis: z.string().min(10).max(500),
-    claimsToVerify: z.array(z.string().max(240)).max(8),
-  }).strict()).length(3),
-  testPlan: z.object({
-    primaryMetric: z.string().min(2).max(160),
-    guardrailMetric: z.string().min(2).max(160),
-    hypothesis: z.string().min(10).max(500),
-    testGuidance: z.string().min(10).max(800),
-    decisionCaveat: z.string().min(10).max(500),
-  }).strict(),
-}).strict();
+
 
 const responseFormat = {
   type: 'object',
@@ -148,7 +132,7 @@ export async function POST(request: Request) {
     try { json = JSON.parse(text); } catch {
       return NextResponse.json({ error: 'AI_INVALID_OUTPUT', message: 'The generated response could not be validated. Please retry.' }, { status: 502 });
     }
-    const output = outputSchema.safeParse(json);
+    const output = creativeOutputSchema.safeParse(json);
     if (!output.success) return NextResponse.json({ error: 'AI_INVALID_OUTPUT', message: 'The generated response did not pass validation. No draft was accepted.' }, { status: 502 });
 
     await db.usageEvent.create({

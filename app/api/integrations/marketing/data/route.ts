@@ -11,7 +11,10 @@ type Tokens = { access_token: string; refresh_token?: string; expires_in?: numbe
 async function googleToken(userId: string, encryptedTokens: string, expiresAt: Date | null) {
   let tokens = decryptCredentials<Tokens>(encryptedTokens);
   if (expiresAt && expiresAt.getTime() > Date.now() + 120_000) return tokens.access_token;
-  if (!tokens.refresh_token) return tokens.access_token;
+  if (!tokens.refresh_token) {
+    if (expiresAt && expiresAt.getTime() <= Date.now()) throw new Error('Google access token expired. Reconnect the Google account to refresh authorization.');
+    return tokens.access_token;
+  }
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error('Google OAuth client credentials are not configured.');

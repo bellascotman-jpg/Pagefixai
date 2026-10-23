@@ -38,7 +38,13 @@ export async function GET(request: Request) {
     node.setAttribute('data-pagefix-variant', assignment);
     send('impression', assignment, visitorId);
     node.addEventListener('click', function(){ send('click', assignment, visitorId); }, {once:true});
-    window.pagefixTrackConversion = function(){ send('conversion', assignment, visitorId); };
+    window.pagefixExperiments = window.pagefixExperiments || {};
+    window.pagefixExperiments[key] = function(){ send('conversion', assignment, visitorId); };
+    window.pagefixTrackConversion = function(experimentKey){
+      var registry = window.pagefixExperiments || {};
+      if (experimentKey && registry[experimentKey]) registry[experimentKey]();
+      else Object.keys(registry).forEach(function(k){ registry[k](); });
+    };
   }
   fetch(configUrl,{mode:'cors',credentials:'omit'}).then(function(r){return r.ok?r.json():null;}).then(function(d){if(d&&d.active)run(d);}).catch(function(){});
 })();`;

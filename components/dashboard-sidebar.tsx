@@ -11,43 +11,20 @@ const groups = [
     { href: '/dashboard/fixes', label: 'Fix center', icon: '↗' },
     { href: '/dashboard/reports', label: 'Reports', icon: '▤' },
   ]},
-  { label: 'AI WORKBENCH', items: [
-    { href: '/dashboard/ai-help', label: 'PageFix AI assistant', icon: '✦' },
-  ]},
   { label: 'GROWTH OPERATIONS', items: [
     { href: '/dashboard/creative-studio', label: 'Ads & Creative Studio', icon: '✎' },
     { href: '/dashboard/experiments', label: 'A/B testing', icon: '⌁' },
-    { href: '/dashboard/intelligence/integrations', label: 'Connect integrations', icon: '⤴' },
+    { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
   ]},
-  { label: 'ANALYSIS', items: [
-    { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
+  { label: 'PAGE INTELLIGENCE', items: [
     { href: '/dashboard/intelligence/buyer-decisions', label: 'Buyer decisions', icon: '◎' },
-    { href: '/dashboard/intelligence/clarity-scorecard', label: 'Clarity scorecard', icon: '◉' },
-    { href: '/dashboard/intelligence/return-risk', label: 'Pre-purchase & return risk', icon: '?' },
     { href: '/dashboard/intelligence/visual-inspection', label: 'Visual & mobile inspection', icon: '▧' },
     { href: '/dashboard/intelligence/seo-data', label: 'SEO & product data', icon: '⌕' },
-    { href: '/dashboard/intelligence/ai-search-readiness', label: 'AI search readiness', icon: '✧' },
     { href: '/dashboard/intelligence/store', label: 'Store intelligence', icon: '▦' },
-    { href: '/dashboard/competitors', label: 'Competitor comparison', icon: '⊙' },
-  ]},
-  { label: 'OPTIMIZATION', items: [
-    { href: '/dashboard/intelligence/copy-fixes', label: 'Grounded copy fixes', icon: '✎' },
-    { href: '/dashboard/intelligence/impact', label: 'Impact analysis', icon: '↗' },
     { href: '/dashboard/intelligence/claims', label: 'Claims & promises', icon: '⇄' },
-    { href: '/dashboard/intelligence/promise-ledger', label: 'Promise Ledger', icon: '▤' },
-    { href: '/dashboard/intelligence/journey', label: 'Journey & message match', icon: '⌁' },
-    { href: '/dashboard/intelligence/retention', label: 'Retention & onboarding', icon: '↻' },
-    { href: '/dashboard/intelligence/experiments', label: 'Experimentation', icon: '⌁' },
-    { href: '/dashboard/intelligence/verification', label: 'Verification history', icon: '✓' },
-    { href: '/dashboard/intelligence/governance', label: 'Evidence & governance', icon: '✓' },
   ]},
-  { label: 'GROWTH', items: [
-    { href: '/dashboard/referrals', label: 'Referrals & earnings', icon: '↗' },
-    { href: '/dashboard/affiliate', label: 'Affiliate program', icon: '◎' },
-  ]},
-  { label: 'WORKSPACES & DATA', items: [
-    { href: '/dashboard/intelligence/workspaces', label: 'Seller & agency workspaces', icon: '▣' },
-    { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
+  { label: 'AI ASSISTANCE', items: [
+    { href: '/dashboard/ai-help', label: 'PageFix AI assistant', icon: '✦' },
   ]},
   { label: 'ACCOUNT', items: [
     { href: '/dashboard/settings', label: 'Workspace settings', icon: '⚙' },
@@ -58,25 +35,19 @@ const groups = [
 export default function DashboardSidebar({ isFounder = false }: { isFounder?: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'AI WORKBENCH': true, 'GROWTH OPERATIONS': false, 'ANALYSIS': true, 'OPTIMIZATION': true, 'GROWTH': true, 'WORKSPACES & DATA': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
-
-  const optimizationPaths = ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/journey','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'];
-  const isOptimizationPath = optimizationPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ 'GROWTH OPERATIONS': false, 'PAGE INTELLIGENCE': true, 'AI ASSISTANCE': true, 'ACCOUNT': true, 'ADMINISTRATION': true });
 
   useEffect(() => {
     setOpen(false);
     setCollapsed(current => ({
       ...current,
-      'AI WORKBENCH': pathname.startsWith('/dashboard/ai-help') ? false : current['AI WORKBENCH'],
       'GROWTH OPERATIONS': (pathname.startsWith('/dashboard/creative-studio') || pathname.startsWith('/dashboard/experiments') || pathname.startsWith('/dashboard/intelligence/integrations')) ? false : current['GROWTH OPERATIONS'],
-      'ANALYSIS': (pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors')) && !isOptimizationPath ? false : current['ANALYSIS'],
-      'OPTIMIZATION': isOptimizationPath ? false : current['OPTIMIZATION'],
-      'WORKSPACES & DATA': pathname.startsWith('/dashboard/intelligence/workspaces') || pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['WORKSPACES & DATA'],
+      'PAGE INTELLIGENCE': pathname.startsWith('/dashboard/intelligence/') && !pathname.startsWith('/dashboard/intelligence/integrations') ? false : current['PAGE INTELLIGENCE'],
+      'AI ASSISTANCE': pathname.startsWith('/dashboard/ai-help') ? false : current['AI ASSISTANCE'],
       'ACCOUNT': pathname.startsWith('/dashboard/settings') ? false : current['ACCOUNT'],
-      'GROWTH': (pathname.startsWith('/dashboard/referrals') || pathname.startsWith('/dashboard/affiliate')) ? false : current['GROWTH'],
       'ADMINISTRATION': pathname.startsWith('/founder') ? false : current['ADMINISTRATION'],
     }));
-  }, [pathname, isOptimizationPath]);
+  }, [pathname]);
 
   useEffect(() => {
     if (!open) return;

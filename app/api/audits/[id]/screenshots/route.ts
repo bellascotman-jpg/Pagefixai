@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { captureAuditScreenshots } from '@/lib/audit/screenshots';
-import { isScreenshotStorageConfigured } from '@/lib/storage/object-store';
+import { isScreenshotStorageConfigured, readAuditScreenshot } from '@/lib/storage/object-store';
+import { isPngBuffer } from '@/lib/audit/png';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -34,8 +35,24 @@ export async function POST(_request: Request, context: { params: Promise<{ id: s
     }, { status: 503 });
   }
 
-  const alreadyStored = new Set(audit.screenshots.filter(item => item.storageUrl).map(item => item.viewport));
-  if (alreadyStored.has('desktop') && alreadyStored.has('mobile')) {
+  // A database row is not proof that an image can still be read. Object-storage
+  // credentials may have changed, an object may have been deleted, or a stored
+  // payload may be corrupt. Validate the bytes before treating a viewport as ready.
+  const validStoredViewports = new Set<string>();
+  for (const item of audit.screenshots) {
+    if (!item.storageUrl || !['desktop', 'mobile'].includes(item.viewport)) continue;
+    try {
+      const bytes = await readAuditScreenshot(item.storageUrl);
+      if (bytes && isPngBuffer(bytes)) validStoredViewports.add(item.viewport);
+    } catch (error) {
+      console.warn('pagefix_existing_screenshot_unreadable', {
+        auditId: id,
+        viewport: item.viewport,
+        message: error instanceof Error ? error.message : 'SCREENSHOT_READ_FAILED',
+      });
+    }
+  }
+  if (validStoredViewports.has('desktop') && validStoredViewports.has('mobile')) {
     return NextResponse.json({ auditId: id, captured: 0, screenshots: ['desktop', 'mobile'], alreadyAvailable: true });
   }
 

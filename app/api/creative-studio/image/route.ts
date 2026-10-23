@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth/session';
+import { getEffectivePlan } from '@/lib/billing/entitlements';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -16,6 +17,7 @@ const schema = z.object({
 export async function POST(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED', message: 'Sign in to generate visual concepts.' }, { status: 401 });
+  if (!(await getEffectivePlan(user.id))) return NextResponse.json({ error: 'PLAN_REQUIRED', message: 'Activate a PageFix plan before generating visual concepts.' }, { status: 402 });
   const key = process.env.OPENAI_API_KEY || process.env.AI_PROVIDER_KEY;
   if (!key) return NextResponse.json({ error: 'AI_PROVIDER_NOT_CONFIGURED', message: 'Image generation requires OPENAI_API_KEY or AI_PROVIDER_KEY on the server.' }, { status: 503 });
   const parsed = schema.safeParse(await request.json().catch(() => null));

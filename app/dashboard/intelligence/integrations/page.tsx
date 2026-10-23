@@ -5,6 +5,7 @@ import StoreProductFixEditor from '@/components/store-product-fix-editor';
 import { useCallback, useEffect, useState, type FormEvent, type CSSProperties } from 'react';
 
 type ProductAttention = { id: string; title: string; status: string | null; price: string | number | null; inventoryQuantity: number | null; imageUrl: string | null; descriptionHtml: string | null; url: string | null };
+type MarketingConnection = { id: string; provider: string; externalAccountId: string | null; accountName: string | null; scopes: unknown; status: string; expiresAt: string | null; lastSyncedAt: string | null; lastError: string | null };
 type Integration = {
   id: string; platform: 'SHOPIFY' | 'WOOCOMMERCE'; shopDomain: string; status: string;
   webhookStatus: string; webhookLastError: string | null; lastSyncedAt: string | null; lastWebhookAt: string | null;
@@ -23,6 +24,7 @@ export default function StoreIntegrationsPage() {
   const [consumerSecret, setConsumerSecret] = useState('');
   const [webhookSecret, setWebhookSecret] = useState('');
   const [integrations, setIntegrations] = useState<Integration[]>([]);
+  const [marketingConnections, setMarketingConnections] = useState<MarketingConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [busyId, setBusyId] = useState('');
@@ -36,11 +38,29 @@ export default function StoreIntegrationsPage() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Could not load connected stores.');
       setIntegrations(data.integrations || []);
+      const marketingResponse = await fetch('/api/integrations/marketing', { cache: 'no-store' });
+      const marketingData = await marketingResponse.json();
+      if (!marketingResponse.ok) throw new Error(marketingData.message || 'Could not load marketing connections.');
+      setMarketingConnections(marketingData.connections || []);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not load connected stores.'); }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get('oauth_connected');
+    const oauthError = params.get('oauth_error');
+    if (connected) setNotice(connected === 'meta_ads' ? 'Meta authorization completed. Ad-account sync and campaign actions still depend on Meta app permissions and review.' : 'Google authorization completed. Ads reporting requires a valid Google Ads developer token and accessible customer accounts.');
+    if (oauthError) setError(oauthError);
+    if (connected || oauthError) {
+      params.delete('oauth_connected'); params.delete('oauth_error');
+      const query = params.toString();
+      window.history.replaceState({}, '', window.location.pathname + (query ? '?' + query : ''));
+      if (connected) void load();
+    }
+  }, [load]);
 
   async function connect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setSubmitting(true); setError(''); setNotice('');

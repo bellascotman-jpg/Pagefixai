@@ -16,11 +16,15 @@ const createSchema = z.object({
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: 'UNAUTHENTICATED' }, { status: 401 });
-  const experiments = await db.experiment.findMany({
+  let experiments;
+  try { experiments = await db.experiment.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
     include: { events: { select: { variantKey: true, eventType: true } } },
-  });
+  }); } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') return NextResponse.json({ experiments: [], schemaReady: false, message: 'The experiment tables are not provisioned in this preview database. Production schema sync is intentionally deferred until the production release.' });
+    return NextResponse.json({ error: 'EXPERIMENTS_UNAVAILABLE', message: 'Could not load experiment data.' }, { status: 503 });
+  }
   return NextResponse.json({ experiments: experiments.map(({ events, ...experiment }) => ({
     ...experiment,
     results: ['A', 'B'].map(variant => {
@@ -43,9 +47,13 @@ export async function POST(request: Request) {
   try { if (parsed.data.selector.length > 300 || parsed.data.selector.includes('<')) throw new Error(); } catch {
     return NextResponse.json({ error: 'INVALID_SELECTOR', message: 'Provide a CSS selector, not HTML.' }, { status: 400 });
   }
-  const experiment = await db.experiment.create({
+  let experiment;
+  try { experiment = await db.experiment.create({
     data: { ...parsed.data, userId: user.id, publicKey: randomBytes(24).toString('base64url'), status: 'DRAFT' },
     select: { id: true, name: true, publicKey: true, targetUrlPattern: true, selector: true, controlText: true, variantText: true, status: true, createdAt: true },
-  });
+  }); } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2021') return NextResponse.json({ error: 'SCHEMA_NOT_READY', message: 'The experiment database tables are not provisioned in this preview. Do not use this preview for live tests; the schema is added during the approved production schema sync.' }, { status: 503 });
+    return NextResponse.json({ error: 'EXPERIMENT_CREATE_FAILED', message: 'Could not create the experiment.' }, { status: 503 });
+  }
   return NextResponse.json({ experiment }, { status: 201 });
 }

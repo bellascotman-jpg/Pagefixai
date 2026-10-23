@@ -13,6 +13,7 @@ const groups = [
   ]},
   { label: 'AI WORKBENCH', items: [
     { href: '/dashboard/ai-help', label: 'PageFix AI assistant', icon: '✦' },
+    { href: '/dashboard/creative-studio', label: 'Creative Studio', icon: '✎' },
   ]},
   { label: 'ANALYSIS', items: [
     { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },

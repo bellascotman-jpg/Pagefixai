@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import AuditScreenshotPanel from '@/components/audit-screenshot-panel';
 import { notFound, redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
@@ -7,7 +7,6 @@ import AuditStatusRefresh from '@/components/audit-status-refresh';
 import { buildCommerceClarityScorecard } from '@/lib/audit/scorecard';
 import { summarizeTrustSignals } from '@/lib/audit/buyer-decision-intelligence';
 import RecheckAuditButton from '@/components/recheck-audit-button';
-import CaptureScreenshotsButton from '@/components/capture-screenshots-button';
 import CandidatePromises from '@/components/candidate-promises';
 import AuditEvidenceViewer from '@/components/audit-evidence-viewer';
 import AuditSeverityChart from '@/components/audit-severity-chart';
@@ -119,13 +118,11 @@ export default async function AuditPage({ params }: { params: Promise<{ id: stri
         <section className="card" style={{ marginTop: 24 }}>
           <h2>Captured page views</h2>
           <p className="muted" style={{ fontSize: 12 }}>PageFix attempts a desktop and mobile screenshot during the audit. If capture or storage is blocked by the target page or runtime, use the retry button; no screenshot is invented. Stored images are private and accessible only to the audit owner.</p>
-          {(!hasDesktopScreenshot || !hasMobileScreenshot) && <div><p className="muted">{hasDesktopScreenshot || hasMobileScreenshot ? 'One viewport is stored. Retry to capture any missing desktop or mobile view.' : 'No stored screenshots are available yet. Capture desktop and mobile views when you need visual evidence.'}</p><CaptureScreenshotsButton auditId={audit.id} /></div>}
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))' }}>
-            {audit.screenshots.filter(item => item.storageUrl).map(item => <article key={item.id}>
-              <h3 style={{ textTransform: 'capitalize' }}>{item.viewport} view</h3>
-              <Image src={'/api/audits/' + audit.id + '/screenshots/' + item.viewport} alt={'Page screenshot captured at ' + item.viewport + ' viewport'} width={item.viewport === 'mobile' ? 390 : 1440} height={item.viewport === 'mobile' ? 844 : 1000} unoptimized style={{ width: '100%', height: 'auto', border: '1px solid var(--line)', borderRadius: 10 }} />
-            </article>)}
-          </div>
+          {(!hasDesktopScreenshot || !hasMobileScreenshot) && <p className="muted">{hasDesktopScreenshot || hasMobileScreenshot ? 'One viewport is stored. The viewer below can retry missing or unreadable screenshots.' : 'No stored screenshots are available yet. The viewer below can capture desktop and mobile views.'}</p>}
+          <AuditScreenshotPanel
+            auditId={audit.id}
+            screenshots={audit.screenshots.filter(item => item.storageUrl).map(item => ({ viewport: item.viewport, createdAt: item.createdAt.toISOString() }))}
+          />
         </section>
         <section className="card" style={{ marginTop: 24 }}>
           <h2>Buyer question coverage</h2>

@@ -45,8 +45,18 @@ export async function GET(request: Request, context: { params: Promise<{ provide
       body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, code, redirect_uri: redirectUri, grant_type: 'authorization_code' }),
       signal: AbortSignal.timeout(15000),
     });
-    const token = await tokenResponse.json() as TokenResponse;
+    let token = await tokenResponse.json() as TokenResponse;
     if (!tokenResponse.ok || !token.access_token) throw new Error(token.error_description || token.error || 'The provider token exchange failed.');
+    if (provider === 'meta_ads') {
+      const longLivedUrl = new URL('https://graph.facebook.com/v22.0/oauth/access_token');
+      longLivedUrl.searchParams.set('grant_type', 'fb_exchange_token');
+      longLivedUrl.searchParams.set('client_id', config.clientId);
+      longLivedUrl.searchParams.set('client_secret', config.clientSecret);
+      longLivedUrl.searchParams.set('fb_exchange_token', token.access_token);
+      const longLivedResponse = await fetch(longLivedUrl, { signal: AbortSignal.timeout(12000) });
+      const longLivedToken = await longLivedResponse.json() as TokenResponse;
+      if (longLivedResponse.ok && longLivedToken.access_token) token = longLivedToken;
+    }
 
     let externalAccountId: string | null = null;
     let accountName: string | null = null;

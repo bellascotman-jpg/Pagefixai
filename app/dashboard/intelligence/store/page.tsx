@@ -32,7 +32,7 @@ export default async function StoreIntelligencePage() {
   const recurring = [...groups.values()].filter(item => item.count > 1).sort((a,b) => b.count-a.count || a.title.localeCompare(b.title));
   const latest = audits.slice(0, 8);
   return <main className="dashboard">
-    <header className="topbar"><div><div className="label">COMMERCE INTELLIGENCE / STORE</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>Store intelligence</h1></div><Link className="primary-button" href="/dashboard/intelligence/store-intelligence">Run store analysis</Link></header>
+    <header className="topbar"><div><div className="label">COMMERCE INTELLIGENCE / STORE</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>Store intelligence</h1></div><Link className="primary-button" href="/dashboard/audits">Audit history</Link></header>
     <div className="container dashboard-main">
       <div className="grid grid-3" style={{margin:'22px 0'}}>
         <div className="card"><div className="label">Audits in recent history</div><div className="stat">{audits.length}</div></div>

@@ -32,9 +32,8 @@ export default async function StoreIntelligencePage() {
   const recurring = [...groups.values()].filter(item => item.count > 1).sort((a,b) => b.count-a.count || a.title.localeCompare(b.title));
   const latest = audits.slice(0, 8);
   return <main className="dashboard">
-    <header className="topbar"><div><div className="label">COMMERCE INTELLIGENCE / STORE</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>Store intelligence</h1></div><Link className="primary-button" href="/dashboard">Inspect another page</Link></header>
+    <header className="topbar"><div><div className="label">COMMERCE INTELLIGENCE / STORE</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>Store intelligence</h1></div><Link className="primary-button" href="/dashboard/intelligence/store-intelligence">Run store analysis</Link></header>
     <div className="container dashboard-main">
-      <p className="muted" style={{maxWidth:850,lineHeight:1.8}}>A seller-level view across pages you have inspected. Repeated issues are grouped by matching finding title; this is a useful work queue, not proof that every product in your store has been inspected.</p>
       <div className="grid grid-3" style={{margin:'22px 0'}}>
         <div className="card"><div className="label">Audits in recent history</div><div className="stat">{audits.length}</div></div>
         <div className="card"><div className="label">Completed inspections</div><div className="stat">{completed.length}</div></div>
@@ -48,7 +47,6 @@ export default async function StoreIntelligencePage() {
         <div className="store-section-heading"><div><div className="label">RECENT PAGE HISTORY</div><h2>Latest inspections</h2></div><Link href="/dashboard/audits">Full audit history →</Link></div>
         {latest.length===0 ? <p className="muted">No inspections yet.</p> : latest.map(a=><Link className="store-audit-row" href={`/dashboard/audits/${a.id}`} key={a.id}><span className="badge">{a.status}</span><span className="store-audit-url">{a.url}</span><span>{a.findings.length} findings</span><span>→</span></Link>)}
       </section>
-      <p className="muted" style={{fontSize:11,marginTop:14}}>Coverage limitation: this view includes only saved audits available to your account. It does not automatically crawl your complete product catalogue or establish that uninspected pages have the same issues.</p>
     </div>
   </main>;
 }

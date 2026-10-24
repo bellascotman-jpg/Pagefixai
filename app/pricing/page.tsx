@@ -42,8 +42,16 @@ export default function PricingPage() {
 
   useEffect(() => {
     let cancelled = false;
+    const requestedPlan = new URLSearchParams(window.location.search).get('checkout');
     fetch('/api/auth/me', { cache: 'no-store', credentials: 'same-origin' })
-      .then(response => { if (!cancelled) setAuthState(response.ok ? 'signed-in' : 'signed-out'); })
+      .then(response => {
+        if (cancelled) return;
+        setAuthState(response.ok ? 'signed-in' : 'signed-out');
+        if (response.ok && requestedPlan && plans.some(plan => plan.id === requestedPlan)) {
+          window.history.replaceState({}, '', '/pricing');
+          void checkout(requestedPlan);
+        }
+      })
       .catch(() => { if (!cancelled) setAuthState('signed-out'); });
     return () => { cancelled = true; };
   }, []);
@@ -59,9 +67,8 @@ export default function PricingPage() {
       });
       const data = await response.json();
       if (response.status === 401) {
-        setAuthState('signed-out');
-        setError('Your session could not be verified for checkout. This page has not logged you out. Sign in again, then return to pricing to continue.');
-        setLoading('');
+        const returnToCheckout = `/pricing?checkout=${encodeURIComponent(planId)}`;
+        window.location.assign(`/auth?mode=login&next=${encodeURIComponent(returnToCheckout)}`);
         return;
       }
       if (!response.ok) throw new Error(data.message || data.error || 'Checkout is not available right now.');

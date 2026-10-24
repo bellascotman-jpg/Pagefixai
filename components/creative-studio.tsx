@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import Image from 'next/image';
 
 type AuditOption = { id: string; url: string; completedAt: string | null };
 type Variant = { angle: string; headline: string; primaryText: string; callToAction: string; rationale: string; hypothesis: string; claimsToVerify: string[] };
@@ -116,7 +117,7 @@ export default function CreativeStudio({ audits }: { audits: AuditOption[] }) {
         <div><button className="button button-primary" disabled={imageBusy}>{imageBusy?'Generating image…':'Generate visual concept'}</button></div>
       </form>
       {visualUrl && <div style={{marginTop:18}}>
-        <img src={visualUrl} alt="AI-generated PageFix marketing creative concept" style={{display:'block',width:'100%',maxWidth:720,height:'auto',borderRadius:12,border:'1px solid var(--line)'}}/>
+        <Image unoptimized src={visualUrl} alt="AI-generated PageFix marketing creative concept" width={720} height={480} style={{display:'block',width:'100%',maxWidth:720,height:'auto',borderRadius:12,border:'1px solid var(--line)'}}/>
         <p className="muted" style={{fontSize:12}}>Review the image for product accuracy and advertising-policy compliance. AI images may contain inaccuracies and are not proof of product features.</p>
         <button className="button button-secondary" type="button" onClick={downloadImage}>Download PNG</button>
       </div>}

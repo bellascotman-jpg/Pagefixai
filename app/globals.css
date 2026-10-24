@@ -737,3 +737,22 @@ html,body{background:var(--paper);color:var(--ink)}
  .sidebar-link{min-height:40px!important}
  .sidebar-bottom{margin-top:16px!important}
 }
+
+
+/* Lightweight landing-page vector motion: animate transforms and opacity only. */
+.hero-motion-art{position:relative;display:grid;place-items:center;min-width:0;pointer-events:none;contain:layout paint;isolation:isolate}
+.hero-motion-art svg{display:block;width:100%;max-width:610px;height:auto;overflow:visible}
+.vector-ring{fill:none;stroke:url(#pf-vector-stroke);stroke-width:1.2;stroke-opacity:.34;transform-origin:300px 250px;animation:pf-ring-drift 18s ease-in-out infinite alternate}
+.vector-ring-two{stroke-opacity:.22;stroke-dasharray:5 9;animation-duration:24s;animation-direction:alternate-reverse}
+.vector-path{fill:none;stroke:url(#pf-vector-stroke);stroke-width:2;stroke-linecap:round;stroke-opacity:.72;stroke-dasharray:4 10;animation:pf-path-flow 22s linear infinite}
+.vector-path-two{stroke-opacity:.38;stroke-dasharray:2 12;animation-duration:28s;animation-direction:reverse}
+.vector-node{fill:#fff8fa;stroke:#a94a68;stroke-width:2;transform-box:fill-box;transform-origin:center;animation:pf-node-float 5.5s ease-in-out infinite}
+.vector-node-one{fill:#6d142d;stroke:#f4dce4;animation-delay:-1s}
+.vector-node-two{animation-delay:-2.4s}.vector-node-three{animation-delay:-.7s}.vector-node-four{animation-delay:-3s}.vector-node-five{animation-delay:-1.8s}
+.vector-glow{opacity:.8;animation:pf-glow-breathe 8s ease-in-out infinite alternate}
+@keyframes pf-ring-drift{from{transform:rotate(-8deg) scale(.98)}to{transform:rotate(8deg) scale(1.02)}}
+@keyframes pf-path-flow{to{stroke-dashoffset:-140}}
+@keyframes pf-node-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.04)}}
+@keyframes pf-glow-breathe{from{opacity:.45}to{opacity:.9}}
+@media(max-width:760px){.hero-motion-art{max-width:520px;margin-inline:auto}.hero-motion-art svg{max-height:390px}}
+@media(prefers-reduced-motion:reduce){.vector-ring,.vector-path,.vector-node,.vector-glow{animation:none!important}}

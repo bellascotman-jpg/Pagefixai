@@ -35,9 +35,9 @@ export async function GET() {
       const hasSuccessfulPayment = user.payments.length > 0;
       const isFounder = user.role === 'FOUNDER' && user.email.toLowerCase() === FOUNDER_EMAIL;
       const accountType = isFounder ? 'FOUNDER' : hasActivePlan && hasSuccessfulPayment ? 'PAID' : hasActivePlan ? 'COMPLIMENTARY' : 'FREE';
-      const { payments, sessions, ...publicUser } = user;
+      const { sessions, subscriptions, affiliateProfile, _count, id, name, email, role, createdAt } = user;
       return {
-        ...publicUser,
+        id, name, email, role, createdAt, subscriptions, affiliateProfile, _count,
         accountType,
         hasActiveSession: sessions.length > 0,
         lastSessionAt: sessions[0]?.createdAt ?? null,

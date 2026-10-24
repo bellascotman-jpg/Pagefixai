@@ -16,10 +16,6 @@ export type JourneyObservation = {
 };
 
 const NEXT_STEP_SIGNAL = /add to cart|buy now|shop now|proceed to checkout|continue to checkout|checkout|place order|complete purchase|pay now|continue|next step|book now|request a quote|contact sales|start free|start trial|sign up|get started|submit/i;
-const DELIVERY_SIGNAL = /shipping|delivery|dispatch|fulfilment|fulfillment|pickup|collection/i;
-const PAYMENT_SIGNAL = /payment|pay securely|card|bank transfer|checkout|billing|wallet/i;
-const PRICE_SIGNAL = /(?:[$₦€£]\s?\d[\d,.]*|\b(?:USD|NGN|GBP|EUR)\s?\d[\d,.]*)/i;
-const RETURN_SIGNAL = /returns?|refunds?|exchange|money.back guarantee/i;
 
 function hasValidPublicHttpUrl(value: string): boolean {
   try {

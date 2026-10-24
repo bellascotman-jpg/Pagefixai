@@ -3,8 +3,8 @@ import { FEATURE_SPECIFICATIONS, buildFeatureSystemPrompt, getFeatureSpecificati
 
 describe('feature specification registry', () => {
   it('defines all requested features with unique IDs', () => {
-    expect(FEATURE_SPECIFICATIONS).toHaveLength(20);
-    expect(new Set(FEATURE_SPECIFICATIONS.map((item) => item.id)).size).toBe(20);
+    expect(FEATURE_SPECIFICATIONS).toHaveLength(21);
+    expect(new Set(FEATURE_SPECIFICATIONS.map((item) => item.id)).size).toBe(21);
   });
 
   it('assigns each feature objective, inputs, processing, output and a system prompt', () => {
@@ -21,7 +21,7 @@ describe('feature specification registry', () => {
 
   it('keeps the requested sections filterable', () => {
     expect(listFeatureSpecifications('ANALYSIS')).toHaveLength(9);
-    expect(listFeatureSpecifications('OPTIMIZATION')).toHaveLength(10);
+    expect(listFeatureSpecifications('OPTIMIZATION')).toHaveLength(11);
     expect(listFeatureSpecifications('AI_WORKBENCH')).toHaveLength(1);
   });
 

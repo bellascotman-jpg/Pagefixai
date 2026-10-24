@@ -40,31 +40,28 @@ export default function HomePage() {
 
     <section className="hero-section">
       <div className="hero-motion-art" aria-hidden="true">
-        <svg viewBox="0 0 760 620" role="presentation" focusable="false">
+        <svg viewBox="0 0 600 500" role="presentation" focusable="false">
           <defs>
-            <linearGradient id="pagefix-ribbon" x1="0%" y1="10%" x2="100%" y2="90%">
-              <stop offset="0%" stopColor="#6d142d" stopOpacity=".12" />
-              <stop offset="30%" stopColor="#c85b79" stopOpacity=".8" />
-              <stop offset="62%" stopColor="#f0b7c7" stopOpacity=".8" />
-              <stop offset="82%" stopColor="#f5d9b8" stopOpacity=".9" />
-              <stop offset="100%" stopColor="#8b2848" stopOpacity=".24" />
-            </linearGradient>
-            <linearGradient id="pagefix-ribbon-core" x1="0%" y1="0%" x2="100%" y2="100%">
+            <linearGradient id="pf-vector-stroke" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#6d142d" />
-              <stop offset="48%" stopColor="#c85b79" />
-              <stop offset="78%" stopColor="#e4a7b9" />
-              <stop offset="100%" stopColor="#b88367" />
+              <stop offset="55%" stopColor="#c85b79" />
+              <stop offset="100%" stopColor="#d6a27b" />
             </linearGradient>
+            <radialGradient id="pf-vector-glow">
+              <stop offset="0%" stopColor="#d98aa2" stopOpacity=".22" />
+              <stop offset="100%" stopColor="#d98aa2" stopOpacity="0" />
+            </radialGradient>
           </defs>
-          <path className="ribbon" d="M-80 120 C 80 20, 165 225, 310 180 S 510 40, 850 115" />
-          <path className="ribbon" d="M-70 300 C 95 220, 210 430, 365 340 S 565 180, 840 265" />
-          <path className="ribbon" d="M-80 485 C 120 360, 220 580, 400 475 S 590 345, 850 410" />
-          <path className="ribbon-core" d="M-60 140 C 110 30, 170 230, 320 180 S 530 45, 850 125" />
-          <path className="ribbon-core" d="M-60 315 C 95 230, 210 435, 365 340 S 570 190, 850 270" />
-          <ellipse className="orbit" cx="380" cy="310" rx="285" ry="195" />
-          <ellipse className="orbit" cx="380" cy="310" rx="235" ry="255" transform="rotate(-28 380 310)" />
-          <circle className="orbit-dot" cx="635" cy="245" r="5" />
-          <circle className="orbit-dot" cx="180" cy="475" r="3.5" />
+          <circle className="vector-glow" cx="300" cy="250" r="220" fill="url(#pf-vector-glow)" />
+          <circle className="vector-ring vector-ring-one" cx="300" cy="250" r="178" />
+          <circle className="vector-ring vector-ring-two" cx="300" cy="250" r="132" />
+          <path className="vector-path vector-path-one" d="M90 300 C145 115 240 95 300 190 S430 365 510 180" />
+          <path className="vector-path vector-path-two" d="M120 145 C220 210 220 310 310 320 S425 265 480 365" />
+          <rect className="vector-node vector-node-one" x="286" y="176" width="28" height="28" rx="8" />
+          <rect className="vector-node vector-node-two" x="468" y="166" width="18" height="18" rx="5" />
+          <circle className="vector-node vector-node-three" cx="120" cy="145" r="7" />
+          <circle className="vector-node vector-node-four" cx="480" cy="365" r="7" />
+          <circle className="vector-node vector-node-five" cx="90" cy="300" r="5" />
         </svg>
       </div>
       <div className="hero-copy">

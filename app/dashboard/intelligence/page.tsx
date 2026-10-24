@@ -10,7 +10,7 @@ const groups = [
     ['Grounded Copy Fixes','copy-fixes'], ['Impact Analysis','impact'], ['Journey & Message Match','journey'], ['Ads & Creative Studio','/dashboard/creative-studio'], ['A/B Testing','/dashboard/experiments'], ['Claims & Promises','claims'], ['Promise Ledger','promise-ledger'], ['Retention & Onboarding','/dashboard/intelligence/retention'], ['Experimentation','experiments'], ['Verification History','verification'], ['Evidence & Governance','governance'],
   ]},
   { title: 'WORKSPACE', items: [
-    ['PageFix AI Assistant','/dashboard/ai-help'], ['Integrations','/dashboard/intelligence/integrations'], ['Seller & Agency Workspaces','workspaces'],
+    ['PageFix AI Assistant','/dashboard/ai-help'], ['Integrations','/dashboard/intelligence/integrations'], ['Workspace Settings','/dashboard/settings'],
   ]},
 ];
 

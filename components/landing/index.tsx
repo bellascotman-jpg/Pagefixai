@@ -54,7 +54,7 @@ export function Nav() {
   return <header className="pfx-nav"><div className="pfx-nav-inner">
     <Link className="pfx-logo" href="/" aria-label="PageFix AI home"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link>
     <nav className="pfx-nav-links" aria-label="Main navigation">
-      <a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a>
+      <a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#solutions">Ads &amp; Creative</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a>
       <Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link>
     </nav>
     <div className="pfx-nav-actions"><Link href="/auth?mode=login">Sign in</Link><Link className="pfx-btn pfx-btn-red pfx-btn-small" href="/auth">Start an audit <span aria-hidden="true">↗</span></Link></div>

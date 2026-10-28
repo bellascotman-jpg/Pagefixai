@@ -1,3 +1,4 @@
+import './overview.css';
 import DashboardSidebar from '@/components/dashboard-sidebar';
 import SessionKeepAlive from '@/components/session-keepalive';
 import { getCurrentUser } from '@/lib/auth/session';

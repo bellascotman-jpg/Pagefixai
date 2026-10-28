@@ -61,6 +61,18 @@ export function Nav() {
   </div></header>;
 }
 
+
+export function BackgroundIcons() {
+  const icons = [
+    { left: "7%", top: "14%", delay: "-1s", path: "M13 2L3 14h9l-1 8 10-12h-9z" },
+    { left: "88%", top: "18%", delay: "-3s", path: "M20 6L9 17l-5-5" },
+    { left: "14%", top: "82%", delay: "-5s", path: "M12 2l9 5-9 5-9-5zM3 12l9 5 9-5M3 17l9 5 9-5" },
+    { left: "64%", top: "44%", delay: "-6s", path: "M20 6L9 17l-5-5" },
+    { left: "40%", top: "88%", delay: "-2s", path: "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" }
+  ];
+  return <div className="pfx-background-icons" aria-hidden="true">{icons.map((icon,i)=><svg key={i} viewBox="0 0 24 24" style={{left:icon.left,top:icon.top,animationDelay:icon.delay}}><path d={icon.path}/></svg>)}</div>;
+}
+
 export function Hero() {
   return <section className="pfx-hero">
     <div className="pfx-hero-glow" aria-hidden="true" />
@@ -130,7 +142,7 @@ export function AuditTrail() {
 }
 
 export function CommerceSystem() {
-  return <section className="pfx-system" id="product-system"><div className="pfx-system-glow" aria-hidden="true"/><div className="pfx-section-wrap"><div className="pfx-eyebrow pfx-eyebrow-light">THE PAGEFIX COMMERCE SYSTEM</div><h2>One connected workflow. <em>Not another pile of audit reports.</em></h2><p className="pfx-section-lead">PageFix is designed to connect inspection, buyer decision intelligence, claim consistency, practical fixes and verification. Individual sellers can use the core workflow independently; teams and agencies can extend it across products and clients.</p><div className="pfx-system-grid">{system.map(([n,title,body,bullets])=><article className="pfx-system-card" key={n}><span>{n}</span><h3>{title}</h3><p>{body}</p><ul>{bullets.map(item=><li key={item}>{item}</li>)}</ul></article>)}</div><p className="pfx-system-note"><b>Important:</b> This describes the product architecture and capability roadmap. Some advanced capabilities require further implementation, verified data access or third-party integrations; PageFix will identify those limits rather than present planned functionality as live.</p></div></section>;
+  return <section className="pfx-system" id="product-system"><BackgroundIcons/><div className="pfx-system-glow" aria-hidden="true"/><div className="pfx-section-wrap"><div className="pfx-eyebrow pfx-eyebrow-light">THE PAGEFIX COMMERCE SYSTEM</div><h2>One connected workflow. <em>Not another pile of audit reports.</em></h2><p className="pfx-section-lead">PageFix is designed to connect inspection, buyer decision intelligence, claim consistency, practical fixes and verification. Individual sellers can use the core workflow independently; teams and agencies can extend it across products and clients.</p><div className="pfx-system-grid">{system.map(([n,title,body,bullets])=><article className="pfx-system-card" key={n}><span>{n}</span><h3>{title}</h3><p>{body}</p><ul>{bullets.map(item=><li key={item}>{item}</li>)}</ul></article>)}</div><p className="pfx-system-note"><b>Important:</b> This describes the product architecture and capability roadmap. Some advanced capabilities require further implementation, verified data access or third-party integrations; PageFix will identify those limits rather than present planned functionality as live.</p></div></section>;
 }
 
 export function PrivacyNote() {

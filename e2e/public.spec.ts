@@ -23,7 +23,7 @@ test('auth page renders signup form', async ({ page }) => {
   await page.goto('/auth');
   await expect(page.getByRole('heading', { name: /start with the evidence/i })).toBeVisible();
   await expect(page.getByLabel('Email address')).toBeVisible();
-  await expect(page.getByLabel('Password')).toBeVisible();
+  await expect(page.locator('input[type="password"]')).toBeVisible();
 });
 
 test('sign-in navigation opens the login state', async ({ page }) => {

@@ -15,9 +15,9 @@ const capabilities = [
   { number: "06", title: "Verification & Rechecks", body: "Inspect the page again after a change and compare the new observation with the prior audit instead of silently overwriting history." },
 ];
 const proofItems = [
-  { label: "01 / OBSERVED", title: "What the page shows", body: "Captured titles, headings, visible copy, links, product details and page elements—subject to what the website allows the inspection to access.", tag: "Directly observed" },
-  { label: "02 / INFERRED", title: "What may deserve review", body: "Explain a plausible buyer-facing risk without presenting an interpretation as a measured customer outcome.", tag: "Inferred risk" },
-  { label: "03 / UNKNOWN", title: "What a public page cannot tell you", body: "Revenue, margins, traffic quality, conversion rates and actual abandonment require authorized data connections.", tag: "Limits disclosed" },
+  { label: "01 / OBSERVED", title: "What the page shows", body: "Captured titles, headings, visible copy, links, product details and page elements—subject to what the website allows the inspection to access.", tag: "Report label: Directly Observed Evidence" },
+  { label: "02 / INTERPRETED", title: "What may create friction", body: "Potential unanswered buyer questions, unclear next steps or mismatches that deserve human review—not a claim that a customer actually abandoned.", tag: "Report label: Inferred Risk or Hypothesis" },
+  { label: "03 / ACTIONABLE", title: "What to fix and recheck", body: "Specific implementation guidance, a stated verification objective and a fresh inspection to see whether the observable issue remains.", tag: "Report label: Recommendation" },
 ];
 const workflow = [
   { title: "Inspect", body: "Capture the public page at supported viewports and collect browser-visible content and technical signals." },
@@ -55,7 +55,7 @@ export function Nav() {
     <Link className="pfx-logo" href="/" aria-label="PageFix AI home"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link>
     <nav className="pfx-nav-links" aria-label="Main navigation">
       <a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a>
-      <Link href="/compare">Compare</Link><Link href="/resources">Guides</Link><Link href="/pricing">Pricing</Link>
+      <Link href="/compare">Compare</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link>
     </nav>
     <div className="pfx-nav-actions"><Link href="/auth?mode=login">Sign in</Link><Link className="pfx-btn pfx-btn-red pfx-btn-small" href="/auth">Start an audit <span aria-hidden="true">↗</span></Link></div>
   </div></header>;
@@ -93,7 +93,7 @@ export function Strips() {
 }
 
 export function Proof() {
-  return <section className="pfx-section pfx-proof" id="trust"><div className="pfx-section-wrap"><div className="pfx-eyebrow">PROOF YOU CAN INSPECT</div><h2>Trust the method. <em>Inspect the evidence.</em></h2><p className="pfx-section-lead">We do not substitute invented case studies or made-up conversion lifts for proof. Here is what PageFix is designed to show in a report—and what it will never pretend to know from a public URL alone.</p><div className="pfx-card-grid">{proofItems.map(x=><article className="pfx-card" key={x.label}><div className="pfx-card-label">{x.label}</div><h3>{x.title}</h3><p>{x.body}</p><span className="pfx-tag">{x.tag}</span></article>)}</div></div></section>;
+  return <section className="pfx-section pfx-proof" id="trust"><div className="pfx-section-wrap"><div className="pfx-eyebrow">PROOF YOU CAN INSPECT</div><h2>Trust the method.<br/><em>Inspect the evidence.</em></h2><p className="pfx-section-lead">We do not substitute invented case studies or made-up conversion lifts for proof. Here is what PageFix is designed to show in a report—and what it will never pretend to know from a public URL alone.</p><div className="pfx-card-grid">{proofItems.map(x=><article className="pfx-card" key={x.label}><div className="pfx-card-label">{x.label}</div><h3>{x.title}</h3><p>{x.body}</p><span className="pfx-tag">{x.tag}</span></article>)}</div><p className="pfx-system-note"><Link href="/methodology">Read our evidence standard →</Link> Product interface previews are illustrative. PageFix does not publish customer testimonials, performance statistics or case-study outcomes unless they are genuine, authorized and verifiable.</p></div></section>;
 }
 
 export function Workflow() {
@@ -137,6 +137,57 @@ export function PrivacyNote() {
   return <section className="pfx-privacy"><Mark>i</Mark><div><div className="pfx-eyebrow">EVIDENCE, PRIVACY AND SECURITY</div><h2>A public-page audit cannot see private business metrics.</h2><p>Revenue, margins, traffic quality, conversion rates, customer lifetime value, actual abandonment and private customer records require authorized data connections. PageFix must not guess these values. Audit websites you are authorized to inspect, keep credentials server-side and treat every finding according to its actual evidence.</p><div className="pfx-inline-links"><Link href="/privacy">Read privacy information →</Link><Link href="/security">Read security practices →</Link></div></div></section>;
 }
 
+
+export function TrustStrip() {
+  return <section className="pfx-trust-strip"><b>THE PAGEFIX STANDARD</b><span><i>01</i> Observable evidence</span><span><i>02</i> Honest confidence</span><span><i>03</i> Practical remediation</span><span><i>04</i> Verifiable rechecks</span></section>;
+}
+
+export function ResourceCta() {
+  return <section className="pfx-resource-cta"><div><div className="pfx-eyebrow">MAKE AN INFORMED CHOICE</div><h2>Compare PageFix with the tools you already use.</h2><p>See where page-level friction diagnosis fits alongside SEO crawlers, speed testing and visitor-behaviour analytics.</p></div><div className="pfx-actions"><Link className="pfx-btn pfx-btn-red" href="/compare">Compare tools →</Link><Link className="pfx-btn pfx-btn-outline" href="/resources">Read practical guides</Link></div></section>;
+}
+
+export function SpecialistTools() {
+  const items = [
+    ["01","Pre-Purchase Clarity & Return Risk","Spot unclear sizing, compatibility, deliverables, shipping or return conditions that may create buyer uncertainty. This does not predict a product's actual return rate."],
+    ["02","Visual & Mobile Inspection","Review screenshots and captured page anatomy where supported, with viewport context and evidence. A screenshot is a record of one captured state, not proof of every dynamic interaction."],
+    ["03","SEO, Product Data & AI Discovery Readiness","Review visible metadata, page structure and structured-data signals. PageFix does not promise rankings, search traffic or inclusion in AI answers."],
+    ["04","Grounded AI Copy Fixes","Generate alternative headlines, descriptions and product copy from facts that are actually available. Missing specifications remain placeholders for the seller to confirm."],
+    ["05","Competitor Context","Organise public-page comparisons and visible content differences. Competitor revenue, traffic, conversion and private performance are not inferred from a page."],
+    ["06","Priority & Fix Effort","Rank the work queue using defined severity, evidence confidence, buyer relevance and implementation effort—not invented financial impact."],
+    ["07","Agency & Client Reporting","Extend the seller workflow across client projects, with clear report scope and privacy controls. Advanced permissions and white-label features must be verified before being promised."],
+    ["08","Experimentation & Outcome Learning","A later-stage capability for controlled tests, sample-size planning and uncertainty-aware measurement. It requires reliable analytics and should not declare winners prematurely."]
+  ];
+  return <section className="pfx-section"><div className="pfx-section-wrap"><div className="pfx-eyebrow">SPECIALIST TOOLS INSIDE THE WORKFLOW</div><h2>Purpose-built checks for the problems sellers face every week.</h2><p className="pfx-section-lead">These capabilities connect to the same evidence and remediation history. Availability depends on the inspected page, stored data, and the integrations actually enabled in your workspace.</p><div className="pfx-card-grid pfx-four">{items.map(([n,title,body])=><article className="pfx-card" key={n}><div className="pfx-card-label">{n}</div><h3>{title}</h3><p>{body}</p></article>)}</div></div></section>;
+}
+
+export function CategoryIntelligence() {
+  const rows = [
+    ["Clothing & accessories","Size and fit guidance, material details, care instructions, colour representation and visible variants."],
+    ["Electronics","Specifications, compatibility, power requirements, included accessories and visible warranty terms."],
+    ["Furniture & home","Dimensions, materials, assembly requirements, delivery conditions and installation clarity."],
+    ["Beauty & skincare","Ingredients, directions, suitability information, relevant warnings and substantiation of visible claims."],
+    ["Digital products & SaaS","Deliverables, supported platforms, prerequisites, access conditions, onboarding and commercial terms."],
+    ["B2B products","Use cases, implementation requirements, integrations, service conditions and support expectations."]
+  ];
+  return <section className="pfx-section"><div className="pfx-section-wrap pfx-category-layout"><div><div className="pfx-eyebrow">CONTEXT-AWARE, NOT ONE-SIZE-FITS-ALL</div><h2>Different products.<br/><em>Different buyer questions.</em></h2><p className="pfx-section-lead">PageFix evaluates what is relevant to the product and buying context. It does not treat every possible checklist item as mandatory for every seller.</p></div><div className="pfx-category-table"><div className="pfx-category-row pfx-category-head"><span>SELLER CATEGORY</span><span>WHAT PAGEFIX CAN REVIEW</span></div>{rows.map(([name,body])=><div className="pfx-category-row" key={name}><b>{name}</b><span>{body}</span></div>)}</div></div></section>;
+}
+
+export function ImpactAnalysis() {
+  return <section className="pfx-impact"><div className="pfx-section-wrap"><div className="pfx-eyebrow pfx-eyebrow-light">COMMERCIAL CONTEXT WITHOUT FICTION</div><h2>Show the risk.<br/><em>Never invent the revenue.</em></h2><p>PageFix separates what a page visibly shows from what might happen and what a seller's own business data can establish.</p><div className="pfx-impact-grid"><article><span>LEVEL 01</span><h3>Identified risk</h3><p>Explain the evidence-backed issue and its plausible relevance to a buyer decision. No financial estimate required.</p></article><article><span>LEVEL 02</span><h3>Scenario analysis</h3><p>Use seller-provided traffic, conversion, order value or margin figures with explicit assumptions. Label outputs as illustrative scenarios.</p></article><article><span>LEVEL 03</span><h3>Measured outcome</h3><p>Compare authorised analytics or transaction data with appropriate caveats. Do not claim causation from a simple before-and-after comparison.</p></article></div></div></section>;
+}
+
+export function ReportDetails() {
+  const items = [
+    ["Classification","Directly Observed Evidence, Inferred Risk, Hypothesis or Recommendation."],
+    ["Evidence location","The captured text, page element, URL, metadata or other observable signal behind the finding."],
+    ["Why it matters","A plain-language explanation of the possible consequence, without claiming a measured conversion impact."],
+    ["Confidence & unknowns","A clear confidence level and the information the audit cannot establish from a public page."],
+    ["Implementation guidance","Concrete steps and optional copy suggestions tied to the specific issue."],
+    ["Verification objective","What should be inspected again after the fix and what would count as resolved, improved or unverified."]
+  ];
+  return <section className="pfx-section"><div className="pfx-section-wrap"><div className="pfx-eyebrow">WHAT THE REPORT SHOULD CONTAIN</div><h2>Every finding needs a reason and a next step.</h2><p className="pfx-section-lead">Findings are designed around evidence and action, not unsupported scores or inflated claims.</p><div className="pfx-card-grid pfx-three">{items.map(([title,body])=><article className="pfx-card" key={title}><Mark>✓</Mark><h3>{title}</h3><p>{body}</p></article>)}</div></div></section>;
+}
+
 export function Faq() {
   return <section className="pfx-section pfx-faq"><div className="pfx-section-wrap"><div className="pfx-eyebrow">BEFORE YOU START</div><h2>Clear expectations. Useful output.</h2><div className="pfx-faq-grid"><details><summary>Will PageFix guarantee more sales or higher search rankings?</summary><p>No. PageFix identifies observable page issues and recommendations. Commercial outcomes depend on many factors outside a public-page audit.</p></details><details><summary>Does it connect to my private analytics automatically?</summary><p>No. Private data must be connected intentionally through an authorized integration. Without it, PageFix reports only what it can observe.</p></details><details><summary>What can I audit?</summary><p>Public product pages, ecommerce pages and landing pages you are authorized to inspect. Some websites may block automated browsers or restrict access.</p></details><details><summary>How do I choose a plan?</summary><p>Starter is $49/month, Growth is $149/month and Agency is $399/month. Custom requirements can be discussed with the team.</p></details></div></div></section>;
 }
@@ -146,9 +197,9 @@ export function FinalCta() {
 }
 
 export function Footer() {
-  return <footer className="pfx-footer"><div className="pfx-footer-top"><Link className="pfx-logo" href="/"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p></div><nav aria-label="Footer navigation"><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link></nav><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>;
+  return <footer className="pfx-footer"><div className="pfx-footer-top"><Link className="pfx-logo" href="/"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p></div><nav aria-label="Footer navigation"><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></nav><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>;
 }
 
 export default function LandingPage() {
-  return <main className="pfx-landing"><Nav/><Hero/><Strips/><Proof/><Workflow/><Solutions/><Steps/><Audiences/><AuditTrail/><CommerceSystem/><PrivacyNote/><Faq/><FinalCta/><Footer/></main>;
+  return <main className="pfx-landing"><Nav/><Hero/><TrustStrip/><Strips/><Proof/><ResourceCta/><Workflow/><Solutions/><Steps/><Audiences/><AuditTrail/><SpecialistTools/><CategoryIntelligence/><ImpactAnalysis/><ReportDetails/><CommerceSystem/><PrivacyNote/><Faq/><FinalCta/><Footer/></main>;
 }

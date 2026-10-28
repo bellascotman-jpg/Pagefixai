@@ -55,7 +55,7 @@ export function Nav() {
     <Link className="pfx-logo" href="/" aria-label="PageFix AI home"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link>
     <nav className="pfx-nav-links" aria-label="Main navigation">
       <a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a>
-      <Link href="/compare">Compare</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link>
+      <Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link>
     </nav>
     <div className="pfx-nav-actions"><Link href="/auth?mode=login">Sign in</Link><Link className="pfx-btn pfx-btn-red pfx-btn-small" href="/auth">Start an audit <span aria-hidden="true">↗</span></Link></div>
   </div></header>;
@@ -86,7 +86,7 @@ export function Hero() {
       </div>
       <div className="pfx-report" aria-label="Illustrative PageFix audit report preview">
         <div className="pfx-report-head"><span><i/> <i/> <i/></span><b>PAGEFIX / AUDIT OVERVIEW</b><small>REPORT VIEW</small></div>
-        <div className="pfx-report-body"><div className="pfx-report-label">REPORT WORKSPACE</div><div className="pfx-report-title">Evidence & recommended fixes</div><p className="pfx-report-disclaimer">Illustrative interface · not customer data</p>
+        <div className="pfx-report-body"><div className="pfx-report-label">REPORT WORKSPACE</div><div className="pfx-report-title">Evidence & recommended fixes <span className="pfx-report-pill">Traceable</span></div><p className="pfx-report-disclaimer">Illustrative interface · not customer data</p>
           <div className="pfx-report-stat-grid"><div><small>Observation type</small><b>Page-level evidence</b><span>Visible to the browser</span></div><div><small>Review approach</small><b>Desktop + mobile</b><span>Where capture is supported</span></div></div>
           <div className="pfx-report-label">EXAMPLE FINDING TYPES · REVIEW BY PRIORITY</div>
           <div className="pfx-finding"><span className="pfx-finding-icon">!</span><div><b>Primary action needs review</b><p>Check whether the next step is clear and discoverable.</p><small>Potential friction</small></div></div>

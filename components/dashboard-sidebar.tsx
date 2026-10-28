@@ -5,6 +5,12 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const groups = [
+  { label: 'QUICK ACCESS', items: [
+    { href: '/dashboard/intelligence', label: 'Intelligence hub', icon: '◈', exact: true },
+    { href: '/dashboard/creative-studio', label: 'Ads & Creative Studio', icon: '✦' },
+    { href: '/dashboard/ai-help', label: 'PageFix AI assistant', icon: '✧' },
+    { href: '/dashboard/intelligence/integrations', label: 'Integrations', icon: '⤴' },
+  ]},
   { label: 'WORKSPACE', items: [
     { href: '/dashboard', label: 'Overview', icon: '◫', exact: true },
     { href: '/dashboard/audits', label: 'Audit history', icon: '⌕' },
@@ -54,7 +60,7 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({
-    'WORKSPACE': false, 'ANALYSIS': true, 'OPTIMIZATION': true, 'AI WORKBENCH': true,
+    'QUICK ACCESS': false, 'WORKSPACE': false, 'ANALYSIS': true, 'OPTIMIZATION': true, 'AI WORKBENCH': true,
     'GROWTH & INTEGRATIONS': true, 'ACCOUNT': true, 'ADMINISTRATION': true,
   });
 
@@ -63,6 +69,7 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
     setCollapsed(current => {
       const next = { ...current };
       const groupsForPath: Record<string, boolean> = {
+        'QUICK ACCESS': pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/creative-studio') || pathname.startsWith('/dashboard/ai-help'),
         'WORKSPACE': pathname === '/dashboard' || pathname.startsWith('/dashboard/audits') || pathname.startsWith('/dashboard/fixes') || pathname.startsWith('/dashboard/reports'),
         'ANALYSIS': pathname.startsWith('/dashboard/intelligence') || pathname.startsWith('/dashboard/competitors'),
         'OPTIMIZATION': pathname.startsWith('/dashboard/creative-studio') || pathname.startsWith('/dashboard/experiments') || ['/dashboard/intelligence/copy-fixes','/dashboard/intelligence/impact','/dashboard/intelligence/journey','/dashboard/intelligence/claims','/dashboard/intelligence/promise-ledger','/dashboard/intelligence/retention','/dashboard/intelligence/experiments','/dashboard/intelligence/verification','/dashboard/intelligence/governance'].some(p => pathname === p || pathname.startsWith(p + '/')),

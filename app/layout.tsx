@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "./product-upgrade.css";
 import "./impact-upgrade.css";
 import "./store-intelligence.css";
 import "./premium-refresh.css";
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-plus-jakarta",
+});
 
 const siteUrl = process.env.APP_URL || "https://pagefixai.vercel.app";
 
@@ -38,7 +46,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={plusJakarta.variable}>{children}</body>
     </html>
   );
 }

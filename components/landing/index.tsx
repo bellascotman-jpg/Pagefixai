@@ -207,5 +207,5 @@ export function Footer() {
 }
 
 export default function LandingPage() {
-  return <main className="pfx-landing"><Nav/><Hero/><TrustStrip/><Strips/><Proof/><ResourceCta/><Workflow/><Solutions/><Steps/><Audiences/><AuditTrail/><SpecialistTools/><CategoryIntelligence/><ImpactAnalysis/><ReportDetails/><CommerceSystem/><PrivacyNote/><Faq/><FinalCta/><Footer/></main>;
+  return <main id="top" className="pfx-landing"><Nav/><Hero/><TrustStrip/><Strips/><Proof/><ResourceCta/><Workflow/><Solutions/><Steps/><Audiences/><AuditTrail/><SpecialistTools/><CategoryIntelligence/><ImpactAnalysis/><ReportDetails/><CommerceSystem/><PrivacyNote/><Faq/><FinalCta/><Footer/></main>;
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Brand from "@/components/brand";
 
 const groups = [
   { title: "Explore", items: [
@@ -29,7 +30,7 @@ export function SidebarNav() {
     <button className={`pfx-sidebar-scrim${open ? " is-open" : ""}`} type="button" aria-label="Close navigation" onClick={close} tabIndex={open ? 0 : -1}/>
     <aside id="pfx-sidebar" className={`pfx-sidebar${open ? " is-open" : ""}`} aria-label="PageFix main navigation">
       <div className="pfx-sidebar-brand">
-        <Link className="pfx-logo" href="/" onClick={close}><span className="pfx-logo-mark">✓</span><span>PageFix<span>AI</span></span></Link>
+        <Brand className="pfx-sidebar-logo" />
         <button className="pfx-sidebar-close" type="button" aria-label="Close navigation" onClick={close}>×</button>
       </div>
       <div className="pfx-sidebar-kicker">COMMERCE INTELLIGENCE</div>

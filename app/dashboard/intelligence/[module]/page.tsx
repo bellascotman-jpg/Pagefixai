@@ -59,34 +59,27 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
       <div><div className="label">COMMERCE INTELLIGENCE / {capability.group.toUpperCase()}</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>{capability.title}</h1></div>
       <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
         <Link className="button button-secondary" href="/dashboard/intelligence">All capabilities</Link>
-        <Link className="button button-secondary" href={`/dashboard/ai-help?topic=${module}`}>Ask PageFix AI →</Link>
+        {module !== 'buyer-decisions' && <Link className="button button-secondary" href={`/dashboard/ai-help?topic=${module}`}>Ask PageFix AI →</Link>}
         <Link className="primary-button" href="/dashboard">Run an inspection →</Link>
       </div>
     </header>
     <div className="container dashboard-main">
-      <div className="capability-detail-hero card">
-        <div className="capability-workspace-top"><span>{capability.group}</span><span className={`capability-status ${statusClass}`}>{capability.status}</span></div>
-        <h2>{capability.title}</h2><p>{capability.summary}</p>
-        {latest ? <div className="capability-detail-actions">
-          <Link href={`/dashboard/audits/${latest.id}${reportAnchor}`} className="primary-button">Open latest evidence →</Link>
-          <Link href="/dashboard/audits" className="button button-secondary">Audit history</Link>
-        </div> : <div className="capability-detail-actions"><Link href="/dashboard" className="primary-button">Run your first inspection →</Link></div>}
+      <div className={module === 'buyer-decisions' ? 'buyer-problem-banner' : 'capability-detail-hero card'}>
+        <div className="capability-workspace-top"><span className="buyer-problem-eyebrow">{module === 'buyer-decisions' ? 'BUYER DECISIONS / DIAGNOSE' : capability.group}</span><span className={`capability-status ${statusClass}`}>{capability.status}</span></div>
+        <h2>{module === 'buyer-decisions' ? 'Why are shoppers hesitating when they are ready to buy?' : capability.title}</h2>
+        <p>{module === 'buyer-decisions' ? 'When important questions go unanswered, shoppers may delay the decision or compare another store. Fixing the information gap gives them a clearer reason to move forward.' : capability.summary}</p>
+        {latest ? <div className="capability-detail-actions"><Link href={`/dashboard/audits/${latest.id}${reportAnchor}`} className="primary-button">Open latest evidence →</Link><Link href="/dashboard/audits" className="button button-secondary">Audit history</Link></div> : <div className="capability-detail-actions"><Link href="/dashboard" className="primary-button">Run your first inspection →</Link></div>}
       </div>
 
-      {!latest ? <section className="card" style={{marginTop:18}}>
-        <h2>No completed inspection yet</h2><p className="muted">This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.</p>
-        <Link className="primary-button" href="/dashboard">Start an inspection →</Link>
+      {!latest ? <section className={module === 'buyer-decisions' ? 'buyer-empty' : 'card'} style={{marginTop:18}}>
+        <strong>{module === 'buyer-decisions' ? 'Your buyer-question review will appear here after the first audit' : 'No completed inspection yet'}</strong>
+        <p>{module === 'buyer-decisions' ? 'PageFix will check the product page for answers about the offer, product details, trust, delivery and returns. No sample results are shown before an audit.' : 'This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.'}</p>
+        <Link className="primary-button" href="/dashboard">Run your first inspection →</Link>
       </section> : <>
-        <section className="card" style={{marginTop:18}}>
-          <div className="label">LIVE WORKSPACE / LATEST COMPLETED INSPECTION</div>
-          <h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2>
-          <div className="grid grid-3">
-            <div className="card"><div className="label">Findings in report</div><div className="stat">{latest.findings.length}</div></div>
-            <div className="card"><div className="label">Relevant to this module</div><div className="stat">{relevantFindings.length}</div></div>
-            <div className="card"><div className="label">Questions reviewed</div><div className="stat">{latest.buyerQuestions.length}</div></div>
-          </div>
-          <p className="muted">Data shown here comes from your saved inspection. The captured page does not reveal private analytics or actual customer behaviour.</p>
-        </section>
+        {module === 'buyer-decisions' ? <section className="buyer-panel" style={{marginTop:18}}><div className="label">INSPECTED STORE PAGE</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2><p>All results below are drawn from this completed inspection. A public page capture cannot reveal private analytics or confirm actual customer behaviour.</p><Link className="button button-secondary" href={`/dashboard/audits/${latest.id}`}>View complete audit record →</Link></section> : <section className="card" style={{marginTop:18}}>
+          <div className="label">LIVE WORKSPACE / LATEST COMPLETED INSPECTION</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2>
+          <div className="grid grid-3"><div className="card"><div className="label">Findings in report</div><div className="stat">{latest.findings.length}</div></div><div className="card"><div className="label">Relevant to this module</div><div className="stat">{relevantFindings.length}</div></div><div className="card"><div className="label">Questions reviewed</div><div className="stat">{latest.buyerQuestions.length}</div></div></div>
+          <p className="muted">Data shown here comes from your saved inspection. The captured page does not reveal private analytics or actual customer behaviour.</p></section>}
 
         {module === 'seo-data' && <section id="technical-seo-readiness" className="card" style={{marginTop:18}}>
           <h2>SEO & product data inspection</h2>
@@ -122,14 +115,54 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
           <div style={{marginTop:12}}><Link className="primary-button" href="/dashboard/ai-help">Ask PageFix AI to explain these SEO signals →</Link></div>
         </section>}
 
-        {(module === 'buyer-decisions' || module === 'return-risk') && <section id="buyer-decision-intelligence" className="card" style={{marginTop:18}}>
-          <h2>{module === 'return-risk' ? 'Pre-purchase clarity and expectation coverage' : 'Buyer objection coverage'}</h2>
-          <p className="muted">These are likely decision questions inferred from the offer category, not claims that real customers asked them.</p>
-          {latest.buyerQuestions.map(question => <article className="finding" key={question.id} style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
-            <div><strong>{question.question}</strong><p className="muted">Evidence references recorded: {Array.isArray(question.evidenceIds) ? question.evidenceIds.length : 0}</p></div>
-            <span className={`badge ${question.status === 'OBSERVED_IN_CAPTURED_PAGE' ? '' : 'danger'}`}>{question.status === 'OBSERVED_IN_CAPTURED_PAGE' ? 'Signal observed' : 'Not observed'}</span>
-          </article>)}
-        </section>}
+        {module === 'buyer-decisions' && (() => {
+          const high = relevantFindings.filter(item => item.severity === 'HIGH').length;
+          const medium = relevantFindings.filter(item => item.severity === 'MEDIUM').length;
+          const low = relevantFindings.filter(item => item.severity === 'LOW').length;
+          const unanswered = latest.buyerQuestions.filter(question => question.status !== 'OBSERVED_IN_CAPTURED_PAGE').length;
+          const maxSeverity = Math.max(high, medium, low, 1);
+          const verified = latest.findings.filter(item => item.status === 'VERIFIED').length;
+          const stillDetected = latest.findings.filter(item => item.status === 'STILL_DETECTED').length;
+          const evidenceRows = relevantFindings.flatMap(item => item.evidence.map(ref => ({ finding: item, evidence: ref.evidence })));
+          return <div className="buyer-workspace" id="buyer-decision-intelligence">
+            <section className="buyer-verdict">
+              <div><div className="label">LATEST INSPECTION VERDICT</div><h2>{relevantFindings.length ? 'Buyer-facing gaps found in the captured page' : 'No matching buyer-decision finding was recorded'}</h2><p>{unanswered} of {latest.buyerQuestions.length} generated decision questions were not observed as addressed in this capture. This is a content review signal, not a measured abandonment rate.</p></div>
+              <div><span className={`buyer-status-pill ${high ? 'risk' : unanswered ? 'watch' : relevantFindings.length ? 'watch' : 'neutral'}`}>{high ? 'High-priority review' : unanswered ? 'Needs attention' : relevantFindings.length ? 'Review recommended' : 'No signal recorded'}</span><div className="buyer-verdict-count"><strong>{unanswered}</strong><span className="muted">questions not observed</span></div></div>
+            </section>
+            <div className="buyer-chart-grid">
+              <section className="buyer-panel">
+                <div className="label">OBJECTION SEVERITY</div><h2>Where buyer hesitation signals cluster</h2><p>Counts reflect matching findings in this saved inspection, not customer-reported objections.</p>
+                {[
+                  {label:'High',count:high,tone:'high'},
+                  {label:'Medium',count:medium,tone:'medium'},
+                  {label:'Low',count:low,tone:'low'},
+                ].map(row => <div className="buyer-severity-row" key={row.label}><span className="buyer-severity-label">{row.label} severity</span><div className="buyer-severity-track" role="img" aria-label={`${row.count} ${row.label.toLowerCase()} severity findings`}><div className={`buyer-severity-fill ${row.tone}`} style={{width:`${row.count / maxSeverity * 100}%`}} /></div><strong>{row.count}</strong></div>)}
+              </section>
+              <section className="buyer-panel">
+                <div className="label">BUYER QUESTIONS</div><h2>Questions the page may leave open</h2><p>Generated from the product category and checked against captured page content.</p>
+                {latest.buyerQuestions.length ? latest.buyerQuestions.map(question => <article className="buyer-question-card" key={question.id}><div><strong>{question.question}</strong><p>{Array.isArray(question.evidenceIds) ? question.evidenceIds.length : 0} linked evidence reference(s)</p></div><span className={`buyer-question-state ${question.status === 'OBSERVED_IN_CAPTURED_PAGE' ? 'observed' : ''}`}>{question.status === 'OBSERVED_IN_CAPTURED_PAGE' ? 'Observed' : 'Not observed'}</span></article>) : <div className="buyer-empty"><strong>No buyer questions were saved for this audit</strong><p>Run a new inspection to generate category-aware questions and check them against the captured page.</p></div>}
+              </section>
+            </div>
+            <section className="buyer-panel">
+              <div className="label">PLAIN-ENGLISH GUIDE</div><h2>What this means</h2><p>These terms explain the signals shown above and why they matter before checkout.</p>
+              <div className="buyer-meaning-grid">
+                <div className="buyer-meaning-item"><strong>Questions not observed</strong><p>Buyer questions for which the captured page did not record a clear answer. Missing information can make comparison and purchase decisions harder.</p></div>
+                <div className="buyer-meaning-item"><strong>Finding severity</strong><p>The audit&apos;s HIGH, MEDIUM or LOW classification of an identified issue. It helps order review work; it is not a sales-loss estimate.</p></div>
+                <div className="buyer-meaning-item"><strong>Evidence references</strong><p>Saved page excerpts or source locations attached to a finding. They let you inspect why PageFix raised the issue.</p></div>
+              </div>
+            </section>
+            <section className="buyer-panel">
+              <div className="label">SOURCE MATERIAL</div><h2>Evidence behind these findings</h2><p>Only excerpts saved with this inspection appear here. An inference is not presented as a direct customer statement.</p>
+              {evidenceRows.length ? <div className="buyer-evidence-list">{evidenceRows.map((row,index) => <article className="buyer-evidence-item" key={`${row.finding.id}-${row.evidence.id}-${index}`}><div className="buyer-evidence-meta"><span>{row.evidence.type.replaceAll('_',' ')}</span><span>{row.finding.severity} severity</span></div><strong>{row.finding.title}</strong><blockquote>{row.evidence.content.slice(0,700)}</blockquote><p className="muted">{row.evidence.location || row.evidence.source || 'Source location not recorded'}</p></article>)}</div> : <div className="buyer-empty"><strong>No linked evidence excerpts were saved for these findings</strong><p>Open the full report to review all captured source records and limitations.</p></div>}
+            </section>
+            <section className="buyer-panel">
+              <div className="label">PRIORITISED REMEDIATION</div><h2>How to fix it</h2><p>Start with the highest-priority saved findings. Effort and commercial impact are not estimated unless the audit contains verified inputs.</p>
+              {relevantFindings.length ? <div className="buyer-fix-list">{relevantFindings.map(item => <article className="buyer-fix-card" key={item.id}><div><div className="buyer-fix-tags"><span>{item.priority.replaceAll('_',' ')}</span><span>{item.severity} severity</span><span>Effort: not estimated</span><span>Impact: not measured</span></div><h3>{item.title}</h3><p>{item.recommendation}</p></div><div className="buyer-fix-actions"><Link href={`/dashboard/audits/${latest.id}`}>Review evidence</Link><Link href={`/dashboard/audits/${latest.id}`}>Verify after change</Link></div></article>)}</div> : <div className="buyer-empty"><strong>No buyer-decision fixes were generated for this inspection</strong><p>Run another inspection after updating the product page to see whether new evidence supports a recommendation.</p></div>}
+            </section>
+            <section className="buyer-verification-strip"><div><strong>Before / after verification</strong><p>{verified || stillDetected ? `${verified} finding(s) marked verified and ${stillDetected} still detected in the saved status record.` : 'A before-and-after comparison will appear after a fresh recheck creates a second inspection. No improvement is assumed.'}</p></div><Link href={`/dashboard/audits/${latest.id}`}>Open recheck workflow →</Link></section>
+          </div>;
+        })()}
+        {module === 'return-risk' && <section id="buyer-decision-intelligence" className="card" style={{marginTop:18}}><h2>Pre-purchase clarity and expectation coverage</h2><p className="muted">These are likely decision questions inferred from the offer category, not claims that real customers asked them.</p>{latest.buyerQuestions.map(question => <article className="finding" key={question.id}><strong>{question.question}</strong><p className="muted">Evidence references recorded: {Array.isArray(question.evidenceIds) ? question.evidenceIds.length : 0}</p></article>)}</section>}
 
         {module === 'visual-inspection' && <section className="card" style={{marginTop:18}}>
           <h2>Captured viewport evidence</h2>

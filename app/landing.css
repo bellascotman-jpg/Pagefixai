@@ -27,3 +27,36 @@
 .pfx-landing .pfx-background-icons{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.2}.pfx-landing .pfx-background-icons svg{position:absolute;width:35px;height:35px;fill:none;stroke:#c8102e;stroke-width:1.25;stroke-linecap:round;stroke-linejoin:round;animation:pfx-icon-drift 9s ease-in-out infinite}.pfx-landing .pfx-system .pfx-background-icons{z-index:0;opacity:.13}.pfx-landing .pfx-system>.pfx-section-wrap{position:relative;z-index:1}.pfx-landing .pfx-system-card ul{padding-left:16px;margin:13px 0 0;color:#d8c7cc}.pfx-landing .pfx-system-card li{font-size:10px;line-height:1.8;padding:2px 0}.pfx-landing .pfx-report-title .pfx-report-pill{font-size:9px;padding:5px 8px;border:1px solid #f0dfe3;background:#fff7f8;color:#a20b25;border-radius:5px;font-weight:800}
 @keyframes pfx-icon-drift{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-12px) rotate(8deg)}}
 @media(prefers-reduced-motion:reduce){.pfx-landing .pfx-background-icons svg{animation:none}}
+
+
+/* Landing navigation: persistent desktop sidebar and accessible mobile drawer. */
+.pfx-landing{padding-left:264px;min-height:100vh}
+.pfx-landing .pfx-nav{display:none}
+.pfx-landing .pfx-sidebar{position:fixed;z-index:100;inset:0 auto 0 0;width:264px;padding:27px 18px 22px;background:#fff;border-right:1px solid #f0dfe3;display:flex;flex-direction:column;box-shadow:8px 0 35px #570a1b08}
+.pfx-landing .pfx-sidebar-brand{display:flex;align-items:center;justify-content:space-between;padding:2px 8px 28px}
+.pfx-landing .pfx-sidebar-brand .pfx-logo{font-size:22px}
+.pfx-landing .pfx-sidebar-brand .pfx-logo>span:last-child>span{color:var(--pfx-red)}
+.pfx-landing .pfx-sidebar-kicker{padding:0 10px 24px;color:#a20b25;font-size:9px;font-weight:900;letter-spacing:.14em}
+.pfx-landing .pfx-sidebar-group{margin-bottom:24px}
+.pfx-landing .pfx-sidebar-heading{padding:0 10px 9px;color:#9b858b;font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+.pfx-landing .pfx-sidebar-group nav{display:grid;gap:4px}
+.pfx-landing .pfx-sidebar-group nav a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 10px;border-radius:8px;color:#55444a;font-size:12px;font-weight:700;transition:background .16s,color .16s}
+.pfx-landing .pfx-sidebar-group nav a span{color:#b99ca4;font-size:12px}
+.pfx-landing .pfx-sidebar-group nav a:hover,.pfx-landing .pfx-sidebar-group nav a:focus-visible{background:#fff0f3;color:var(--pfx-red)}
+.pfx-landing .pfx-sidebar-bottom{margin-top:auto;padding:16px 8px 0;border-top:1px solid #f0dfe3;display:grid;gap:12px}
+.pfx-landing .pfx-sidebar-signin{font-size:12px;font-weight:800;color:#55444a}
+.pfx-landing .pfx-sidebar-bottom .pfx-btn{width:100%;min-height:43px}
+.pfx-landing .pfx-sidebar-bottom p{margin:0;color:#9b858b;font-size:10px}
+.pfx-landing .pfx-menu-toggle,.pfx-landing .pfx-sidebar-close,.pfx-landing .pfx-sidebar-scrim{display:none}
+@media(max-width:900px){
+ .pfx-landing{padding-left:0}
+ .pfx-landing .pfx-sidebar{width:min(300px,84vw);transform:translateX(-105%);transition:transform .24s ease;box-shadow:18px 0 50px #25030b26}
+ .pfx-landing .pfx-sidebar.is-open{transform:translateX(0)}
+ .pfx-landing .pfx-menu-toggle{position:fixed;z-index:90;top:14px;left:14px;width:44px;height:44px;border:1px solid #f0dfe3;border-radius:11px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;box-shadow:0 5px 20px #570a1b12}
+ .pfx-landing .pfx-menu-toggle span{width:18px;height:2px;border-radius:2px;background:#6b1024}
+ .pfx-landing .pfx-sidebar-close{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:8px;background:#fff0f3;color:#a20b25;font-size:23px;line-height:1}
+ .pfx-landing .pfx-sidebar-scrim{position:fixed;z-index:95;inset:0;background:#17050bb0;border:0}
+ .pfx-landing .pfx-sidebar-scrim.is-open{display:block}
+ .pfx-landing .pfx-hero{padding-top:76px}
+}
+@media(prefers-reduced-motion:reduce){.pfx-landing .pfx-sidebar{transition:none}}

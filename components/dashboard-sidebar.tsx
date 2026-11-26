@@ -79,7 +79,7 @@ function SidebarIcon({ name }: { name: string }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true" className="sidebar-lucide"><path d={iconPaths[name] ?? iconPaths.file} /></svg>;
 }
 
-export default function DashboardSidebar({ isFounder = false }: { isFounder?: boolean }) {
+export default function DashboardSidebar({ isFounder = false, usedUnits = 0, includedUnits = null, isFounderAccess = false }: { isFounder?: boolean; usedUnits?: number; includedUnits?: number | null; isFounderAccess?: boolean }) {
   const pathname = usePathname();
   const activeGroup = groups.find(group => group.items.some(item => item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/'))) ?? groups[0];
   const [open, setOpen] = useState(false);
@@ -136,7 +136,10 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
         <div className="sidebar-account-heading"><SidebarIcon name="settings" /><span>ACCOUNT</span></div>
         <Link href="/dashboard/settings" className={`sidebar-link redesigned-link ${pathname.startsWith('/dashboard/settings') ? 'sidebar-link-active' : ''}`} onClick={() => setOpen(false)}><SidebarIcon name="settings" /><span>Workspace settings</span></Link>
         <Link href="/pricing" className={`sidebar-link redesigned-link ${pathname.startsWith('/pricing') ? 'sidebar-link-active' : ''}`} onClick={() => setOpen(false)}><SidebarIcon name="target" /><span>Plans & usage</span></Link>
-        <div className="sidebar-usage-note"><span>Plan and audit usage</span><Link href="/pricing">View usage <span aria-hidden="true">↗</span></Link></div>
+        <div className="sidebar-usage-meter">
+          <div className="sidebar-usage-meter-top"><span>{isFounderAccess ? 'Founder access' : 'Audit usage'}</span><Link href="/pricing">Manage</Link></div>
+          {isFounderAccess ? <strong className="sidebar-usage-unlimited">Unlimited access</strong> : includedUnits !== null ? <><div className="sidebar-usage-meter-values"><strong>{usedUnits.toLocaleString()}</strong><span> / {includedUnits.toLocaleString()} audits</span></div><div className="sidebar-usage-track" role="progressbar" aria-label="Audit usage" aria-valuemin={0} aria-valuemax={includedUnits} aria-valuenow={Math.min(usedUnits, includedUnits)}><span style={{width:`${includedUnits > 0 ? Math.min(100, usedUnits / includedUnits * 100) : 0}%`}} /></div></> : <span className="sidebar-usage-pending">Usage available with an active plan</span>}
+        </div>
       </div>
       <div className="sidebar-bottom"><p>Evidence first. Fix what you can verify.</p></div>
     </aside>

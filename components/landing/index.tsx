@@ -1,3 +1,4 @@
+import Brand from "@/components/brand";
 import Link from "next/link";
 import { SidebarNav } from "./sidebar-nav";
 
@@ -203,7 +204,7 @@ export function FinalCta() {
 }
 
 export function Footer() {
-  return <footer className="pfx-footer"><div className="pfx-footer-top"><Link className="pfx-logo" href="/"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p></div><nav aria-label="Footer navigation"><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></nav><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>;
+  return <footer className="pfx-footer"><div className="pfx-footer-top"><Brand className="pfx-footer-brand" /><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p></div><nav aria-label="Footer navigation"><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></nav><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>;
 }
 
 export default function LandingPage() {

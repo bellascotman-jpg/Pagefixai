@@ -1,4 +1,6 @@
+import Brand from "@/components/brand";
 import Link from "next/link";
+import { SidebarNav } from "./sidebar-nav";
 
 const solutionItems = [
   "Product Page Intelligence", "Buyer Objection Intelligence", "Commerce Friction Intelligence",
@@ -51,14 +53,7 @@ function Mark({ children }: { children: React.ReactNode }) {
 }
 
 export function Nav() {
-  return <header className="pfx-nav"><div className="pfx-nav-inner">
-    <Link className="pfx-logo" href="/" aria-label="PageFix AI home"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link>
-    <nav className="pfx-nav-links" aria-label="Main navigation">
-      <a href="#capabilities">Platform</a><a href="#product-system">Features</a><a href="#solutions">Ads &amp; Creative</a><a href="#how-it-works">How it works</a><a href="#trust">Evidence standard</a>
-      <Link href="/compare">Compare tools</Link><Link href="/resources">Guides</Link><Link href="/partners/affiliate">Partners</Link><Link href="/pricing">Pricing</Link>
-    </nav>
-    <div className="pfx-nav-actions"><Link href="/auth?mode=login">Sign in</Link><Link className="pfx-btn pfx-btn-red pfx-btn-small" href="/auth">Start an audit <span aria-hidden="true">↗</span></Link></div>
-  </div></header>;
+  return <SidebarNav />;
 }
 
 
@@ -209,9 +204,9 @@ export function FinalCta() {
 }
 
 export function Footer() {
-  return <footer className="pfx-footer"><div className="pfx-footer-top"><Link className="pfx-logo" href="/"><span className="pfx-logo-mark">✓</span>PageFix<span>AI</span></Link><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p></div><nav aria-label="Footer navigation"><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></nav><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>;
+  return <footer className="pfx-footer"><div className="pfx-footer-top"><Brand className="pfx-footer-brand" /><p>Evidence-led website diagnostics. Clear limits. Practical fixes.</p></div><nav aria-label="Footer navigation"><Link href="/pricing">Pricing</Link><Link href="/compare">Compare tools</Link><Link href="/blog">Blog</Link><Link href="/resources">Resources</Link><Link href="/partners/affiliate">Affiliate program</Link><Link href="/referrals">Referral program</Link><Link href="/methodology">Evidence standard</Link><Link href="/privacy">Privacy</Link><Link href="/security">Security</Link><Link href="/auth">Account</Link><a href="mailto:wisdomfrankceo@gmail.com">Contact</a></nav><small>© {new Date().getFullYear()} PageFix AI. Audit findings describe observable evidence and do not guarantee commercial outcomes.</small></footer>;
 }
 
 export default function LandingPage() {
-  return <main className="pfx-landing"><Nav/><Hero/><TrustStrip/><Strips/><Proof/><ResourceCta/><Workflow/><Solutions/><Steps/><Audiences/><AuditTrail/><SpecialistTools/><CategoryIntelligence/><ImpactAnalysis/><ReportDetails/><CommerceSystem/><PrivacyNote/><Faq/><FinalCta/><Footer/></main>;
+  return <main id="top" className="pfx-landing"><Nav/><Hero/><TrustStrip/><Strips/><Proof/><ResourceCta/><Workflow/><Solutions/><Steps/><Audiences/><AuditTrail/><SpecialistTools/><CategoryIntelligence/><ImpactAnalysis/><ReportDetails/><CommerceSystem/><PrivacyNote/><Faq/><FinalCta/><Footer/></main>;
 }

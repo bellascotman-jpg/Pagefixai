@@ -9,11 +9,11 @@ type BrandProps = {
 export default function Brand({ className = '', href = '/', label = 'PageFix AI home' }: BrandProps) {
   return (
     <Link href={href} className={`brand-lockup ${className}`.trim()} aria-label={label}>
-      <svg className="brand-symbol" viewBox="0 0 40 40" aria-hidden="true" focusable="false">
-        <rect x="2" y="2" width="36" height="36" rx="11" fill="#6d142d" />
-        <path d="M12 11h10.4a7.1 7.1 0 0 1 0 14.2H17v5.8h-5V11Z" fill="#fff" />
-        <path d="M17 16v4.8h5.4a2.4 2.4 0 0 0 0-4.8H17Z" fill="#c85b79" />
-        <path d="m23.2 27.2 3.1 3.1 5.9-6.3" fill="none" stroke="#f5d9b8" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+      <svg className="brand-symbol" viewBox="0 0 48 48" role="img" aria-label="PageFix symbol" focusable="false">
+        <rect x="2" y="2" width="44" height="44" rx="13" fill="#6D142D" />
+        <path d="M14 35V13h11.2c6.1 0 9.8 3.2 9.8 8.5S31.3 30 25.2 30H20v5h-6Zm6-10h5c2.7 0 4-1.1 4-3.4s-1.3-3.5-4-3.5h-5V25Z" fill="#FFF8FA" />
+        <path d="M34.5 32.5v-5.8M38.5 32.5v-9M42.5 32.5v-12" stroke="#F2C3D0" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="38.5" cy="16" r="1.8" fill="#F5D9B8" />
       </svg>
       <span className="brand-wordmark">PageFix<small>AI</small></span>
     </Link>

@@ -59,7 +59,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
       <div><div className="label">COMMERCE INTELLIGENCE / {capability.group.toUpperCase()}</div><h1 style={{fontSize:27,margin:'4px 0 0'}}>{capability.title}</h1></div>
       <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>
         <Link className="button button-secondary" href="/dashboard/intelligence">All capabilities</Link>
-        <Link className="button button-secondary" href={`/dashboard/ai-help?topic=${module}`}>Ask PageFix AI →</Link>
+        {module !== 'buyer-decisions' && <Link className="button button-secondary" href={`/dashboard/ai-help?topic=${module}`}>Ask PageFix AI →</Link>}
         <Link className="primary-button" href="/dashboard">Run an inspection →</Link>
       </div>
     </header>
@@ -71,9 +71,10 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
         {latest ? <div className="capability-detail-actions"><Link href={`/dashboard/audits/${latest.id}${reportAnchor}`} className="primary-button">Open latest evidence →</Link><Link href="/dashboard/audits" className="button button-secondary">Audit history</Link></div> : <div className="capability-detail-actions"><Link href="/dashboard" className="primary-button">Run your first inspection →</Link></div>}
       </div>
 
-      {!latest ? <section className="card" style={{marginTop:18}}>
-        <h2>No completed inspection yet</h2><p className="muted">This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.</p>
-        <Link className="primary-button" href="/dashboard">Start an inspection →</Link>
+      {!latest ? <section className={module === 'buyer-decisions' ? 'buyer-empty' : 'card'} style={{marginTop:18}}>
+        <strong>{module === 'buyer-decisions' ? 'Your buyer-question review will appear here after the first audit' : 'No completed inspection yet'}</strong>
+        <p>{module === 'buyer-decisions' ? 'PageFix will check the product page for answers about the offer, product details, trust, delivery and returns. No sample results are shown before an audit.' : 'This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.'}</p>
+        <Link className="primary-button" href="/dashboard">Run your first inspection →</Link>
       </section> : <>
         {module === 'buyer-decisions' ? <section className="buyer-panel" style={{marginTop:18}}><div className="label">INSPECTED STORE PAGE</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2><p>All results below are drawn from this completed inspection. A public page capture cannot reveal private analytics or confirm actual customer behaviour.</p><Link className="button button-secondary" href={`/dashboard/audits/${latest.id}`}>View complete audit record →</Link></section> : <section className="card" style={{marginTop:18}}>
           <div className="label">LIVE WORKSPACE / LATEST COMPLETED INSPECTION</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2>

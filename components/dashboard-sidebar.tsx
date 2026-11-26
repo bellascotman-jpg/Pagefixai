@@ -84,12 +84,10 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
   const activeGroup = groups.find(group => group.items.some(item => item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/'))) ?? groups[0];
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState<string>(activeGroup.label);
-  const [userToggled, setUserToggled] = useState(false);
-
   useEffect(() => {
     setOpen(false);
-    if (!userToggled) setExpanded(activeGroup.label);
-  }, [pathname, activeGroup.label, userToggled]);
+    setExpanded(activeGroup.label);
+  }, [pathname, activeGroup.label]);
 
   useEffect(() => {
     if (!open) return;
@@ -123,7 +121,7 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
           const isExpanded = expanded === group.label;
           const active = group.items.some(item => item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + '/'));
           return <section key={group.label} className={`sidebar-group redesigned-group ${group.tone ?? ''} ${active ? 'has-active' : ''} ${isExpanded ? 'is-expanded' : 'is-collapsed'}`}>
-            <button type="button" className="sidebar-section-toggle redesigned-section-toggle" aria-expanded={isExpanded} onClick={() => { setUserToggled(true); setExpanded(current => current === group.label ? '' : group.label); }}>
+            <button type="button" className="sidebar-section-toggle redesigned-section-toggle" aria-expanded={isExpanded} onClick={() => setExpanded(current => current === group.label ? '' : group.label)}>
               <span className="sidebar-group-copy"><span className="sidebar-section-label">{group.label}</span><span className="sidebar-group-descriptor">{group.descriptor}</span></span>
               <svg viewBox="0 0 24 24" aria-hidden="true" className="sidebar-chevron"><path d="m7 10 5 5 5-5" /></svg>
             </button>

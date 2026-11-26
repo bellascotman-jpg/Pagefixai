@@ -465,3 +465,16 @@ html,body{background:#fbf7f8;color:#2a1018}
 .pfx-landing .pfx-footer-brand .brand-wordmark{color:#fff}
 .pfx-landing .pfx-footer-brand .brand-wordmark small{color:#f2c3d0}
 @media(max-width:900px){.payment-bridge{padding:18px}.payment-bridge-card{padding:26px 22px}}
+
+
+/* Shared logo placement in authentication and authenticated workspaces. */
+.auth-aside .auth-brand-inverse .brand-wordmark{color:#fff!important}
+.auth-aside .auth-brand-inverse .brand-wordmark small{color:#f2c3d0!important}
+.auth-mobile-brand .auth-brand .brand-wordmark{color:#2a1018!important}
+.auth-mobile-brand .auth-brand .brand-wordmark small{color:#6d142d!important}
+.app-sidebar .sidebar-brand-lockup .brand-wordmark{color:#fff!important}
+.app-sidebar .sidebar-brand-lockup .brand-wordmark small{color:#f2c3d0!important}
+.app-sidebar .sidebar-brand-lockup .brand-symbol{width:35px;height:35px;flex:0 0 35px}
+.mobile-workspace-bar .sidebar-brand-lockup .brand-wordmark{color:#2a1018!important}
+.mobile-workspace-bar .sidebar-brand-lockup .brand-wordmark small{color:#6d142d!important}
+.mobile-workspace-bar .sidebar-brand-lockup .brand-symbol{width:30px;height:30px;flex-basis:30px}

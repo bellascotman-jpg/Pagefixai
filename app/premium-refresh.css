@@ -387,3 +387,81 @@
   .marketing .trust-strip div,
   .marketing .workflow-step { transition:none!important; }
 }
+
+
+/* Unified PageFix visual system — applied after legacy theme layers. */
+:root{
+  --ink:#2a1018!important;
+  --muted:#74656a!important;
+  --teal:#6d142d!important;
+  --teal-dark:#4b0d20!important;
+  --mint:#f5e6eb!important;
+  --line:#e7dce0!important;
+  --paper:#fbf7f8!important;
+  --white:#fff!important;
+  --dark:#210b12!important;
+  --dark-2:#38101e!important;
+  --pagefix-accent:#6d142d;
+  --pagefix-accent-hover:#4b0d20;
+  --pagefix-rose:#c85b79;
+  --pagefix-blush:#f2c3d0;
+  --pagefix-cream:#f5d9b8;
+}
+html,body{background:#fbf7f8;color:#2a1018}
+.button-primary,.primary-button,.auth-submit,.pricing-page .pricing-cta.button-primary{
+  background:#6d142d!important;color:#fff!important;border-color:#6d142d!important;
+  box-shadow:0 8px 22px rgba(109,20,45,.14)!important;
+}
+.button-primary:hover,.primary-button:hover,.auth-submit:hover,.pricing-page .pricing-cta.button-primary:hover{
+  background:#4b0d20!important;border-color:#4b0d20!important;
+}
+.button-secondary{border-color:#e0cbd2!important;color:#4b2632!important;background:#fff!important}
+.eyebrow,.nav-links a:hover,.site-footer a:hover,.text-button,.auth-switch button,.auth-legal a,.auth-forgot{color:#6d142d}
+.site-nav{background:rgba(251,247,248,.94)!important;border-bottom-color:#e7dce0!important}
+.nav-links,.nav-actions{color:#5d4850!important}
+.pricing-page,.pricing-page .pricing-hero,.pricing-page .pricing-comparison,.pricing-page .pricing-faq{background:#fbf7f8}
+.pricing-page .pricing-card{background:#fff!important;border-color:#e7dce0!important}
+.pricing-page .pricing-card-featured{border-color:#6d142d!important;box-shadow:0 18px 44px rgba(109,20,45,.11)!important}
+.pricing-page .pricing-ribbon,.pricing-page .pricing-promise{color:#6d142d}
+.pricing-page .pricing-promise{background:#f5e6eb;border-color:#e7dce0}
+.dashboard{background:#fbf7f8!important}
+.topbar{background:#fff!important;border-bottom-color:#e7dce0!important}
+.app-sidebar{background:linear-gradient(180deg,#210b12 0%,#2a1018 62%,#38101e 100%)!important;color:#f4e9ed!important;border-right-color:rgba(242,195,208,.1)!important}
+.sidebar-brand span,.sidebar-icon{color:#f2c3d0!important}
+.sidebar-link-active{background:rgba(200,91,121,.18)!important;box-shadow:inset 3px 0 #e29bb0!important}
+.sidebar-link:hover{background:rgba(242,195,208,.08)!important;color:#fff!important}
+.sidebar-section-label{color:#c89aa7!important}
+.sidebar-bottom{border-top-color:rgba(242,195,208,.16)!important}
+.sidebar-bottom a{color:#f2c3d0!important}
+
+/* The in-app payment bridge uses the same burgundy, blush and warm-white system. */
+.payment-bridge{
+  min-height:100vh;display:grid;place-items:center;padding:28px;
+  background:radial-gradient(ellipse at 80% 12%,rgba(200,91,121,.13),transparent 35%),linear-gradient(145deg,#fbf7f8 0%,#f5e6eb 100%)!important;
+  color:#2a1018;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.payment-bridge-card{
+  width:min(520px,100%);padding:clamp(28px,5vw,48px);border:1px solid #e7dce0;
+  border-radius:22px;background:rgba(255,255,255,.96);box-shadow:0 24px 80px rgba(42,16,24,.09);
+}
+.payment-bridge-brand{margin-bottom:35px}
+.payment-bridge-brand .brand-symbol{width:42px;height:42px;flex-basis:42px}
+.payment-bridge-brand .brand-wordmark{font-size:25px}
+.payment-bridge .eyebrow{color:#6d142d;font-size:10px;font-weight:850;letter-spacing:.14em}
+.payment-bridge-card h1{margin:16px 0 12px;color:#2a1018;font-size:clamp(27px,5vw,36px);line-height:1.13;letter-spacing:-.05em}
+.payment-bridge-card>p{margin:0;color:#74656a;font-size:14px;line-height:1.85}
+.payment-bridge-status{display:flex;align-items:center;gap:10px;margin:25px 0;padding:13px 14px;border:1px solid #e7dce0;border-radius:10px;background:#fbf7f8;color:#6d142d;font-size:12px;font-weight:750}
+.payment-bridge-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#c85b79;box-shadow:0 0 0 4px #f5e6eb}
+.payment-bridge-dot-error{background:#b42318;box-shadow:0 0 0 4px #fee4e2}
+.payment-bridge-card>.button{width:100%;margin-top:6px}
+.payment-bridge .button-secondary{background:#fff!important;border-color:#e0cbd2!important;color:#6d142d!important}
+.payment-bridge .button-secondary:hover{background:#f5e6eb!important}
+.brand-lockup .brand-symbol{filter:drop-shadow(0 3px 5px rgba(109,20,45,.14))}
+.brand-lockup .brand-wordmark small{color:#6d142d!important}
+.pfx-landing .pfx-sidebar-brand .pfx-sidebar-logo{display:inline-flex;align-items:center;gap:10px}
+.pfx-landing .pfx-sidebar-brand .pfx-sidebar-logo .brand-symbol{width:38px;height:38px;flex-basis:38px}
+.pfx-landing .pfx-sidebar-brand .pfx-sidebar-logo .brand-wordmark{font-size:22px}
+.pfx-landing .pfx-footer-brand{display:inline-flex;margin-bottom:8px}
+.pfx-landing .pfx-footer-brand .brand-wordmark{color:#fff}
+.pfx-landing .pfx-footer-brand .brand-wordmark small{color:#f2c3d0}
+@media(max-width:900px){.payment-bridge{padding:18px}.payment-bridge-card{padding:26px 22px}}

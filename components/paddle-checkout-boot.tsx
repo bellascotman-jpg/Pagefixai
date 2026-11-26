@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Script from 'next/script';
 import Link from 'next/link';
+import Brand from '@/components/brand';
 
 declare global {
   interface Window {
@@ -59,7 +60,7 @@ export default function PaddleCheckoutBoot({
         onError={() => setState('error')}
       />
       <div className="payment-bridge-card">
-        <div className="payment-bridge-mark" aria-hidden="true">P</div>
+        <Brand className="payment-bridge-brand" />
         <div className="eyebrow">{complete ? 'CHECKOUT COMPLETE' : 'SECURE SUBSCRIPTION CHECKOUT'}</div>
         <h1>
           {complete

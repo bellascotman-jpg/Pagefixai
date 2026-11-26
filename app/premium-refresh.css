@@ -205,7 +205,7 @@
 .marketing .hero-motion-art{z-index:-1;right:-5%;top:0;width:min(66%,790px);height:100%;opacity:.96}
 .marketing .hero-motion-art .ribbon{stroke-width:46;opacity:.72;filter:blur(15px);animation-duration:16s}
 .marketing .hero-motion-art .ribbon-core{stroke-width:2.8;opacity:.72;stroke-dasharray:4 11;animation-duration:24s}
-.marketing .hero-motion-art .orbit{stroke:#8e6ab8;opacity:.34;animation-duration:42s}
+.marketing .hero-motion-art .orbit{stroke:#c85b79;opacity:.34;animation-duration:42s}
 .marketing .hero-motion-art .orbit-dot{fill:#6d142d;opacity:.76}
 @keyframes pagefix-gradient-drift{0%{background-position:0% 20%;transform:translate3d(0,0,0) scale(1)}50%{background-position:100% 45%;transform:translate3d(-1.5%,1%,0) scale(1.035)}100%{background-position:30% 100%;transform:translate3d(1%,-1%,0) scale(1.015)}}
 @media(max-width:900px){.marketing .hero-motion-art{right:-18%;width:78%;opacity:.7}.marketing .hero-section:before{right:-24%;width:100%;height:100%}}
@@ -291,7 +291,7 @@
   height:3px;
   transform:scaleX(.18);
   transform-origin:left;
-  background:linear-gradient(90deg,#6d142d,#c85b79,#8e6ab8,#4691dd);
+  background:linear-gradient(90deg,#6d142d,#c85b79,#c85b79,#f2c3d0);
   transition:transform .32s ease;
 }
 .marketing .capability-card:hover::after { transform:scaleX(1); }
@@ -308,7 +308,7 @@
   background:rgba(255,255,255,.76);
 }
 .marketing .system-card-featured {
-  background:linear-gradient(145deg,#fff 10%,#fbf4f7 68%,#f5f2fc 100%);
+  background:linear-gradient(145deg,#fff 10%,#fbf4f7 68%,#f5e6eb 100%);
 }
 .marketing .system-card:hover { background:#fff; }
 .marketing .system-number,
@@ -327,7 +327,7 @@
   position:relative;
   isolation:isolate;
   overflow:hidden;
-  background:linear-gradient(110deg,#fbf3f6 0%,#f8f5fc 54%,#f1f7fc 100%);
+  background:linear-gradient(110deg,#fbf3f6 0%,#fbf7f8 54%,#f5e6eb 100%);
 }
 .marketing .resource-cta-strip::before {
   content:"";
@@ -341,7 +341,7 @@
   animation:pagefix-block-drift 17s ease-in-out infinite alternate;
 }
 .marketing .proof-footnote {
-  background:linear-gradient(105deg,#fbf1f4,#f6f3fb);
+  background:linear-gradient(105deg,#fbf1f4,#f5e6eb);
   border-color:#ead9e1;
 }
 .marketing .audience-grid article { background:#fff; }

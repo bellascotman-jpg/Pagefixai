@@ -147,7 +147,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
               <div className="label">PLAIN-ENGLISH GUIDE</div><h2>What this means</h2><p>These terms explain the signals shown above and why they matter before checkout.</p>
               <div className="buyer-meaning-grid">
                 <div className="buyer-meaning-item"><strong>Questions not observed</strong><p>Buyer questions for which the captured page did not record a clear answer. Missing information can make comparison and purchase decisions harder.</p></div>
-                <div className="buyer-meaning-item"><strong>Finding severity</strong><p>The audit's HIGH, MEDIUM or LOW classification of an identified issue. It helps order review work; it is not a sales-loss estimate.</p></div>
+                <div className="buyer-meaning-item"><strong>Finding severity</strong><p>The audit&apos;s HIGH, MEDIUM or LOW classification of an identified issue. It helps order review work; it is not a sales-loss estimate.</p></div>
                 <div className="buyer-meaning-item"><strong>Evidence references</strong><p>Saved page excerpts or source locations attached to a finding. They let you inspect why PageFix raised the issue.</p></div>
               </div>
             </section>

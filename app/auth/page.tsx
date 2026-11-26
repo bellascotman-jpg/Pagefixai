@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FOUNDER_EMAIL } from '@/lib/plans';
+import Brand from '@/components/brand';
 
 function PasswordVisibilityButton({ visible, onToggle }: { visible: boolean; onToggle: () => void }) {
   return (
@@ -75,13 +76,13 @@ export default function AuthPage() {
 
   return <main className="auth-shell">
     <div className="auth-aside">
-      <Link className="brand" href="/">PageFix<span>AI</span></Link>
+      <Brand className="auth-brand auth-brand-inverse" />
       <div className="auth-aside-copy"><div className="eyebrow eyebrow-light">EVIDENCE BEFORE OPINIONS</div><h2>Find the issue.<br/>Understand the why.<br/><span>Verify the fix.</span></h2><p>Practical website diagnostics for teams who need clear evidence, not invented metrics or generic recommendations.</p><div className="auth-assurance"><span>✓</span> Findings grounded in captured page evidence</div><div className="auth-assurance"><span>✓</span> Clear limits around private business data</div><div className="auth-assurance"><span>✓</span> Rechecks that preserve audit history</div></div>
       <div className="auth-aside-foot">PageFix AI · Website diagnostics with honest limits</div>
     </div>
     <section className="auth-panel">
       <div className="auth-card">
-        <div className="auth-mobile-brand"><Link className="brand" href="/">PageFix<span>AI</span></Link></div>
+        <div className="auth-mobile-brand"><Brand className="auth-brand" /></div>
         <div className="eyebrow">{mode === 'signup' ? 'CREATE YOUR WORKSPACE' : 'YOUR WORKSPACE AWAITS'}</div>
         <h1>{mode === 'signup' ? 'Start with the evidence.' : 'Welcome back.'}</h1>
         <p className="muted">{mode === 'signup' ? 'Create an account to inspect pages, organize findings and track the fixes you make.' : 'Sign in to continue your website diagnostics workflow.'}</p>

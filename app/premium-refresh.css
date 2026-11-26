@@ -478,3 +478,6 @@ html,body{background:#fbf7f8;color:#2a1018}
 .mobile-workspace-bar .sidebar-brand-lockup .brand-wordmark{color:#2a1018!important}
 .mobile-workspace-bar .sidebar-brand-lockup .brand-wordmark small{color:#6d142d!important}
 .mobile-workspace-bar .sidebar-brand-lockup .brand-symbol{width:30px;height:30px;flex-basis:30px}
+
+/* Visible keyboard focus remains consistent with the PageFix burgundy identity. */
+.brand-lockup:focus-visible,.payment-bridge .button:focus-visible,.pfx-landing .pfx-sidebar-group nav a:focus-visible{outline:3px solid #c85b79!important;outline-offset:4px!important}

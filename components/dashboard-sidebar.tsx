@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Brand from '@/components/brand';
 
 const groups = [
   { label: 'QUICK ACCESS', items: [
@@ -101,13 +102,13 @@ export default function DashboardSidebar({ isFounder = false }: { isFounder?: bo
   return <>
     <div className="mobile-workspace-bar">
       <button className="workspace-menu-button" type="button" aria-label={open ? 'Close workspace menu' : 'Open workspace menu'} aria-expanded={open} aria-controls="workspace-sidebar" onClick={() => setOpen(value => !value)}><span /><span /><span /></button>
-      <Link href="/dashboard" className="sidebar-brand">PageFix<span>AI</span></Link>
+      <Brand href="/dashboard" className="sidebar-brand-lockup" />
       <span className="workspace-bar-label">WORKSPACE</span>
     </div>
     <button type="button" aria-label="Close workspace navigation" className={`workspace-sidebar-backdrop ${open ? 'is-open' : ''}`} onClick={() => setOpen(false)} tabIndex={open ? 0 : -1} />
     <aside id="workspace-sidebar" className={`app-sidebar ${open ? 'is-open' : ''}`}>
-      <Link href="/dashboard" className="sidebar-brand sidebar-desktop-brand">PageFix<span>AI</span></Link>
-      <div className="sidebar-mobile-heading"><Link href="/dashboard" className="sidebar-brand" onClick={() => setOpen(false)}>PageFix<span>AI</span></Link><button type="button" className="sidebar-close-button" aria-label="Close workspace menu" onClick={() => setOpen(false)}>×</button></div>
+      <Brand href="/dashboard" className="sidebar-brand-lockup sidebar-desktop-brand" />
+      <div className="sidebar-mobile-heading"><Brand href="/dashboard" className="sidebar-brand-lockup" /><button type="button" className="sidebar-close-button" aria-label="Close workspace menu" onClick={() => setOpen(false)}>×</button></div>
       {visibleGroups.map(group => <div key={group.label} className={`sidebar-group ${collapsed[group.label] ? 'is-collapsed' : ''}`}>
         <button type="button" className="sidebar-section-toggle" aria-expanded={!collapsed[group.label]} onClick={() => setCollapsed(current => ({ ...current, [group.label]: !current[group.label] }))}><span className="sidebar-section-label">{group.label}</span><span className="sidebar-section-chevron" aria-hidden="true">{collapsed[group.label] ? '+' : '−'}</span></button>
         {!collapsed[group.label] && <nav className="sidebar-nav" aria-label={group.label}>{group.items.map(item => {

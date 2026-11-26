@@ -27,8 +27,12 @@
 .sidebar-account-heading{display:flex;align-items:center;gap:9px;padding:0 11px 8px;color:#f3dce4;font-size:10px;font-weight:850;letter-spacing:.13em}
 .sidebar-account-heading .sidebar-lucide{width:15px;height:15px}
 .sidebar-account .redesigned-link{min-height:42px}
-.sidebar-usage-note{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:9px 3px 0;padding:10px 11px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.045);font-size:9px;color:#cbb6bf}
-.sidebar-usage-note a{color:#f4c4d1;font-weight:800;white-space:nowrap}
+.sidebar-usage-meter{margin:9px 3px 0;padding:11px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:rgba(255,255,255,.045);color:#cbb6bf}
+.sidebar-usage-meter-top,.sidebar-usage-meter-values{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sidebar-usage-meter-top{font-size:9px;font-weight:750}.sidebar-usage-meter-top a{color:#f4c4d1;font-weight:850}
+.sidebar-usage-meter-values{margin-top:8px;font-size:9px}.sidebar-usage-meter-values strong{font-size:16px;color:#fff}.sidebar-usage-meter-values span{color:#cbb6bf}
+.sidebar-usage-track{height:5px;margin-top:8px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.13)}.sidebar-usage-track span{display:block;height:100%;border-radius:99px;background:#e7a5b8}
+.sidebar-usage-unlimited{display:block;margin-top:8px;color:#fff;font-size:13px}.sidebar-usage-pending{display:block;margin-top:8px;color:#cbb6bf;font-size:9px;line-height:1.5}
 .redesigned-sidebar .sidebar-bottom{flex:0 0 auto;margin:0!important;padding:11px 10px 0!important}
 .redesigned-sidebar .sidebar-bottom p{margin:0!important;color:#bfa8b1;font-size:9px!important;line-height:1.5!important}
 .pagefix-assistant-float{position:fixed;right:22px;bottom:22px;z-index:45;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 17px;border:1px solid #8f5269;border-radius:999px;background:#5a132d;color:#fff;font-size:12px;font-weight:800;box-shadow:0 12px 32px rgba(48,8,23,.22);transition:transform .18s ease,background .18s ease}

@@ -238,3 +238,21 @@
 .pf-flow-arrow span{font-size:9px;font-weight:800}.pf-flow-arrow .mismatch{color:#b42318}.pf-flow-arrow .match{color:#187344}.pf-flow-arrow .unchecked{color:#887580}
 .pf-flow-arrow b{font-size:15px}
 @media(max-width:760px){.pf-flow-arrow{justify-content:center;transform:none;margin:5px 0}.pf-flow-arrow b{transform:rotate(90deg)}}
+
+
+/* Feature-specific five-block report visuals */
+.pf-viewport-grid,.pf-seo-grid,.pf-verification-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.pf-viewport-card,.pf-seo-grid article,.pf-verification-grid article{display:grid;gap:7px;min-width:0;padding:15px;border:1px solid #eee2e7;border-radius:13px;background:#fff}
+.pf-viewport-card>span,.pf-seo-grid article>span,.pf-verification-grid article>span{color:#8a6e7b;font-size:9px;font-weight:850;letter-spacing:.1em}
+.pf-viewport-card strong,.pf-seo-grid article>strong,.pf-verification-grid article>strong{color:#432235;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.pf-viewport-card a{color:#741d40;font-size:11px;font-weight:800}
+.pf-verification-grid article>strong{font-size:22px;font-variant-numeric:tabular-nums}
+.pf-chart-card>p{margin:0;color:#776671;font-size:11px;line-height:1.65}
+.pf-report-block .pf-explain-grid{margin-top:12px}
+.pf-report-block .pf-explain-grid article{padding:14px;border:1px solid #eee3e8;border-radius:13px;background:#fdfbfc}
+.pf-report-block .pf-explain-grid article p{margin:5px 0 0;color:#776671;font-size:11px;line-height:1.6}
+.pf-report-block .pf-fix-card>p{margin:6px 0}
+.pf-report-footer{display:flex;gap:8px;flex-wrap:wrap}
+.pf-report-footer .button{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 12px;border:1px solid #e7d9df;border-radius:9px;background:#fff;color:#6d1b3d;font-size:10px;font-weight:800;text-decoration:none}
+.pf-report-footer .button:hover{background:#fbf3f6}
+@media(max-width:600px){.pf-viewport-grid,.pf-seo-grid,.pf-verification-grid{grid-template-columns:1fr}.pf-report-footer .button{flex:1 1 140px}}

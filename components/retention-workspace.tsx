@@ -183,21 +183,66 @@ export default function RetentionWorkspace() {
       </form>
     </section>
 
-    {(selectedId || findings.length > 0 || metrics) && <section className="card">
-      <div className="label">SAVED ANALYSIS {selectedId ? `/ ${selectedId.slice(0, 8)}` : ''}</div>
-      <h2>Findings and next actions</h2>
-      {metrics && <div className="grid grid-3" style={{ margin: '16px 0' }}>
-        <div className="card"><div className="label">Journey completion</div><div className="stat">{metrics.completionRatePercent.toFixed(1)}%</div><p className="muted">{metrics.usersCompleted} / {metrics.usersStarted} users</p></div>
-        <div className="card"><div className="label">Not completed</div><div className="stat">{metrics.incompleteRatePercent.toFixed(1)}%</div><p className="muted">Calculated from supplied cohort counts</p></div>
-        <div className="card"><div className="label">Activation rate</div><div className="stat">{metrics.activationRatePercent === null ? 'Not supplied' : `${metrics.activationRatePercent.toFixed(1)}%`}</div><p className="muted">{metrics.windowLabel}</p></div>
-      </div>}
-      {metrics && <p className="muted">Metrics source: user-supplied aggregate counts. These rates describe the entered cohort only and do not establish causes of drop-off.</p>}
-      {findings.length === 0 ? <p className="muted">No rule-based gaps were detected in the supplied content. This is not a guarantee that the journey is free of usability or retention problems.</p> : <div style={{ display: 'grid', gap: 12 }}>{findings.map(item => <article className="finding" key={item.id}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}><strong>{item.title}</strong><span className="badge">{item.severity}</span><span className="badge">{item.label}</span></div>
-        <p>{item.detail}</p><p><strong>Why it matters:</strong> {item.whyItMatters}</p><p><strong>Recommended action:</strong> {item.recommendation}</p><p className="muted">Basis: {item.source}</p>
-      </article>)}</div>}
-    </section>}
+    {(selectedId || findings.length > 0 || metrics) && <section className="pf-audit-report">
+      <div className="pf-report-meta"><span>RETENTION & LIFECYCLE / SAVED ANALYSIS</span><span>{selectedId ? `RECORD ${selectedId.slice(0,8)}` : 'UNSAVED RESULTS'}</span></div>
 
+      <section className="pf-report-block">
+        <div className="pf-block-heading"><span>01</span><h2>The customer-lifecycle problem</h2></div>
+        <div className="pf-problem">
+          <span>PROBLEM / BUSINESS CONSEQUENCE</span>
+          <h2>“I need customers to understand the next step and reach the value I promised, without getting stuck in the journey.”</h2>
+          <p><strong>What it can cost:</strong> Unclear handoffs can increase support effort and create activation or retention risk. This analysis reviews only the content and aggregate metrics you supplied; it does not identify actual churn causes.</p>
+        </div>
+      </section>
+
+      <section className="pf-report-block">
+        <div className="pf-block-heading"><span>02</span><h2>Journey review verdict</h2></div>
+        <div className="pf-verdict-grid">
+          <article className="pf-verdict-card"><span>FINDINGS TO REVIEW</span><strong>{findings.length}</strong><small>Rule-based findings from the supplied journey material</small></article>
+          <article className={`pf-risk-card ${findings.some(item=>item.severity==='HIGH')?'risk':findings.length?'watch':'good'}`}><span>REVIEW PRIORITY</span><strong>{findings.some(item=>item.severity==='HIGH')?'High-priority review':findings.length?'Review recommended':'No rule-based gap detected'}</strong><small>{findings.filter(item=>item.severity==='HIGH').length} high · {findings.filter(item=>item.severity==='MEDIUM').length} medium · {findings.filter(item=>item.severity==='LOW').length} low</small></article>
+          <article className="pf-verdict-card"><span>JOURNEY STEPS SUPPLIED</span><strong>{input.steps.filter(step=>step.content.trim()).length} / {input.steps.length}</strong><small>Steps with visible content pasted into this analysis</small></article>
+          <article className="pf-verdict-card"><span>MESSAGES SUPPLIED</span><strong>{input.emails.filter(email=>email.subject.trim()||email.body.trim()).length}</strong><small>Onboarding emails or messages included</small></article>
+        </div>
+        {metrics && <div className="pf-verdict-grid" style={{marginTop:12}}>
+          <article className="pf-verdict-card"><span>JOURNEY COMPLETION</span><strong>{metrics.completionRatePercent.toFixed(1)}%</strong><small>{metrics.usersCompleted} / {metrics.usersStarted} users · supplied cohort</small></article>
+          <article className="pf-verdict-card"><span>INCOMPLETE RATE</span><strong>{metrics.incompleteRatePercent.toFixed(1)}%</strong><small>Calculated from supplied aggregate counts</small></article>
+          <article className="pf-verdict-card"><span>ACTIVATION RATE</span><strong>{metrics.activationRatePercent===null?'Not supplied':`${metrics.activationRatePercent.toFixed(1)}%`}</strong><small>{metrics.windowLabel || 'Reporting window not labelled'}</small></article>
+        </div>}
+        {metrics && <p className="muted">Metric source: {metrics.source}. Rates describe only the supplied cohort and reporting window; they do not establish why users did or did not complete the journey.</p>}
+        <div className="pf-explain-grid">
+          <article><strong>Known</strong><p>{input.steps.filter(step=>step.content.trim()).length} journey step(s) and {input.emails.filter(email=>email.subject.trim()||email.body.trim()).length} message(s) were supplied.</p></article>
+          <article><strong>Not established</strong><p>Actual churn, causal drop-off, customer sentiment and product usage outside the supplied material remain unknown.</p></article>
+        </div>
+      </section>
+
+      <section className="pf-report-block">
+        <div className="pf-block-heading"><span>03</span><h2>Where the supplied journey needs attention</h2></div>
+        <div className="pf-chart-card">
+          <p>Step coverage shows whether content was supplied for review. It does not confirm that the live screen or interactive control works.</p>
+          <div className="pf-bars">{input.steps.map((step,index)=><div className="pf-bar-row" key={step.id}><span className="pf-bar-rank">{String(index+1).padStart(2,'0')}</span><span className="pf-bar-label">{step.name || `Journey step ${index+1}`}</span><div className="pf-bar-track" role="img" aria-label={step.content.trim()?'Content supplied for this step':'No content supplied for this step'}><div className={`pf-bar-fill ${step.content.trim()?'has-value':''}`} style={{width:step.content.trim()?'100%':'0%'}} /></div><strong>{step.content.trim()?'Ready':'Unknown'}</strong></div>)}</div>
+          <div className="pf-explain-grid" style={{marginTop:14}}><article><strong>Journey type</strong><p>{input.flowType.replaceAll('_',' ')} · {input.businessType === 'saas' ? 'SaaS / software' : 'E-commerce'}</p></article><article><strong>Promised outcome</strong><p>{input.promisedOutcome.trim() || 'No pre-signup promise was supplied for comparison.'}</p></article></div>
+        </div>
+      </section>
+
+      <section className="pf-report-block">
+        <div className="pf-block-heading"><span>04</span><h2>Evidence and supplied source material</h2></div>
+        {findings.length ? <div className="pf-evidence-list">{findings.map(item=><article key={item.id}>
+          <div className="pf-chip-row"><span>{item.label}</span><span>{item.severity} SEVERITY</span></div>
+          <strong>{item.title}</strong><blockquote>{item.detail}</blockquote><small>Source: {item.source}</small>
+        </article>)}</div> : <div className="pf-empty-inline">No rule-based finding was generated from this analysis. This does not certify the journey as usable or complete.</div>}
+        <div className="pf-subpanel"><h3>Supplied journey content</h3>{input.steps.map((step,index)=><article key={step.id} style={{padding:'10px 0',borderTop:index?'1px solid #eee2e7':0}}><strong>{index+1}. {step.name}</strong><p className="muted">{step.content.trim()?step.content.slice(0,650):'No visible content supplied for this step.'}</p><small>Expected next action: {step.expectedNextStep || 'Not specified'} · Expected outcome: {step.expectedOutcome || 'Not specified'}</small></article>)}</div>
+        {input.emails.some(email=>email.subject.trim()||email.body.trim()) && <div className="pf-subpanel"><h3>Supplied onboarding messages</h3>{input.emails.filter(email=>email.subject.trim()||email.body.trim()).map((email,index)=><article key={index} style={{padding:'10px 0',borderTop:index?'1px solid #eee2e7':0}}><strong>{email.subject || `Message ${index+1}`}</strong><p className="muted">{email.body.slice(0,500)}</p><small>Primary action: {email.callToAction || 'Not specified'}</small></article>)}</div>}
+      </section>
+
+      <section className="pf-report-block">
+        <div className="pf-block-heading"><span>05</span><h2>Prioritised improvement plan</h2></div>
+        <p className="pf-fix-intro">Resolve the highest-severity issues first. Confirm the actual live flow, make the next action and success outcome explicit, then measure the same cohort after the change.</p>
+        {findings.length ? <div className="pf-fix-list">{findings.map((item,index)=><article className="pf-fix-card" key={item.id}>
+          <div className="pf-fix-top"><span>STEP {index+1}</span><span className={item.severity==='HIGH'?'risk':item.severity==='MEDIUM'?'watch':'good'}>{item.severity}</span><span>{item.label}</span></div>
+          <h3>{item.title}</h3><p>{item.recommendation}</p><small>{item.whyItMatters}</small>
+        </article>)}</div> : <div className="pf-empty-inline">No corrective action was generated by the current rules. Review the actual user journey and collect customer feedback before concluding that no friction exists.</div>}
+      </section>
+    </section>}
     <section className="card">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}><div><div className="label">YOUR ACCOUNT / HISTORY</div><h2>Saved retention analyses</h2></div><button type="button" className="button button-secondary" onClick={() => void loadHistory()} disabled={loadingHistory}>{loadingHistory ? 'Refreshing…' : 'Refresh history'}</button></div>
       {loadingHistory ? <p className="muted">Loading saved analyses…</p> : history.length === 0 ? <p className="muted">Your saved analyses will appear here after the first successful run.</p> : <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>{history.map(record => <button type="button" key={record.id} onClick={() => openSaved(record)} className="finding" style={{ textAlign: 'left', cursor: 'pointer', border: selectedId === record.id ? '1px solid var(--accent, #0f766e)' : undefined, color: 'inherit', background: 'transparent' }}><strong>{record.name}</strong><span className="badge" style={{ marginLeft: 8 }}>{record.flowType}</span><div className="muted" style={{ marginTop: 5 }}>{new Date(record.createdAt).toLocaleString()} · {record.findings?.length ?? 0} findings</div></button>)}</div>}

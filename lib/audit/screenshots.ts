@@ -34,9 +34,10 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
   const target = await validateAuditUrl(rawUrl, validatedHosts);
   let browser: Browser | null = null;
   const stored: StoredAuditScreenshot[] = [];
+  let timedOut = false;
   // Screenshots are supplemental. A hostile/slow page or constrained serverless
   // browser must never hold the core audit open indefinitely.
-  const hardStop = setTimeout(() => { void browser?.close().catch(() => undefined); }, 12_000);
+  const hardStop = setTimeout(() => { timedOut = true; void browser?.close().catch(() => undefined); }, 12_000);
   hardStop.unref?.();
 
   try {
@@ -46,8 +47,13 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
       headless: true,
       timeout: 7_000,
     });
+    if (timedOut) {
+      await browser.close().catch(() => undefined);
+      return [];
+    }
 
     for (const capture of CAPTURES) {
+      if (timedOut) break;
       let page: Awaited<ReturnType<Browser['newPage']>> | null = null;
       try {
         page = await browser.newPage({
@@ -126,6 +132,7 @@ export async function captureAuditScreenshots(auditId: string, rawUrl: string): 
       } finally {
         await page?.close().catch(() => undefined);
       }
+      if (timedOut) break;
     }
   } finally {
     clearTimeout(hardStop);

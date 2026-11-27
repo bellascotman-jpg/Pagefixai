@@ -4,6 +4,9 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { capabilities } from '@/lib/product/capabilities';
 import IntelligenceActionPanel from '@/components/intelligence-action-panel';
+import IntelligenceModuleReport from '@/components/intelligence-module-report';
+
+const professionalFeatureModules = new Set(['inspection', 'verification', 'workspaces', 'reports', 'governance', 'return-risk', 'copy-fixes', 'visual-inspection', 'seo-data']);
 
 const findingFilters: Record<string, RegExp> = {
   'buyer-decisions': /buyer|value proposition|proof|trust|claim|promise|purchase action|commercial action|shipping|return|refund|benefit|decision/i,
@@ -50,7 +53,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
   const latest = audits[0];
   const seoSnapshot = latest ? safeJson(latest.evidence.find(item => item.type === 'METADATA')?.content) : null;
   const pattern = findingFilters[module] ?? /./;
-  const relevantFindings = latest?.findings.filter(item => pattern.test(item.title + ' ' + item.observation + ' ' + item.recommendation)) ?? [];
+  const relevantFindings = module === 'workspaces' ? [] : latest?.findings.filter(item => pattern.test(item.title + ' ' + item.observation + ' ' + item.recommendation)) ?? [];
   const statusClass = capability.status === 'Available in current workflow' ? 'status-available' : capability.status === 'Foundation / needs validation' ? 'status-foundation' : 'status-planned';
   const reportAnchor = module === 'seo-data' ? '#technical-seo-readiness' : module === 'buyer-decisions' || module === 'return-risk' ? '#buyer-decision-intelligence' : '#prioritized-findings';
 
@@ -71,11 +74,11 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
         {latest ? <div className="capability-detail-actions"><Link href={`/dashboard/audits/${latest.id}${reportAnchor}`} className="primary-button">Open latest evidence →</Link><Link href="/dashboard/audits" className="button button-secondary">Audit history</Link></div> : <div className="capability-detail-actions"><Link href="/dashboard" className="primary-button">Run your first inspection →</Link></div>}
       </div>
 
-      {!latest ? <section className={module === 'buyer-decisions' ? 'buyer-empty' : 'card'} style={{marginTop:18}}>
+      {!latest ? professionalFeatureModules.has(module) ? <IntelligenceModuleReport capability={capability} audit={null} findings={[]} /> : <section className={module === 'buyer-decisions' ? 'buyer-empty' : 'card'} style={{marginTop:18}}>
         <strong>{module === 'buyer-decisions' ? 'Your buyer-question review will appear here after the first audit' : 'No completed inspection yet'}</strong>
         <p>{module === 'buyer-decisions' ? 'PageFix will check the product page for answers about the offer, product details, trust, delivery and returns. No sample results are shown before an audit.' : 'This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.'}</p>
         <Link className="primary-button" href="/dashboard">Run your first inspection →</Link>
-      </section> : <>
+      </section> : professionalFeatureModules.has(module) ? <IntelligenceModuleReport capability={capability} audit={latest} findings={relevantFindings} /> : <>
         {module === 'buyer-decisions' ? <section className="buyer-panel" style={{marginTop:18}}><div className="label">INSPECTED STORE PAGE</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2><p>All results below are drawn from this completed inspection. A public page capture cannot reveal private analytics or confirm actual customer behaviour.</p><Link className="button button-secondary" href={`/dashboard/audits/${latest.id}`}>View complete audit record →</Link></section> : <section className="card" style={{marginTop:18}}>
           <div className="label">LIVE WORKSPACE / LATEST COMPLETED INSPECTION</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2>
           <div className="grid grid-3"><div className="card"><div className="label">Findings in report</div><div className="stat">{latest.findings.length}</div></div><div className="card"><div className="label">Relevant to this module</div><div className="stat">{relevantFindings.length}</div></div><div className="card"><div className="label">Questions reviewed</div><div className="stat">{latest.buyerQuestions.length}</div></div></div>
@@ -239,12 +242,12 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
         </section>
       </>}
 
-      {!latest && ['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection','competitors'].includes(module) && <IntelligenceActionPanel module={module} />}
+      {!latest && !professionalFeatureModules.has(module) && ['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection','competitors'].includes(module) && <IntelligenceActionPanel module={module} />}
 
-      <section className="grid grid-2" style={{marginTop:18}}>
+      {!professionalFeatureModules.has(module) && <section className="grid grid-2" style={{marginTop:18}}>
         <section className="card"><h2>Scope of this module</h2><ul className="capability-detail-list">{capability.whatItDoes.map(item=><li key={item}>{item}</li>)}</ul></section>
         <section className="card"><h2>Limits and safeguards</h2><ul className="capability-detail-list">{capability.limits.map(item=><li key={item}>{item}</li>)}</ul></section>
-      </section>
+      </section>}
     </div>
   </main>;
 }

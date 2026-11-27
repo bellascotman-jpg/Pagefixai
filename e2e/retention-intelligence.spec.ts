@@ -74,15 +74,15 @@ test('retention workspace controls add, remove, save, clear and restore analyses
   await page.getByLabel('How do you know this step succeeded?').fill('The first project is created.');
   await page.getByRole('button', { name: 'Analyse journey & save results' }).click();
   await expect(page.getByRole('status')).toContainText('Analysis completed and saved to your account.');
-  await expect(page.getByRole('heading', { name: 'Findings and next actions' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Journey review verdict' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Clear current results' }).click();
-  await expect(page.getByRole('heading', { name: 'Findings and next actions' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Journey review verdict' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Refresh history' }).click();
   const savedRecord = page.getByRole('button', { name: /Retention UI functional test/ });
   await expect(savedRecord).toBeVisible();
   await savedRecord.click();
-  await expect(page.getByRole('heading', { name: 'Findings and next actions' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Journey review verdict' })).toBeVisible();
   await expect(page.getByRole('status')).toContainText('Loaded saved analysis');
 });

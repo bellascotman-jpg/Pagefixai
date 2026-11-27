@@ -6,6 +6,20 @@ import { buildBuyerDecisionFindings, buildBuyerQuestionChecks } from '@/lib/audi
 import { isConfirmedBrokenDestination, selectInternalCommercialLinks } from '@/lib/intelligence/link-handoff';
 import { captureAuditScreenshots, type ViewportAuditSignals } from '@/lib/audit/screenshots';
 
+async function withFallbackTimeout<T>(promise: Promise<T>, milliseconds: number, fallback: T): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), milliseconds);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 export const ENGINE_VERSION = '1.3.1';
 
 type ExtractedPage = {
@@ -199,7 +213,7 @@ export async function runAudit(auditId: string) {
     const viewportSignals: ViewportAuditSignals[] = [];
     const screenshotEvidence: Array<{ viewport: 'desktop' | 'mobile'; storageKey: string }> = [];
     try {
-      const captures = await captureAuditScreenshots(auditId, target.toString());
+      const captures = await withFallbackTimeout(captureAuditScreenshots(auditId, target.toString()), 14_000, []);
       viewportSignals.push(...captures.map((capture) => capture.signals));
       screenshotEvidence.push(...captures.map((capture) => ({ viewport: capture.viewport, storageKey: capture.storageKey })));
       for (const capture of captures) {

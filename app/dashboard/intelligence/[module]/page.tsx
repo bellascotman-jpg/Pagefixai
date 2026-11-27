@@ -6,7 +6,7 @@ import { capabilities } from '@/lib/product/capabilities';
 import IntelligenceActionPanel from '@/components/intelligence-action-panel';
 import IntelligenceModuleReport from '@/components/intelligence-module-report';
 
-const professionalFeatureModules = new Set(['store', 'retention', 'verification', 'workspaces', 'reports', 'governance', 'return-risk', 'copy-fixes', 'visual-inspection', 'journey', 'seo-data']);
+const professionalFeatureModules = new Set(['inspection', 'verification', 'workspaces', 'reports', 'governance', 'return-risk', 'copy-fixes', 'visual-inspection', 'seo-data']);
 
 const findingFilters: Record<string, RegExp> = {
   'buyer-decisions': /buyer|value proposition|proof|trust|claim|promise|purchase action|commercial action|shipping|return|refund|benefit|decision/i,
@@ -53,7 +53,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
   const latest = audits[0];
   const seoSnapshot = latest ? safeJson(latest.evidence.find(item => item.type === 'METADATA')?.content) : null;
   const pattern = findingFilters[module] ?? /./;
-  const relevantFindings = latest?.findings.filter(item => pattern.test(item.title + ' ' + item.observation + ' ' + item.recommendation)) ?? [];
+  const relevantFindings = module === 'workspaces' ? [] : latest?.findings.filter(item => pattern.test(item.title + ' ' + item.observation + ' ' + item.recommendation)) ?? [];
   const statusClass = capability.status === 'Available in current workflow' ? 'status-available' : capability.status === 'Foundation / needs validation' ? 'status-foundation' : 'status-planned';
   const reportAnchor = module === 'seo-data' ? '#technical-seo-readiness' : module === 'buyer-decisions' || module === 'return-risk' ? '#buyer-decision-intelligence' : '#prioritized-findings';
 

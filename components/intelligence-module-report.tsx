@@ -212,6 +212,32 @@ export default function IntelligenceModuleReport({ capability, audit, findings }
           <article><span>VISIBLE TEXT</span><strong>{page?.visibleText?.length ?? 'Not captured'} characters</strong></article>
         </div> : capability.slug === 'verification' ? <div className="pf-verification-grid">
           {['OPEN','IN_PROGRESS','COMPLETED','VERIFIED','STILL_DETECTED','UNABLE_TO_VERIFY'].map(status => <article key={status}><span>{status.replaceAll('_', ' ')}</span><strong>{audit.findings.filter(item => item.status === status).length}</strong></article>)}
+        </div> : capability.slug === 'workspaces' ? <div className="pf-verification-grid">
+          <article><span>ACCOUNT-OWNED AUDIT RECORD</span><strong>Available</strong></article>
+          <article><span>SAVED EVIDENCE RECORDS</span><strong>{audit.evidence.length}</strong></article>
+          <article><span>TEAM ROLE PERMISSIONS</span><strong>Not verified</strong></article>
+          <article><span>CLIENT DATA ISOLATION</span><strong>Not verified</strong></article>
+          <article><span>ASSIGNMENTS & APPROVALS</span><strong>Not evidenced here</strong></article>
+          <article><span>COLLABORATOR ACCESS</span><strong>Not evidenced here</strong></article>
+        </div> : capability.slug === 'governance' ? <div className="pf-verification-grid">
+          <article><span>FINDINGS WITH EVIDENCE</span><strong>{audit.findings.filter(item => item.evidence.length > 0).length} / {audit.findings.length}</strong></article>
+          <article><span>HIGH CONFIDENCE</span><strong>{audit.findings.filter(item => item.confidence === 'HIGH').length}</strong></article>
+          <article><span>MEDIUM CONFIDENCE</span><strong>{audit.findings.filter(item => item.confidence === 'MEDIUM').length}</strong></article>
+          <article><span>LOW CONFIDENCE</span><strong>{audit.findings.filter(item => item.confidence === 'LOW').length}</strong></article>
+          <article><span>UNLINKED FINDINGS</span><strong>{audit.findings.filter(item => item.evidence.length === 0).length}</strong></article>
+          <article><span>SAVED EVIDENCE RECORDS</span><strong>{audit.evidence.length}</strong></article>
+        </div> : capability.slug === 'reports' ? <div className="pf-verification-grid">
+          <article><span>PAGE CAPTURE</span><strong>{page ? 'Available' : 'Not captured'}</strong></article>
+          <article><span>FINDINGS</span><strong>{audit.findings.length}</strong></article>
+          <article><span>EVIDENCE RECORDS</span><strong>{audit.evidence.length}</strong></article>
+          <article><span>STORED SCREENSHOTS</span><strong>{storedScreenshots.length}</strong></article>
+          <article><span>JSON EXPORT</span><strong>Available</strong></article>
+          <article><span>CSV EXPORT</span><strong>Available</strong></article>
+        </div> : capability.slug === 'return-risk' ? <div className="pf-verification-grid">
+          <article><span>BUYER QUESTIONS REVIEWED</span><strong>{audit.buyerQuestions.length}</strong></article>
+          <article><span>NOT OBSERVED</span><strong>{unanswered}</strong></article>
+          <article><span>OBSERVED IN CAPTURE</span><strong>{audit.buyerQuestions.filter(item => item.status === 'OBSERVED_IN_CAPTURED_PAGE').length}</strong></article>
+          <article><span>UNKNOWN / OTHER STATES</span><strong>{audit.buyerQuestions.filter(item => !['OBSERVED_IN_CAPTURED_PAGE'].includes(item.status) && item.status !== 'NOT_OBSERVED_IN_CAPTURED_PAGE').length}</strong></article>
         </div> : <div className="pf-bars">
           {themes.length ? themes.map(([label, count], index) => <div className="pf-bar-row" key={label}><span className="pf-bar-rank">{String(index + 1).padStart(2, '0')}</span><span className="pf-bar-label">{label}</span><div className="pf-bar-track" role="img" aria-label={`${count} findings in ${label}`}><div className={`pf-bar-fill ${count ? 'has-value' : ''}`} style={{ width: `${count / Math.max(...themes.map(item => item[1]), 1) * 100}%` }} /></div><strong>{count}</strong></div>) : <div className="pf-empty-inline">No matching feature findings were recorded. This is not proof that the page is free of risk; it means the current inspection did not produce a matching signal.</div>}
         </div>}

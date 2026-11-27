@@ -174,7 +174,7 @@
 .pf-explain-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .pf-explain-grid article{padding:15px;border:1px solid #eee3e8;border-radius:13px;background:#fdfbfc}
 .pf-explain-grid strong{font-size:12px}.pf-explain-grid p{margin:6px 0 0;color:#776671;font-size:11px;line-height:1.65}
-.pf-evidence-head{display:flex;align-items:start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pf-evidence-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .pf-evidence-head p{margin:3px 0;color:#887580;font-size:11px}
 .pf-evidence-list{display:grid;gap:10px;margin-top:12px}
 .pf-evidence-list article{padding:15px;border:1px solid #eee2e7;border-radius:13px;min-width:0}

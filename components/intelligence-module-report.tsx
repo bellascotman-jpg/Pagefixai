@@ -176,7 +176,6 @@ export default function IntelligenceModuleReport({ capability, audit, findings }
   const medium = findings.filter(item => item.severity === 'MEDIUM').length;
   const low = findings.filter(item => item.severity === 'LOW').length;
   const linked = findings.filter(item => item.evidence.length > 0).length;
-  const maxSeverity = Math.max(high, medium, low, 1);
   const groups = new Map<string, number>();
   findings.forEach(item => groups.set(themeFor(item), (groups.get(themeFor(item)) ?? 0) + 1));
   const themes = [...groups.entries()].sort((a, b) => b[1] - a[1]);

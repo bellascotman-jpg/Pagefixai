@@ -4,6 +4,9 @@ import { getCurrentUser } from '@/lib/auth/session';
 import { db } from '@/lib/db';
 import { capabilities } from '@/lib/product/capabilities';
 import IntelligenceActionPanel from '@/components/intelligence-action-panel';
+import IntelligenceModuleReport from '@/components/intelligence-module-report';
+
+const professionalFeatureModules = new Set(['store', 'retention', 'verification', 'workspaces', 'reports', 'governance', 'return-risk', 'copy-fixes', 'visual-inspection', 'journey', 'seo-data']);
 
 const findingFilters: Record<string, RegExp> = {
   'buyer-decisions': /buyer|value proposition|proof|trust|claim|promise|purchase action|commercial action|shipping|return|refund|benefit|decision/i,
@@ -75,7 +78,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
         <strong>{module === 'buyer-decisions' ? 'Your buyer-question review will appear here after the first audit' : 'No completed inspection yet'}</strong>
         <p>{module === 'buyer-decisions' ? 'PageFix will check the product page for answers about the offer, product details, trust, delivery and returns. No sample results are shown before an audit.' : 'This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.'}</p>
         <Link className="primary-button" href="/dashboard">Run your first inspection →</Link>
-      </section> : <>
+      </section> : professionalFeatureModules.has(module) ? <IntelligenceModuleReport capability={capability} audit={latest} findings={relevantFindings} /> : <>
         {module === 'buyer-decisions' ? <section className="buyer-panel" style={{marginTop:18}}><div className="label">INSPECTED STORE PAGE</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2><p>All results below are drawn from this completed inspection. A public page capture cannot reveal private analytics or confirm actual customer behaviour.</p><Link className="button button-secondary" href={`/dashboard/audits/${latest.id}`}>View complete audit record →</Link></section> : <section className="card" style={{marginTop:18}}>
           <div className="label">LIVE WORKSPACE / LATEST COMPLETED INSPECTION</div><h2 style={{overflowWrap:'anywhere'}}>{latest.url}</h2>
           <div className="grid grid-3"><div className="card"><div className="label">Findings in report</div><div className="stat">{latest.findings.length}</div></div><div className="card"><div className="label">Relevant to this module</div><div className="stat">{relevantFindings.length}</div></div><div className="card"><div className="label">Questions reviewed</div><div className="stat">{latest.buyerQuestions.length}</div></div></div>

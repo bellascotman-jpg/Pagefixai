@@ -244,10 +244,10 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
 
       {!latest && !professionalFeatureModules.has(module) && ['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection','competitors'].includes(module) && <IntelligenceActionPanel module={module} />}
 
-      <section className="grid grid-2" style={{marginTop:18}}>
+      {!professionalFeatureModules.has(module) && <section className="grid grid-2" style={{marginTop:18}}>
         <section className="card"><h2>Scope of this module</h2><ul className="capability-detail-list">{capability.whatItDoes.map(item=><li key={item}>{item}</li>)}</ul></section>
         <section className="card"><h2>Limits and safeguards</h2><ul className="capability-detail-list">{capability.limits.map(item=><li key={item}>{item}</li>)}</ul></section>
-      </section>
+      </section>}
     </div>
   </main>;
 }

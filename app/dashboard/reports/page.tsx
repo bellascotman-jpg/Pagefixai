@@ -96,7 +96,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         <div className="pf-flow">
           {[
             ['Review','Open the report and confirm the evidence supports the finding.'],
-            ['Assign','Use the Fix Center to track the correction and owner.'],
+            ['Assign','Use the Fix Center to track the correction and its status.'],
             ['Change','Update the source page using verified product and policy facts.'],
             ['Recheck','Run a fresh inspection and compare the new capture.'],
           ].map((step,index)=><div className="pf-flow-step" key={step[0]}><div className="pf-flow-node"><span>{index+1}</span><strong>{step[0]}</strong><small>Next action</small></div><p>{step[1]}</p></div>)}

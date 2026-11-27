@@ -75,14 +75,13 @@ export default function FeatureAuditReport({ feature, audit, findings, questions
     const rank = (s: string) => s === 'HIGH' ? 3 : s === 'MEDIUM' ? 2 : 1;
     return rank(b.severity) - rank(a.severity);
   });
-  const answeredCount = questions.length - unanswered.length;
 
   return <div className="pf-audit-report">
     <div className="pf-report-meta"><span>FEATURE AUDIT REPORT</span><span>{audit.completedAt ? audit.completedAt.toLocaleString() : 'Completion time unavailable'}</span></div>
     <div className="pf-audit-target"><span>INSPECTED PAGE</span><strong>{audit.url}</strong><Link href={`/dashboard/audits/${audit.id}`}>Open complete audit record →</Link></div>
 
     <Block number="01" title="Problem">
-      <div className="pf-problem"><span>THE STORE OWNER'S PROBLEM</span><h2>{isBuyer ? '“Shoppers may still have questions about this product before they feel ready to buy.”' : '“I need to know whether my product page makes the offer, trust signals and next step clear.”'}</h2><p>If important details are unclear, a shopper may pause, compare another store or misunderstand what they are buying. This audit does not measure the revenue cost; it identifies content gaps worth reviewing.</p></div>
+      <div className="pf-problem"><span>THE STORE OWNER&apos;S PROBLEM</span><h2>{isBuyer ? '“Shoppers may still have questions about this product before they feel ready to buy.”' : '“I need to know whether my product page makes the offer, trust signals and next step clear.”'}</h2><p>If important details are unclear, a shopper may pause, compare another store or misunderstand what they are buying. This audit does not measure the revenue cost; it identifies content gaps worth reviewing.</p></div>
     </Block>
 
     <Block number="02" title="Findings">

@@ -229,3 +229,7 @@
  .pf-problem h2{font-size:17px}
 }
 @media(max-width:390px){.pf-report-meta{font-size:9px}.pf-block-heading h2{font-size:16px}.pf-bar-row{grid-template-columns:16px 92px minmax(0,1fr) 18px;gap:5px}.pf-fix-top span{font-size:8px}}
+
+.pf-fix-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border:0;border-radius:10px;background:#681a3a;color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+.pf-fix-actions button:disabled{opacity:.6;cursor:wait}
+.pf-fix-actions small{display:block;margin-top:7px;color:#6f5c66;font-size:10px;line-height:1.5}

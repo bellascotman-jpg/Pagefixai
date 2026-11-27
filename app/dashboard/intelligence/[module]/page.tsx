@@ -74,7 +74,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
         {latest ? <div className="capability-detail-actions"><Link href={`/dashboard/audits/${latest.id}${reportAnchor}`} className="primary-button">Open latest evidence →</Link><Link href="/dashboard/audits" className="button button-secondary">Audit history</Link></div> : <div className="capability-detail-actions"><Link href="/dashboard" className="primary-button">Run your first inspection →</Link></div>}
       </div>
 
-      {!latest ? <section className={module === 'buyer-decisions' ? 'buyer-empty' : 'card'} style={{marginTop:18}}>
+      {!latest ? professionalFeatureModules.has(module) ? <IntelligenceModuleReport capability={capability} audit={null} findings={[]} /> : <section className={module === 'buyer-decisions' ? 'buyer-empty' : 'card'} style={{marginTop:18}}>
         <strong>{module === 'buyer-decisions' ? 'Your buyer-question review will appear here after the first audit' : 'No completed inspection yet'}</strong>
         <p>{module === 'buyer-decisions' ? 'PageFix will check the product page for answers about the offer, product details, trust, delivery and returns. No sample results are shown before an audit.' : 'This module becomes actionable after PageFix has captured a public page. Run an inspection to populate this workspace with evidence and findings.'}</p>
         <Link className="primary-button" href="/dashboard">Run your first inspection →</Link>
@@ -242,7 +242,7 @@ export default async function IntelligenceModulePage({ params }: { params: Promi
         </section>
       </>}
 
-      {!latest && ['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection','competitors'].includes(module) && <IntelligenceActionPanel module={module} />}
+      {!latest && !professionalFeatureModules.has(module) && ['buyer-decisions','return-risk','clarity-scorecard','visual-inspection','seo-data','ai-search-readiness','store','copy-fixes','journey','experiments','verification','governance','workspaces','integrations','reports','inspection','competitors'].includes(module) && <IntelligenceActionPanel module={module} />}
 
       <section className="grid grid-2" style={{marginTop:18}}>
         <section className="card"><h2>Scope of this module</h2><ul className="capability-detail-list">{capability.whatItDoes.map(item=><li key={item}>{item}</li>)}</ul></section>

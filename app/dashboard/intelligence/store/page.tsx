@@ -94,6 +94,7 @@ export default async function StoreIntelligencePage() {
           <strong>{row.finding.title}</strong><blockquote>{row.evidence.content.slice(0,700)}</blockquote>
           <small>{row.url} · {row.evidence.location || row.evidence.source || 'Source location not recorded'} · <Link href={`/dashboard/audits/${row.auditId}`}>Open audit</Link></small>
         </article>)}</div> : <div className="pf-empty-inline">No evidence-linked open findings are available in this audit window. Review the complete audit history before drawing a conclusion.</div>}
+        <div className="pf-subpanel"><h3>Recent inspected pages</h3><p>Latest completed source records in this account.</p>{latest.length ? latest.map(a=><article key={a.id} style={{padding:'10px 0',borderTop:'1px solid #eee2e7'}}><strong style={{overflowWrap:'anywhere'}}>{a.url}</strong><p className="muted">{a.findings.length} findings · {a.completedAt?.toLocaleString() ?? 'Completion date unavailable'}</p><Link href={`/dashboard/audits/${a.id}`}>Open audit report →</Link></article>) : <p className="muted">No completed inspections yet.</p>}</div>
       </section>
 
       <section className="pf-report-block">
@@ -107,10 +108,6 @@ export default async function StoreIntelligencePage() {
         <div className="pf-report-footer"><Link className="button" href="/dashboard/fixes">Open Fix Center</Link><Link className="button" href="/dashboard/audits">Full audit history</Link><Link className="button" href="/dashboard/reports">Reports & exports</Link></div>
       </section>
 
-      <section className="pf-report-block">
-        <div className="pf-block-heading"><span>Recent</span><h2>Latest inspected pages</h2></div>
-        {latest.length ? <div className="pf-evidence-list">{latest.map(a=><article key={a.id}><div className="pf-chip-row"><span>COMPLETED</span><span>{a.findings.length} FINDINGS</span></div><strong style={{overflowWrap:'anywhere'}}>{a.url}</strong><small>{a.completedAt?.toLocaleString() ?? 'Completion date unavailable'}</small><Link href={`/dashboard/audits/${a.id}`}>Open audit report →</Link></article>)}</div> : <div className="pf-empty-report"><span>NO COMPLETED INSPECTIONS</span><h2>Your store report starts with its first completed inspection.</h2><p>Run a public-page inspection to create a saved evidence record. No sample store data is displayed.</p><Link className="primary-button" href="/dashboard">Run first inspection →</Link></div>}
-      </section>
       <p className="muted" style={{fontSize:11}}>Coverage limitation: this view is limited to the 250 most recent completed audits owned by your account. It does not automatically crawl a product catalogue or establish that uninspected pages share these issues.</p>
     </div>
   </main>;

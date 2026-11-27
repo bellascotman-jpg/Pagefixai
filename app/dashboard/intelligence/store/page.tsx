@@ -92,7 +92,7 @@ export default async function StoreIntelligencePage() {
         {evidenceRows.length ? <div className="pf-evidence-list">{evidenceRows.map((row,index)=><article key={row.evidence.id+row.finding.id+index}>
           <div className="pf-chip-row"><span>{row.evidence.type.replaceAll('_',' ')}</span><span>{row.finding.severity} SEVERITY</span><span>{row.finding.confidence} CONFIDENCE</span></div>
           <strong>{row.finding.title}</strong><blockquote>{row.evidence.content.slice(0,700)}</blockquote>
-          <small>{row.url} · {row.evidence.location || row.evidence.source || 'Source location not recorded'} · <Link href={`/dashboard/audits/${row.auditId}`}>Open audit</Link></small>
+          <small>{row.finding.url} · {row.evidence.location || row.evidence.source || 'Source location not recorded'} · <Link href={`/dashboard/audits/${row.finding.auditId}`}>Open audit</Link></small>
         </article>)}</div> : <div className="pf-empty-inline">No evidence-linked open findings are available in this audit window. Review the complete audit history before drawing a conclusion.</div>}
         <div className="pf-subpanel"><h3>Recent inspected pages</h3><p>Latest completed source records in this account.</p>{latest.length ? latest.map(a=><article key={a.id} style={{padding:'10px 0',borderTop:'1px solid #eee2e7'}}><strong style={{overflowWrap:'anywhere'}}>{a.url}</strong><p className="muted">{a.findings.length} findings · {a.completedAt?.toLocaleString() ?? 'Completion date unavailable'}</p><Link href={`/dashboard/audits/${a.id}`}>Open audit report →</Link></article>) : <p className="muted">No completed inspections yet.</p>}</div>
       </section>

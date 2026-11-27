@@ -233,3 +233,8 @@
 .pf-fix-actions button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border:0;border-radius:10px;background:#681a3a;color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
 .pf-fix-actions button:disabled{opacity:.6;cursor:wait}
 .pf-fix-actions small{display:block;margin-top:7px;color:#6f5c66;font-size:10px;line-height:1.5}
+
+.pf-flow-arrow{position:static;display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:7px;color:#8e7180;font-size:10px}
+.pf-flow-arrow span{font-size:9px;font-weight:800}.pf-flow-arrow .mismatch{color:#b42318}.pf-flow-arrow .match{color:#187344}.pf-flow-arrow .unchecked{color:#887580}
+.pf-flow-arrow b{font-size:15px}
+@media(max-width:760px){.pf-flow-arrow{justify-content:center;transform:none;margin:5px 0}.pf-flow-arrow b{transform:rotate(90deg)}}

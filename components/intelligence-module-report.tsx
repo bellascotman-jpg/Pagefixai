@@ -81,14 +81,14 @@ const moduleCopy: Record<string, { problem: string; cost: string; visual: string
     cost: 'Unclear ownership can slow approvals and increase the risk of work being performed in the wrong account. This view reflects the signed-in account’s records only.',
     visual: 'How much of this report has traceable ownership and evidence?',
     visualHelp: 'This page summarises the current account’s saved audit records; it does not certify enterprise role permissions or multi-client isolation.',
-    action: 'Keep each client’s work in its own authorised account or workspace and verify role access before inviting collaborators.',
+    action: 'Keep client records in separate authorised accounts until membership permissions and client-data isolation have been verified; do not invite collaborators on the assumption that roles are complete.',
   },
   reports: {
     problem: '“I need a report my team or client can act on and trace back to the exact page evidence.”',
     cost: 'A recommendation without a source, scope or verification path creates review delays and makes it harder to agree on the next change.',
     visual: 'How much of this report is backed by linked evidence?',
     visualHelp: 'Evidence coverage counts findings with at least one linked saved evidence record. It measures traceability, not whether the interpretation is correct.',
-    action: 'Share the audit through the available authorised report controls, keep internal notes private, and attach a recheck to any completed fix.',
+    action: 'Use the account-owned report and JSON/CSV exports for internal review; do not treat an export as a revocable share link, and attach a recheck to any completed fix.',
   },
   governance: {
     problem: '“I need to know what PageFix actually observed, what it inferred, and what is still unknown before I approve a change.”',

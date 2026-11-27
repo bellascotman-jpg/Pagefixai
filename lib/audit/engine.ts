@@ -213,7 +213,7 @@ export async function runAudit(auditId: string) {
     const viewportSignals: ViewportAuditSignals[] = [];
     const screenshotEvidence: Array<{ viewport: 'desktop' | 'mobile'; storageKey: string }> = [];
     try {
-      const captures = await withFallbackTimeout(captureAuditScreenshots(auditId, target.toString()), 10_000, []);
+      const captures = await withFallbackTimeout(captureAuditScreenshots(auditId, target.toString()), 14_000, []);
       viewportSignals.push(...captures.map((capture) => capture.signals));
       screenshotEvidence.push(...captures.map((capture) => ({ viewport: capture.viewport, storageKey: capture.storageKey })));
       for (const capture of captures) {

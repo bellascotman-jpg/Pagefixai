@@ -43,7 +43,7 @@ type Audit = {
 
 type Props = {
   capability: Capability;
-  audit: Audit;
+  audit: Audit | null;
   findings: Finding[];
 };
 
@@ -156,6 +156,15 @@ export default function IntelligenceModuleReport({ capability, audit, findings }
     visualHelp: 'Counts reflect the latest saved inspection only.',
     action: capability.next,
   };
+  if (!audit) return <div className="pf-audit-report">
+    <div className="pf-report-meta"><span>{capability.group.toUpperCase()} / FIRST FEATURE REPORT</span><span>AWAITING FIRST COMPLETED INSPECTION</span></div>
+    <Block number="01" title="The store-owner problem"><div className="pf-problem"><span>PROBLEM / BUSINESS CONSEQUENCE</span><h2>{copy.problem}</h2><p><strong>What it can cost:</strong> {copy.cost}</p></div></Block>
+    <Block number="02" title="Inspection verdict"><div className="pf-verdict-grid"><article className="pf-verdict-card"><span>REPORT STATUS</span><strong>Awaiting data</strong><small>No completed inspection is available in this account.</small></article><article className="pf-risk-card watch"><span>REVIEW PRIORITY</span><strong>Not assessed</strong><small>No score or risk level is invented before a capture.</small></article><article className="pf-verdict-card"><span>FINDINGS</span><strong>—</strong><small>Will be calculated from the first completed inspection.</small></article><article className="pf-verdict-card"><span>EVIDENCE</span><strong>—</strong><small>No source records are available yet.</small></article></div></Block>
+    <Block number="03" title={copy.visual}><div className="pf-chart-card"><p>{copy.visualHelp}</p><div className="pf-empty-inline">This visual will populate from saved audit data after the first completed inspection. No sample bars or placeholder scores are shown.</div></div></Block>
+    <Block number="04" title="Evidence and source traceability"><div className="pf-empty-inline">No page capture or evidence records exist yet. PageFix will show source excerpts, capture locations and evidence identifiers here after an inspection.</div></Block>
+    <Block number="05" title="Prioritised action and verification plan"><p className="pf-fix-intro">{copy.action}</p><div className="pf-report-footer"><Link className="button" href="/dashboard">Run the first inspection</Link><Link className="button" href="/dashboard/audits">Open audit history</Link></div></Block>
+  </div>;
+
   const high = findings.filter(item => item.severity === 'HIGH').length;
   const medium = findings.filter(item => item.severity === 'MEDIUM').length;
   const low = findings.filter(item => item.severity === 'LOW').length;

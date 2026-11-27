@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import FindingFixAction from '@/components/finding-fix-action';
 
 type Evidence = { id: string; type: string; source: string; location: string | null; content: string };
 type Finding = {
@@ -113,7 +114,7 @@ export default function FeatureAuditReport({ feature, audit, findings, questions
 
     <Block number="05" title="Fix">
       <p className="pf-fix-intro">Fixes are ranked by saved severity. Effort comes from the audit record. Commercial impact is not measured by a public-page inspection, so it is not guessed.</p>
-      {sortedFindings.length ? <div className="pf-fix-list">{sortedFindings.map(f => <article key={f.id} className="pf-fix-card"><div className="pf-fix-top"><span className={severityTone(f.severity)}>{f.severity} priority</span><span>Effort: {effortLabel(f.effort)}</span><span>Impact: Not measured</span></div><h3>{f.title}</h3><p>{f.recommendation}</p><small>{f.whyItMatters}</small><div className="pf-fix-actions"><Link href={`/dashboard/audits/${audit.id}#finding-${f.id}`}>Mark as fixed / Verify →</Link></div></article>)}</div> : <div className="pf-empty-inline">No fixes were generated for this feature in the selected audit. This does not prove the page is issue-free.</div>}
+      {sortedFindings.length ? <div className="pf-fix-list">{sortedFindings.map(f => <article key={f.id} className="pf-fix-card"><div className="pf-fix-top"><span className={severityTone(f.severity)}>{f.severity} priority</span><span>Effort: {effortLabel(f.effort)}</span><span>Impact: Not measured</span></div><h3>{f.title}</h3><p>{f.recommendation}</p><small>{f.whyItMatters}</small><FindingFixAction findingId={f.id} auditId={audit.id} initialStatus={f.status} /></article>)}</div> : <div className="pf-empty-inline">No fixes were generated for this feature in the selected audit. This does not prove the page is issue-free.</div>}
       <div className="pf-report-footer"><Link className="primary-button" href={`/dashboard/audits/${audit.id}`}>Open audit and recheck workflow →</Link></div>
     </Block>
   </div>;

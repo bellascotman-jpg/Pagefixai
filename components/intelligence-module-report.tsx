@@ -246,7 +246,6 @@ export default function IntelligenceModuleReport({ capability, audit, findings }
           <article><span>BUYER QUESTIONS REVIEWED</span><strong>{audit.buyerQuestions.length}</strong></article>
           <article><span>NOT OBSERVED</span><strong>{unanswered}</strong></article>
           <article><span>OBSERVED IN CAPTURE</span><strong>{audit.buyerQuestions.filter(item => item.status === 'OBSERVED_IN_CAPTURED_PAGE').length}</strong></article>
-          <article><span>UNKNOWN / OTHER STATES</span><strong>{audit.buyerQuestions.filter(item => !['OBSERVED_IN_CAPTURED_PAGE'].includes(item.status) && item.status !== 'NOT_OBSERVED_IN_CAPTURED_PAGE').length}</strong></article>
         </div> : <div className="pf-bars">
           {themes.length ? themes.map(([label, count], index) => <div className="pf-bar-row" key={label}><span className="pf-bar-rank">{String(index + 1).padStart(2, '0')}</span><span className="pf-bar-label">{label}</span><div className="pf-bar-track" role="img" aria-label={`${count} findings in ${label}`}><div className={`pf-bar-fill ${count ? 'has-value' : ''}`} style={{ width: `${count / Math.max(...themes.map(item => item[1]), 1) * 100}%` }} /></div><strong>{count}</strong></div>) : <div className="pf-empty-inline">No matching feature findings were recorded. This is not proof that the page is free of risk; it means the current inspection did not produce a matching signal.</div>}
         </div>}

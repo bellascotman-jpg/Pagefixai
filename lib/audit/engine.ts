@@ -13,7 +13,6 @@ async function withFallbackTimeout<T>(promise: Promise<T>, milliseconds: number,
       promise,
       new Promise<T>((resolve) => {
         timer = setTimeout(() => resolve(fallback), milliseconds);
-        timer.unref?.();
       }),
     ]);
   } finally {

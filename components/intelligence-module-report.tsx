@@ -48,7 +48,13 @@ type Props = {
 };
 
 const moduleCopy: Record<string, { problem: string; cost: string; visual: string; visualHelp: string; action: string }> = {
-  inspection: {\n    problem: '“I need to know exactly what PageFix inspected, what it could not reach, and which page issues deserve action first.”',\n    cost: 'A shallow or unclear inspection can create false confidence and send the team after the wrong issue. Coverage and capture limitations must remain visible.',\n    visual: 'What was actually captured from the inspected page?',\n    visualHelp: 'The page fields below come from the saved HTML capture. Missing values are shown as unknown, not treated as confirmed defects.',\n    action: 'Review the evidence behind each finding, address the highest-priority page issue, and run a fresh inspection to verify the change.',\n  },
+  inspection: {
+    problem: '“I need to know exactly what PageFix inspected, what it could not reach, and which page issues deserve action first.”',
+    cost: 'A shallow or unclear inspection can create false confidence and send the team after the wrong issue. Coverage and capture limitations must remain visible.',
+    visual: 'What was actually captured from the inspected page?',
+    visualHelp: 'The page fields below come from the saved HTML capture. Missing values are shown as unknown, not treated as confirmed defects.',
+    action: 'Review the evidence behind each finding, address the highest-priority page issue, and run a fresh inspection to verify the change.',
+  },
   store: {
     problem: '“I need to see which pages keep creating the same problems so my team can fix the source, not chase symptoms.”',
     cost: 'Repeated issues can consume review time and leave the same customer-facing friction across multiple inspected pages. This report counts only pages actually audited.',
